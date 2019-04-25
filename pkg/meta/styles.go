@@ -12,6 +12,17 @@ import (
 	"github.com/fatih/color"
 )
 
+func StatusColor(status Status) (color.Attribute, color.Attribute) {
+	switch status {
+	case StatusTrusted:
+		return StyleSuccess()
+	case StatusUnknown:
+		return StyleWarning()
+	default:
+		return StyleError()
+	}
+}
+
 func StyleAffordance() (color.Attribute, color.Attribute) {
 	return color.FgHiBlue, color.Bold
 }
