@@ -42,6 +42,7 @@ func NewCmdSign() *cobra.Command {
 		Args: cobra.ExactArgs(1),
 	}
 
+	cmd.Flags().StringP("key", "k", "", "specify the public key <vcn> should use, if not set the last available is used")
 	cmd.Flags().BoolP("public", "p", false, "when signed as public, the asset name and the signer's identity will be visible to everyone")
 	cmd.Flags().BoolP("yes", "y", false, "when used, you automatically confirm the ownership of this asset")
 
@@ -64,11 +65,16 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 		return err
 	}
 
+	pubKey, err := cmd.Flags().GetString("key")
+	if err != nil {
+		return err
+	}
+
 	cmd.SilenceUsage = true
-	return sign(args[0], state, meta.VisibilityForFlag(public), yes)
+	return sign(pubKey, args[0], state, meta.VisibilityForFlag(public), yes)
 }
 
-func sign(filename string, state meta.Status, visibility meta.Visibility, acknowledge bool) error {
+func sign(pubKey string, filename string, state meta.Status, visibility meta.Visibility, acknowledge bool) error {
 
 	if err := cli.AssertUserLogin(); err != nil {
 		return err
@@ -132,6 +138,12 @@ func sign(filename string, state meta.Status, visibility meta.Visibility, acknow
 		}
 	}
 
+	if pubKey == "" {
+		pubKey = u.DefaultKey()
+	}
+	fmt.Println()
+	fmt.Println("Signer:", u.Email())
+	fmt.Println("Key:", pubKey)
 	passphrase, err := cli.ProvidePassphrase()
 	if err != nil {
 		return err
@@ -150,17 +162,22 @@ func sign(filename string, state meta.Status, visibility meta.Visibility, acknow
 	}
 
 	// TODO: return and display: block #, trx #
-	err = u.Sign(a, u.DefaultKey(), passphrase, state, visibility)
+	verification, err := u.Sign(a, pubKey, passphrase, state, visibility)
 
 	s.Stop()
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("")
-	fmt.Println("Asset:\t", filename)
-	fmt.Println("Hash:\t", artifactHash)
-	// fmt.Println("Date:\t\t", time.Now())
-	// fmt.Println("Signer:\t", "<pubKey>")
+	fmt.Println()
+	cli.PrintColumn("Asset", filename, "NA")
+	cli.PrintColumn("Hash", artifactHash, "NA")
+	if verification.Timestamp != time.Unix(0, 0) {
+		cli.PrintColumn("Date", verification.Timestamp.String(), "NA")
+	} else {
+		cli.PrintColumn("Date", "NA", "NA")
+	}
+	sc, ss := meta.StatusColor(verification.Status)
+	cli.PrintColumn("Status", meta.StatusName(verification.Status), "NA", sc, ss)
 	return nil
 }

@@ -12,6 +12,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -86,12 +87,13 @@ func BlockChainVerifyMatchingPublicKey(hash string, publicKey string) (verificat
 	if err != nil {
 		return nil, err
 	}
+	publicKey = strings.ToLower(publicKey)
 	for i := count.Int64() - 1; i >= 0; i-- {
 		address, level, status, timestamp, err := instance.VerifyByIndex(nil, hash, big.NewInt(i))
 		if err != nil {
 			return nil, err
 		}
-		if address.Hex() == publicKey {
+		if strings.ToLower(address.Hex()) == publicKey {
 			return &BlockchainVerification{
 				Owner:     address,
 				Level:     meta.Level(level.Int64()),

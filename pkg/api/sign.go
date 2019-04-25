@@ -34,34 +34,34 @@ your patience.
 It only takes few seconds. Please try again in 1 minute.
 `
 
-func (u User) Sign(artifact Artifact, pubKey string, passphrase string, state meta.Status, visibility meta.Visibility) error {
+func (u User) Sign(artifact Artifact, pubKey string, passphrase string, state meta.Status, visibility meta.Visibility) (*BlockchainVerification, error) {
 
 	hasAuth, err := u.IsAuthenticated()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if !hasAuth {
-		return makeAuthRequiredError()
+		return nil, makeAuthRequiredError()
 	}
 
 	if artifact.Hash == "" {
-		return makeError("asset's hash is missing", nil)
+		return nil, makeError("asset's hash is missing", nil)
 	}
 	if artifact.Name == "" {
-		return makeError("asset's name is missing", nil)
+		return nil, makeError("asset's name is missing", nil)
 	}
 
 	keyin, err := u.cfg.OpenKey(pubKey)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	synced, err := u.isWalletSynced(pubKey)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if !synced {
-		return makeError(fmt.Sprintf(walletNotSyncMsg, artifact.Name), nil)
+		return nil, makeError(fmt.Sprintf(walletNotSyncMsg, artifact.Name), nil)
 	}
 
 	return u.commitHash(keyin, passphrase, artifact.Hash, artifact.Name, artifact.Size, state, visibility)
@@ -76,7 +76,7 @@ func (u User) commitHash(
 	fileSize uint64,
 	status meta.Status,
 	visibility meta.Visibility,
-) (err error) {
+) (verification *BlockchainVerification, err error) {
 	transactor, err := bind.NewTransactor(keyin, passphrase)
 	if err != nil {
 		return
@@ -138,7 +138,7 @@ func (u User) commitHash(
 	}
 
 	pubKey := transactor.From.Hex()
-	verification, err := BlockChainVerifyMatchingPublicKey(hash, pubKey)
+	verification, err = BlockChainVerifyMatchingPublicKey(hash, pubKey)
 	if err != nil {
 		return
 	}

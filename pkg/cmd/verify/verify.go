@@ -19,7 +19,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/fatih/color"
+	"github.com/vchain-us/vcn/internal/cli"
 	"github.com/vchain-us/vcn/internal/docker"
 	"github.com/vchain-us/vcn/internal/utils"
 	"github.com/vchain-us/vcn/pkg/api"
@@ -44,25 +44,34 @@ func NewCmdVerify() *cobra.Command {
 		strings.Replace(cmd.UsageTemplate(), "{{.UseLine}}", "{{.UseLine}} ...ARG(s)", 1),
 	)
 
+	cmd.Flags().StringP("key", "k", "", "specify the public key <vcn> should use, if not set the last available is used")
+
 	return cmd
 }
 
 func runVerify(cmd *cobra.Command, args []string) error {
+	pubKey, err := cmd.Flags().GetString("key")
+	if err != nil {
+		return err
+	}
 	user := api.NewUser(store.Config().CurrentContext)
 	for _, spec := range args {
-		if ok, err := verify(spec, user); !ok {
+		if ok, err := verify(spec, pubKey, user); !ok {
 			cmd.SilenceUsage = true
 			if err != nil {
 				return err
 			}
-			return fmt.Errorf("%s is not verified", spec)
+			if pubKey == "" {
+				return fmt.Errorf("%s is not verified", spec)
+			}
+			return fmt.Errorf("%s is not verified by %s", spec, pubKey)
 		}
 	}
 
 	return nil
 }
 
-func verify(filename string, user *api.User) (success bool, err error) {
+func verify(filename string, pubKey string, user *api.User) (success bool, err error) {
 	var artifactHash string
 	// fixme(leogr): refactor to spec
 	if strings.HasPrefix(filename, "docker:") {
@@ -77,7 +86,13 @@ func verify(filename string, user *api.User) (success bool, err error) {
 		}
 		artifactHash = strings.TrimSpace(hash)
 	}
-	verification, err := api.BlockChainVerify(artifactHash)
+
+	var verification *api.BlockchainVerification
+	if pubKey == "" {
+		verification, err = api.BlockChainVerify(artifactHash)
+	} else {
+		verification, err = api.BlockChainVerifyMatchingPublicKey(artifactHash, pubKey)
+	}
 	if err != nil {
 		return false, fmt.Errorf("unable to verify hash: %s", err)
 	}
@@ -87,76 +102,47 @@ func verify(filename string, user *api.User) (success bool, err error) {
 		artifact, _ = api.LoadArtifactForHash(user, artifactHash, verification.MetaHash())
 	}
 	if artifact != nil {
-		printColumn("Asset", artifact.Filename, filepath.Base(filename))
-		printColumn("Hash", artifactHash, "NA")
-		printColumn("Date", verification.Timestamp.String(), "NA")
-		printColumn("Signer", artifact.Publisher, verification.Owner.Hex())
-		printColumn("Name", artifact.Name, "NA")
+		cli.PrintColumn("Asset", artifact.Filename, filepath.Base(filename))
+		cli.PrintColumn("Hash", artifactHash, "NA")
+		cli.PrintColumn("Date", verification.Timestamp.String(), "NA")
+		cli.PrintColumn("Signer", artifact.Publisher, "NA")
+		cli.PrintColumn("Key", strings.ToLower(verification.Owner.Hex()), "NA")
+		cli.PrintColumn("Name", artifact.Name, "NA")
 		if artifact.FileSize > 0 {
-			printColumn("Size", humanize.Bytes(artifact.FileSize), "NA")
+			cli.PrintColumn("Size", humanize.Bytes(artifact.FileSize), "NA")
 		} else {
-			printColumn("Size", "NA", "NA")
+			cli.PrintColumn("Size", "NA", "NA")
 		}
-		printColumn("Company", artifact.PublisherCompany, "NA")
-		printColumn("Website", artifact.PublisherWebsiteUrl, "NA")
-		printColumn("Level", meta.LevelName(verification.Level), "NA")
+		cli.PrintColumn("Company", artifact.PublisherCompany, "NA")
+		cli.PrintColumn("Website", artifact.PublisherWebsiteUrl, "NA")
+		cli.PrintColumn("Level", meta.LevelName(verification.Level), "NA")
 	} else {
-		printColumn("Asset", filepath.Base(filename), "NA")
-		printColumn("Hash", artifactHash, "NA")
+		cli.PrintColumn("Asset", filepath.Base(filename), "NA")
+		cli.PrintColumn("Hash", artifactHash, "NA")
 		if verification.Timestamp != time.Unix(0, 0) {
-			printColumn("Date", verification.Timestamp.String(), "NA")
+			cli.PrintColumn("Date", verification.Timestamp.String(), "NA")
 		} else {
-			printColumn("Date", "NA", "NA")
+			cli.PrintColumn("Date", "NA", "NA")
 		}
+		cli.PrintColumn("Signer", "NA", "NA")
 		if verification.Owner != common.BigToAddress(big.NewInt(0)) {
-			printColumn("Signer", verification.Owner.Hex(), "NA")
+			cli.PrintColumn("Key", strings.ToLower(verification.Owner.Hex()), "NA")
 		} else {
-			printColumn("Signer", "NA", "NA")
+			cli.PrintColumn("Key", "NA", "NA")
 		}
-		printColumn("Name", "NA", "NA")
-		printColumn("Company", "NA", "NA")
-		printColumn("Website", "NA", "NA")
-		printColumn("Size", "NA", "NA")
-		printColumn("Level", "NA", "NA")
+		cli.PrintColumn("Name", "NA", "NA")
+		cli.PrintColumn("Company", "NA", "NA")
+		cli.PrintColumn("Website", "NA", "NA")
+		cli.PrintColumn("Size", "NA", "NA")
+		cli.PrintColumn("Level", "NA", "NA")
 	}
 
-	var c, s color.Attribute
-	switch verification.Status {
-	case meta.StatusTrusted:
-		success = true
-		c, s = meta.StyleSuccess()
-	case meta.StatusUnknown:
-		success = false
-		c, s = meta.StyleWarning()
-	default:
-		success = false
-		c, s = meta.StyleError()
-	}
-	printColumn("Status", meta.StatusName(verification.Status), "NA", c, s)
+	c, s := meta.StatusColor(verification.Status)
+	cli.PrintColumn("Status", meta.StatusName(verification.Status), "NA", c, s)
+	success = verification.Status == meta.StatusTrusted
 
 	// todo(ameingast): redundant tracking events?
 	_ = api.TrackPublisher(user, meta.VcnVerifyEvent)
 	_ = api.TrackVerify(user, artifactHash, filepath.Base(filename))
 	return
-}
-
-func printColumn(field string, value string, fallback string, p ...color.Attribute) {
-	var spaces string
-	for i := len(field); i < 8; i++ {
-		spaces += " "
-	}
-	fmt.Print(field + ":" + spaces)
-	if p != nil {
-		c := color.New(p...)
-		c.Set()
-	}
-	if value != "" {
-		fmt.Print(value)
-	} else {
-		fmt.Print(fallback)
-	}
-	if p != nil {
-		color.Unset()
-	}
-	fmt.Println()
 }
