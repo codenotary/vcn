@@ -81,6 +81,10 @@ func WalletEndpoint() string {
 	return FoundationEndpoint() + "/v1/wallet"
 }
 
+func RemainingSignOpsEndpoint() string {
+	return FoundationEndpoint() + "/v1/artifact/remaining-sign-operations"
+}
+
 func ArtifactEndpoint() string {
 	return FoundationEndpoint() + "/v1/artifact"
 }

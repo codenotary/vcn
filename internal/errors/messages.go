@@ -14,6 +14,12 @@ const UnconfirmedEmail = `your email address was not confirmed
 Please confirm it by clicking on the link we sent to %s.
 If you did not receive the email, please go to %s and click on the link "Resend email"`
 
+const NoRemainingSignOps = `signature quota exceeded
+
+Unfortunately, you have used all your signatures for this month.
+If you would like to increase the number of monthly signatures, 
+please email us at support@codenotary.io with your request.`
+
 // BlockchainPermission refers to https://github.com/vchain-us/vcn/wiki/Errors#blockchain-permission-403
 const BlockchainPermission = `could not write to blockchain
 
