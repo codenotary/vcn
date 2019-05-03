@@ -30,3 +30,22 @@ func TestDocker(t *testing.T) {
 	assert.Regexp(t, "[0-9a-f]{64}", a.Hash)
 	assert.NotZero(t, a.Size)
 }
+
+func TestInferVer(t *testing.T) {
+	testCases := map[string]string{
+		"golang:1.12-stretch": "1.12-stretch",
+		"golang:latest":       "",
+	}
+
+	for tag, ver := range testCases {
+		i := image{
+			RepoTags: []string{tag},
+		}
+		assert.Equal(
+			t,
+			ver,
+			i.inferVer(),
+			"wrong version for %s", tag,
+		)
+	}
+}
