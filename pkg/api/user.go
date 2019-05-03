@@ -50,6 +50,13 @@ func (u User) HasKey() bool {
 	return false
 }
 
+func (u User) Keys() []string {
+	if u.cfg != nil {
+		return u.cfg.PubKeys()
+	}
+	return nil
+}
+
 func (u *User) Authenticate(password string) (err error) {
 	if u == nil || u.Email() == "" {
 		return makeFatal("user not initialized", nil)

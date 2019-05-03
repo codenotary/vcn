@@ -108,7 +108,7 @@ type ArtifactResponse struct {
 }
 
 func (a ArtifactResponse) String() string {
-	return fmt.Sprintf("File:\t%s\nHash:\t%s\nStatus:\t%s\n\n",
+	return fmt.Sprintf("Name:\t%s\nHash:\t%s\nStatus:\t%s\n\n",
 		a.Name, a.Hash, a.Status)
 }
 

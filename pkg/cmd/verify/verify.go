@@ -67,58 +67,46 @@ func runVerify(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	user := api.NewUser(store.Config().CurrentContext)
+	cmd.SilenceUsage = true
 
-	var a *api.Artifact
+	user := api.NewUser(store.Config().CurrentContext)
 
 	// by hash
 	if hash != "" {
-		a = &api.Artifact{
+		a := &api.Artifact{
 			Hash: hash,
 		}
-		if ok, err := verify(a, pubKey, user); !ok {
-			cmd.SilenceUsage = true
-			if err != nil {
-				return err
-			}
-			if pubKey == "" {
-				return fmt.Errorf("%s is not verified", hash)
-			}
-			return fmt.Errorf("%s is not verified by %s", hash, pubKey)
+		if err := verify(a, pubKey, user); err != nil {
+			return err
 		}
 		return nil
 	}
 
-	// by args
+	// else by args
 	for _, arg := range args {
 		a, err := extractor.Extract(arg)
 		if err != nil {
 			return err
 		}
-		if ok, err := verify(a, pubKey, user); !ok {
-			cmd.SilenceUsage = true
-			if err != nil {
-				return err
-			}
-			if pubKey == "" {
-				return fmt.Errorf("%s is not verified", arg)
-			}
-			return fmt.Errorf("%s is not verified by %s", arg, pubKey)
+		if err := verify(a, pubKey, user); err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-func verify(a *api.Artifact, pubKey string, user *api.User) (success bool, err error) {
+func verify(a *api.Artifact, pubKey string, user *api.User) (err error) {
 	var verification *api.BlockchainVerification
-	if pubKey == "" {
-		verification, err = api.BlockChainVerify(a.Hash)
-	} else {
+	if pubKey != "" {
 		verification, err = api.BlockChainVerifyMatchingPublicKey(a.Hash, pubKey)
+	} else if pubKeys := user.Keys(); len(pubKeys) > 0 {
+		verification, err = api.BlockChainVerifyMatchingPublicKeys(a.Hash, pubKeys)
+	} else {
+		verification, err = api.BlockChainVerify(a.Hash)
 	}
 	if err != nil {
-		return false, fmt.Errorf("unable to verify hash: %s", err)
+		return fmt.Errorf("unable to verify hash: %s", err)
 	}
 
 	var artifact *api.ArtifactResponse
@@ -172,10 +160,20 @@ func verify(a *api.Artifact, pubKey string, user *api.User) (success bool, err e
 
 	c, s := meta.StatusColor(verification.Status)
 	cli.PrintColumn("Status", meta.StatusName(verification.Status), "NA", c, s)
-	success = verification.Status == meta.StatusTrusted
 
 	// todo(ameingast): redundant tracking events?
 	_ = api.TrackPublisher(user, meta.VcnVerifyEvent)
 	_ = api.TrackVerify(user, a.Hash, a.Name)
+
+	if verification.Status != meta.StatusTrusted {
+		if pubKey != "" {
+			err = fmt.Errorf("%s is not verified by %s", a.Hash, pubKey)
+		} else if email := user.Email(); email != "" {
+			err = fmt.Errorf("%s is not verified by %s", a.Hash, email)
+		} else {
+			err = fmt.Errorf("%s is not verified", a.Hash)
+		}
+	}
+
 	return
 }

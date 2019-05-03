@@ -70,10 +70,17 @@ func BlockChainVerify(hash string) (verification *BlockchainVerification, err er
 	return verification, nil
 }
 
-func BlockChainVerifyMatchingPublicKey(hash string, publicKey string) (verification *BlockchainVerification, err error) {
+func BlockChainVerifyMatchingPublicKey(hash string, pubKey string) (verification *BlockchainVerification, err error) {
+	return BlockChainVerifyMatchingPublicKeys(hash, []string{pubKey})
+}
+
+func BlockChainVerifyMatchingPublicKeys(hash string, pubKeys []string) (verification *BlockchainVerification, err error) {
 	logger().WithFields(logrus.Fields{
 		"hash": hash,
-	}).Trace("BlockChainVerifyMatchingPublicKey")
+		"keys": pubKeys,
+	}).Trace("BlockChainVerifyMatchingPublicKeys")
+
+	// Connect and get verification count
 	client, err := ethclient.Dial(meta.MainNetEndpoint())
 	if err != nil {
 		return nil, err
@@ -87,13 +94,22 @@ func BlockChainVerifyMatchingPublicKey(hash string, publicKey string) (verificat
 	if err != nil {
 		return nil, err
 	}
-	publicKey = strings.ToLower(publicKey)
+
+	// Make a map to lookup pubKey quickly
+	keysMap := map[string]bool{}
+	for i, pubKey := range pubKeys {
+		pubKey = strings.ToLower(pubKey)
+		pubKeys[i] = pubKey
+		keysMap[pubKey] = true
+	}
+
+	// Iterate over verifications
 	for i := count.Int64() - 1; i >= 0; i-- {
 		address, level, status, timestamp, err := instance.VerifyByIndex(nil, hash, big.NewInt(i))
 		if err != nil {
 			return nil, err
 		}
-		if strings.ToLower(address.Hex()) == publicKey {
+		if keysMap[strings.ToLower(address.Hex())] {
 			return &BlockchainVerification{
 				Owner:     address,
 				Level:     meta.Level(level.Int64()),
@@ -102,5 +118,6 @@ func BlockChainVerifyMatchingPublicKey(hash string, publicKey string) (verificat
 			}, nil
 		}
 	}
-	return nil, fmt.Errorf("no matching asset for hash %s and publicKey %s", hash, publicKey)
+
+	return nil, fmt.Errorf("no matching asset for hash %s and publicKeys %s", hash, pubKeys)
 }
