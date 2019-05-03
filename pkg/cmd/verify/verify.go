@@ -37,7 +37,15 @@ func NewCmdVerify() *cobra.Command {
 		Short:   "Verify digital artifact against blockchain",
 		Long:    ``,
 		RunE:    runVerify,
-		Args:    cobra.MinimumNArgs(1),
+		Args: func(cmd *cobra.Command, args []string) error {
+			if hash, _ := cmd.Flags().GetString("hash"); hash != "" {
+				if len(args) > 0 {
+					return fmt.Errorf("cannot use arg(s) with --hash")
+				}
+				return nil
+			}
+			return cobra.MinimumNArgs(1)(cmd, args)
+		},
 	}
 
 	cmd.SetUsageTemplate(
@@ -45,39 +53,64 @@ func NewCmdVerify() *cobra.Command {
 	)
 
 	cmd.Flags().StringP("key", "k", "", "specify the public key <vcn> should use, if not set the last available is used")
+	cmd.Flags().String("hash", "", "specify a hash to verify, if set no arg(s) can be used")
 
 	return cmd
 }
 
 func runVerify(cmd *cobra.Command, args []string) error {
+	hash, err := cmd.Flags().GetString("hash")
+	if err != nil {
+		return err
+	}
 	pubKey, err := cmd.Flags().GetString("key")
 	if err != nil {
 		return err
 	}
 	user := api.NewUser(store.Config().CurrentContext)
-	for _, spec := range args {
-		if ok, err := verify(spec, pubKey, user); !ok {
+
+	var a *api.Artifact
+
+	// by hash
+	if hash != "" {
+		a = &api.Artifact{
+			Hash: hash,
+		}
+		if ok, err := verify(a, pubKey, user); !ok {
 			cmd.SilenceUsage = true
 			if err != nil {
 				return err
 			}
 			if pubKey == "" {
-				return fmt.Errorf("%s is not verified", spec)
+				return fmt.Errorf("%s is not verified", hash)
 			}
-			return fmt.Errorf("%s is not verified by %s", spec, pubKey)
+			return fmt.Errorf("%s is not verified by %s", hash, pubKey)
+		}
+		return nil
+	}
+
+	// by args
+	for _, arg := range args {
+		a, err := extractor.Extract(arg)
+		if err != nil {
+			return err
+		}
+		if ok, err := verify(a, pubKey, user); !ok {
+			cmd.SilenceUsage = true
+			if err != nil {
+				return err
+			}
+			if pubKey == "" {
+				return fmt.Errorf("%s is not verified", arg)
+			}
+			return fmt.Errorf("%s is not verified by %s", arg, pubKey)
 		}
 	}
 
 	return nil
 }
 
-func verify(arg string, pubKey string, user *api.User) (success bool, err error) {
-
-	a, err := extractor.Extract(arg)
-	if err != nil {
-		return
-	}
-
+func verify(a *api.Artifact, pubKey string, user *api.User) (success bool, err error) {
 	var verification *api.BlockchainVerification
 	if pubKey == "" {
 		verification, err = api.BlockChainVerify(a.Hash)
