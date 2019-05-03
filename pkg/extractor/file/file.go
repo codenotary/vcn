@@ -59,6 +59,9 @@ func Artifact(u *uri.URI) (*api.Artifact, error) {
 		return nil, err
 	}
 
+	// Infer version from filename
+	m["version"] = inferVer(stat.Name())
+
 	// Sniff executable info, if any
 	if ok, data, _ := xInfo(f, &mime); ok {
 		m.SetValues(data)

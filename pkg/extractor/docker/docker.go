@@ -42,6 +42,7 @@ func Artifact(u *uri.URI) (*api.Artifact, error) {
 	m := api.Metadata{
 		"architecture": i.Architecture,
 		"platform":     i.Os,
+		"version":      i.inferVer(),
 	}
 	m[Scheme] = i
 	return &api.Artifact{
@@ -77,6 +78,17 @@ func (i image) name() string {
 		return i.RepoTags[0]
 	}
 	return i.hash()
+}
+
+func (i image) inferVer() string {
+	if len(i.RepoTags) > 0 {
+		parts := strings.SplitN(i.RepoTags[0], ":", 2)
+		if len(parts) > 1 && parts[1] != "latest" {
+			return parts[1]
+		}
+	}
+
+	return ""
 }
 
 func inspect(arg string) ([]image, error) {
