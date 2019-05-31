@@ -20,6 +20,7 @@ require (
 	github.com/fjl/memsize v0.0.0-20180929194037-2a09253e352a // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/gorilla/mux v1.7.2
 	github.com/h2non/filetype v1.0.8
 	github.com/hashicorp/golang-lru v0.5.1 // indirect
 	github.com/huin/goupnp v1.0.0 // indirect
