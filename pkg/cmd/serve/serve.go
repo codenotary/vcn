@@ -27,6 +27,12 @@ type signRequest struct {
 	Datae string `json:"datae"`
 }
 
+type verifyResult struct {
+	Artifact     *api.ArtifactResponse       `json:"artifact"`
+	Verification *api.BlockchainVerification `json:"verification"`
+	Hash         string                      `json:"hash"`
+}
+
 // NewCmdLogin returns the cobra command for `vcn login`
 func NewCmdServe() *cobra.Command {
 	cmd := &cobra.Command{
@@ -87,8 +93,32 @@ func sign(w http.ResponseWriter, r *http.Request) {
 
 func verify(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
+	hash := vars["hash"]
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Hash: %v\n", vars["hash"])
+
+	var user *api.User // todo: get current user
+
+	verification, err := api.BlockChainVerify(hash)
+	if err != nil {
+		panic(err)
+	}
+
+	var artifact *api.ArtifactResponse
+	if !verification.Unknown() {
+		artifact, _ = api.LoadArtifactForHash(user, hash, verification.MetaHash())
+	}
+
+	res := verifyResult{
+		Verification: verification,
+		Artifact:     artifact,
+		Hash:         hash,
+	}
+
+	b, err := json.MarshalIndent(res, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Fprintln(w, string(b))
 
 }
 
