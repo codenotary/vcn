@@ -107,6 +107,7 @@ func (c *config) User(email string) *User {
 		}
 	}
 
+	// fixme(leogr): what if email is empty?
 	u := User{
 		Email: email,
 	}
@@ -130,6 +131,7 @@ func (c *config) RemoveUser(email string) bool {
 	return false
 }
 
+// ClearContext unsets the current context (ie. logouts all users)
 func (c *config) ClearContext() {
 	if c == nil {
 		return

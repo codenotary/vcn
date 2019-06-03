@@ -17,6 +17,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	"github.com/vchain-us/vcn/pkg/api"
+	"github.com/vchain-us/vcn/pkg/store"
 )
 
 type signRequest struct {
@@ -60,6 +61,22 @@ func Execute() error {
 	return nil
 }
 
+func currentUser() (*api.User, error) {
+	email := store.Config().CurrentContext
+	if email != "" {
+		return nil, fmt.Errorf("No user has been set for current context")
+	}
+	u := api.NewUser(email)
+	hasAuth, err := u.IsAuthenticated()
+	if err != nil {
+		return nil, err
+	}
+	if !hasAuth {
+		return nil, fmt.Errorf("Current user is not authenticated")
+	}
+	return u, nil
+}
+
 func sign(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 
@@ -96,7 +113,7 @@ func verify(w http.ResponseWriter, r *http.Request) {
 	hash := vars["hash"]
 	w.WriteHeader(http.StatusOK)
 
-	var user *api.User // todo: get current user
+	user, _ := currentUser()
 
 	verification, err := api.BlockChainVerify(hash)
 	if err != nil {
