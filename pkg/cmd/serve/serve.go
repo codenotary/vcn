@@ -17,22 +17,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
 	"github.com/vchain-us/vcn/pkg/api"
+	"github.com/vchain-us/vcn/pkg/cmd/internal/types"
 	"github.com/vchain-us/vcn/pkg/store"
 )
-
-type signRequest struct {
-	Dataa string `json:"dataa"`
-	Datab string `json:"datab"`
-	Datac string `json:"datac"`
-	Datad string `json:"datad"`
-	Datae string `json:"datae"`
-}
-
-type verifyResult struct {
-	Artifact     *api.ArtifactResponse       `json:"artifact"`
-	Verification *api.BlockchainVerification `json:"verification"`
-	Hash         string                      `json:"hash"`
-}
 
 // NewCmdLogin returns the cobra command for `vcn login`
 func NewCmdServe() *cobra.Command {
@@ -77,35 +64,51 @@ func currentUser() (*api.User, error) {
 	return u, nil
 }
 
-func sign(w http.ResponseWriter, r *http.Request) {
-	decoder := json.NewDecoder(r.Body)
+func writeErr(w http.ResponseWriter, err error) {
+	b, _ := json.MarshalIndent(types.NewError(err), "", "  ")
+	fmt.Fprintln(w, string(b))
+}
 
-	var t signRequest
-	err := decoder.Decode(&t)
-
+func writeResult(w http.ResponseWriter, r *types.Result) {
+	b, err := json.MarshalIndent(r, "", "  ")
 	if err != nil {
-		panic(err)
+		writeErr(w, err)
+		return
 	}
+	fmt.Fprintln(w, string(b))
+}
 
-	user := api.NewUser("user@cloud-r.eu")
+func sign(w http.ResponseWriter, r *http.Request) {
+	user, err := currentUser()
+	if err != nil {
+		writeErr(w, err)
+		return
+	}
 	isExist, err := user.IsExist()
 	if err != nil {
-		panic(err)
+		writeErr(w, err)
+		return
 	}
 	if !isExist {
-		panic(fmt.Errorf("no such user"))
+		writeErr(w, fmt.Errorf("no such user"))
+		return
 	}
-	// Make the artifact to be signed
+
 	var a api.Artifact
-	a.Hash = "myhash"
-	ver, err := user.Sign(a, "<key>", "<passphrase>", 0, 0)
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&a)
 	if err != nil {
-		panic(err)
+		writeErr(w, err)
+		return
 	}
 
-	fmt.Fprintln(w, ver)
-	fmt.Println("Starting server")
+	verification, err := user.Sign(a, "<key>", "<passphrase>", 0, 0)
+	if err != nil {
+		writeErr(w, err)
+		return
+	}
 
+	writeResult(w, types.NewResult(&a, nil, verification))
 }
 
 func verify(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +120,8 @@ func verify(w http.ResponseWriter, r *http.Request) {
 
 	verification, err := api.BlockChainVerify(hash)
 	if err != nil {
-		panic(err)
+		writeErr(w, err)
+		return
 	}
 
 	var artifact *api.ArtifactResponse
@@ -125,18 +129,7 @@ func verify(w http.ResponseWriter, r *http.Request) {
 		artifact, _ = api.LoadArtifactForHash(user, hash, verification.MetaHash())
 	}
 
-	res := verifyResult{
-		Verification: verification,
-		Artifact:     artifact,
-		Hash:         hash,
-	}
-
-	b, err := json.MarshalIndent(res, "", "  ")
-	if err != nil {
-		panic(err)
-	}
-	fmt.Fprintln(w, string(b))
-
+	writeResult(w, types.NewResult(nil, artifact, verification))
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
