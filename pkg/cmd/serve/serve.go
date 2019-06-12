@@ -55,7 +55,9 @@ func Execute() error {
 
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", index)
-	router.HandleFunc("/sign", sign).Methods("POST")
+	router.HandleFunc("/sign", signHander(meta.StatusTrusted)).Methods("POST")
+	router.HandleFunc("/untrust", signHander(meta.StatusUntrusted)).Methods("POST")
+	router.HandleFunc("/unsupport", signHander(meta.StatusUnsupported)).Methods("POST")
 	router.HandleFunc("/verify/{hash}", verify).Methods("GET")
 
 	fmt.Println("Starting server http://localhost:8080")
@@ -103,7 +105,14 @@ func writeResponse(w http.ResponseWriter, r *types.Result) {
 	fmt.Fprintln(w, string(b))
 }
 
-func sign(w http.ResponseWriter, r *http.Request) {
+func signHander(state meta.Status) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		s := state
+		sign(s, w, r)
+	}
+}
+
+func sign(state meta.Status, w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var jsonRequest api.ArtifactRequest
 	err := decoder.Decode(&jsonRequest)
@@ -159,7 +168,7 @@ func sign(w http.ResponseWriter, r *http.Request) {
 	a.ContentType = jsonRequest.ContentType
 	a.Metadata = m
 
-	verification, err := user.Sign(a, pubKey, os.Getenv(meta.KeyStorePasswordEnv), 0, meta.VisibilityForString(jsonRequest.Visibility))
+	verification, err := user.Sign(a, pubKey, os.Getenv(meta.KeyStorePasswordEnv), state, meta.VisibilityFromString(jsonRequest.Visibility))
 	if err != nil {
 		writeErrorResponse(w, "sign error", err, http.StatusBadRequest)
 		return
