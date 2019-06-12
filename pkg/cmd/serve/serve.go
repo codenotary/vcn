@@ -14,28 +14,26 @@ import (
 	"log"
 	"net/http"
 	"os"
+
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
-	"github.com/vchain-us/vcn/pkg/meta"
 	"github.com/vchain-us/vcn/pkg/api"
-	"github.com/vchain-us/vcn/pkg/store"
 	"github.com/vchain-us/vcn/pkg/cmd/internal/types"
-
+	"github.com/vchain-us/vcn/pkg/meta"
+	"github.com/vchain-us/vcn/pkg/store"
 )
 
-
 type errorResponse struct {
-	Message        string `json:"message"`
-	Code        uint64 `json:"code"`
-	Error       error `json:"error"`
+	Message string `json:"message"`
+	Code    uint64 `json:"code"`
+	Error   error  `json:"error"`
 }
 
-
-// NewCmdLogin returns the cobra command for `vcn login`
+// NewCmdServe returns the cobra command for `vcn serve`
 func NewCmdServe() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "serve",
-		Short: "Start Web Server",
+		Short: "Start a web server",
 		Long:  ``,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceUsage = true
@@ -52,7 +50,7 @@ func Execute() error {
 	//CHECK PASSphrase
 	passphrase := os.Getenv(meta.KeyStorePasswordEnv)
 	if passphrase == "" {
-		return fmt.Errorf("Server need KEYSTORE_PASSWORD env")
+		return fmt.Errorf("Server needs KEYSTORE_PASSWORD env")
 	}
 
 	router := mux.NewRouter().StrictSlash(true)
@@ -63,28 +61,26 @@ func Execute() error {
 	fmt.Println("Starting server http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", router))
 
-
-
 	return nil
 }
 
 func currentUser() (*api.User, error) {
 	email := store.Config().CurrentContext
 	if email == "" {
-		return nil, fmt.Errorf("No user has been set for current context")
+		return nil, fmt.Errorf("no user has been set for current context")
 	}
 	u := api.NewUser(email)
 	hasAuth, err := u.IsAuthenticated()
 	if err != nil {
-		return u, fmt.Errorf("Current user is not authenticated")
+		return u, fmt.Errorf("current user is not authenticated")
 	}
 	if !hasAuth {
-		return u, fmt.Errorf("Current user is not authenticated")
+		return u, fmt.Errorf("current user is not authenticated")
 	}
 	return u, nil
 }
 
-func writeErrorResponse(w http.ResponseWriter, message string, err error, code uint64 ){
+func writeErrorResponse(w http.ResponseWriter, message string, err error, code uint64) {
 	var errResponse errorResponse
 	errResponse.Message = message
 	errResponse.Code = code
@@ -96,18 +92,16 @@ func writeErrorResponse(w http.ResponseWriter, message string, err error, code u
 	if jerr == nil {
 		fmt.Fprintln(w, string(b))
 	}
-
 }
 
 func writeResponse(w http.ResponseWriter, r *types.Result) {
 	b, err := json.MarshalIndent(r, "", "  ")
 	if err != nil {
-		writeErrorResponse(w,"",err,400)
+		writeErrorResponse(w, "", err, 400)
 		return
 	}
 	fmt.Fprintln(w, string(b))
 }
-
 
 func sign(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
@@ -115,69 +109,63 @@ func sign(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(&jsonRequest)
 
 	if err != nil {
-		writeErrorResponse(w,"Invalid Request Body",err,http.StatusBadRequest)
+		writeErrorResponse(w, "invalid Request Body", err, http.StatusBadRequest)
 		return
 	}
 
-
 	//check hash in request
 	if jsonRequest.Hash == "" {
-		writeErrorResponse(w,"invalid hash",nil,http.StatusBadRequest)
+		writeErrorResponse(w, "invalid hash", nil, http.StatusBadRequest)
 		return
 	}
 	//check hash in request
 	if jsonRequest.Size <= 0 {
-		writeErrorResponse(w,"invalid size",nil,http.StatusBadRequest)
+		writeErrorResponse(w, "invalid size", nil, http.StatusBadRequest)
 		return
 	}
 	if jsonRequest.Name == "" {
-		writeErrorResponse(w,"invalid name",nil,http.StatusBadRequest)
+		writeErrorResponse(w, "invalid name", nil, http.StatusBadRequest)
 		return
 	}
 	if jsonRequest.ContentType == "" {
-		writeErrorResponse(w,"invalid contentType",nil,http.StatusBadRequest)
+		writeErrorResponse(w, "invalid contentType", nil, http.StatusBadRequest)
 		return
 	}
 	if jsonRequest.Kind == "" {
-		writeErrorResponse(w,"invalid kind",nil,http.StatusBadRequest)
+		writeErrorResponse(w, "invalid kind", nil, http.StatusBadRequest)
 		return
 	}
-
-
 
 	user, err := currentUser()
 	if user == nil || err != nil {
-		writeErrorResponse(w,"no sourch user",err,http.StatusBadRequest)
+		writeErrorResponse(w, "no sourch user", err, http.StatusBadRequest)
 		return
 	}
 
-	pubKey := user.DefaultKey();
+	pubKey := user.DefaultKey()
 	if pubKey == "" {
-		writeErrorResponse(w,"invalid pubKey",nil,http.StatusBadRequest)
+		writeErrorResponse(w, "invalid pubKey", nil, http.StatusBadRequest)
 		return
 	}
-	
 
 	// Make the artifact to be signed
 	var a api.Artifact
 	m := api.Metadata{}
-	m["version"] = "";
+	m["version"] = ""
 	a.Hash = jsonRequest.Hash
-    a.Name = jsonRequest.Name
-    a.Size = jsonRequest.Size
-    a.Kind = jsonRequest.Kind
-    a.ContentType = jsonRequest.ContentType
-	a.Metadata =  m
+	a.Name = jsonRequest.Name
+	a.Size = jsonRequest.Size
+	a.Kind = jsonRequest.Kind
+	a.ContentType = jsonRequest.ContentType
+	a.Metadata = m
 
-	verification, err := user.Sign(a, pubKey,  os.Getenv(meta.KeyStorePasswordEnv), 0, meta.VisibilityForString(jsonRequest.Visibility))
+	verification, err := user.Sign(a, pubKey, os.Getenv(meta.KeyStorePasswordEnv), 0, meta.VisibilityForString(jsonRequest.Visibility))
 	if err != nil {
-		writeErrorResponse(w,"sign error",err,http.StatusBadRequest)
+		writeErrorResponse(w, "sign error", err, http.StatusBadRequest)
 		return
 	}
 
 	writeResponse(w, types.NewResult(&a, nil, verification))
-
-
 }
 
 func verify(w http.ResponseWriter, r *http.Request) {
@@ -197,11 +185,10 @@ func verify(w http.ResponseWriter, r *http.Request) {
 		artifact, _ = api.LoadArtifactForHash(user, hash, verification.MetaHash())
 	}
 
-	
 	writeResponse(w, types.NewResult(nil, artifact, verification))
-
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Index")
+	// can be used for healthcheck
+	fmt.Fprintln(w, "OK")
 }
