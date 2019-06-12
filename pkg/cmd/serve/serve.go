@@ -13,13 +13,23 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
+	"os"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
+	"github.com/vchain-us/vcn/pkg/meta"
 	"github.com/vchain-us/vcn/pkg/api"
-	"github.com/vchain-us/vcn/pkg/cmd/internal/types"
 	"github.com/vchain-us/vcn/pkg/store"
+	"github.com/vchain-us/vcn/pkg/cmd/internal/types"
+
 )
+
+
+type errorResponse struct {
+	Message        string `json:"message"`
+	Code        uint64 `json:"code"`
+	Error       error `json:"error"`
+}
+
 
 // NewCmdLogin returns the cobra command for `vcn login`
 func NewCmdServe() *cobra.Command {
@@ -39,76 +49,135 @@ func NewCmdServe() *cobra.Command {
 
 // Execute the login action
 func Execute() error {
+	//CHECK PASSphrase
+	passphrase := os.Getenv(meta.KeyStorePasswordEnv)
+	if passphrase == "" {
+		return fmt.Errorf("Server need KEYSTORE_PASSWORD env")
+	}
+
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", index)
 	router.HandleFunc("/sign", sign).Methods("POST")
 	router.HandleFunc("/verify/{hash}", verify).Methods("GET")
-	fmt.Println("Starting server")
+
+	fmt.Println("Starting server http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", router))
+
+
+
 	return nil
 }
 
 func currentUser() (*api.User, error) {
 	email := store.Config().CurrentContext
-	if email != "" {
+	if email == "" {
 		return nil, fmt.Errorf("No user has been set for current context")
 	}
 	u := api.NewUser(email)
 	hasAuth, err := u.IsAuthenticated()
 	if err != nil {
-		return nil, err
+		return u, fmt.Errorf("Current user is not authenticated")
 	}
 	if !hasAuth {
-		return nil, fmt.Errorf("Current user is not authenticated")
+		return u, fmt.Errorf("Current user is not authenticated")
 	}
 	return u, nil
 }
 
-func writeErr(w http.ResponseWriter, err error) {
-	b, _ := json.MarshalIndent(types.NewError(err), "", "  ")
-	fmt.Fprintln(w, string(b))
+func writeErrorResponse(w http.ResponseWriter, message string, err error, code uint64 ){
+	var errResponse errorResponse
+	errResponse.Message = message
+	errResponse.Code = code
+	if err != nil {
+		errResponse.Error = err
+	}
+	b, jerr := json.MarshalIndent(errResponse, "", "  ")
+	w.WriteHeader(http.StatusBadRequest)
+	if jerr == nil {
+		fmt.Fprintln(w, string(b))
+	}
+
 }
 
-func writeResult(w http.ResponseWriter, r *types.Result) {
+func writeResponse(w http.ResponseWriter, r *types.Result) {
 	b, err := json.MarshalIndent(r, "", "  ")
 	if err != nil {
-		writeErr(w, err)
+		writeErrorResponse(w,"",err,400)
 		return
 	}
 	fmt.Fprintln(w, string(b))
 }
 
+
 func sign(w http.ResponseWriter, r *http.Request) {
-	user, err := currentUser()
-	if err != nil {
-		writeErr(w, err)
-		return
-	}
-	isExist, err := user.IsExist()
-	if err != nil {
-		writeErr(w, err)
-		return
-	}
-	if !isExist {
-		writeErr(w, fmt.Errorf("no such user"))
-		return
-	}
-
-	var a api.Artifact
 	decoder := json.NewDecoder(r.Body)
-	err = decoder.Decode(&a)
+	var jsonRequest api.ArtifactRequest
+	err := decoder.Decode(&jsonRequest)
+
 	if err != nil {
-		writeErr(w, err)
+		writeErrorResponse(w,"Invalid Request Body",err,http.StatusBadRequest)
 		return
 	}
 
-	verification, err := user.Sign(a, "<key>", "<passphrase>", 0, 0)
-	if err != nil {
-		writeErr(w, err)
+
+	//check hash in request
+	if jsonRequest.Hash == "" {
+		writeErrorResponse(w,"invalid hash",nil,http.StatusBadRequest)
+		return
+	}
+	//check hash in request
+	if jsonRequest.Size <= 0 {
+		writeErrorResponse(w,"invalid size",nil,http.StatusBadRequest)
+		return
+	}
+	if jsonRequest.Name == "" {
+		writeErrorResponse(w,"invalid name",nil,http.StatusBadRequest)
+		return
+	}
+	if jsonRequest.ContentType == "" {
+		writeErrorResponse(w,"invalid contentType",nil,http.StatusBadRequest)
+		return
+	}
+	if jsonRequest.Kind == "" {
+		writeErrorResponse(w,"invalid kind",nil,http.StatusBadRequest)
 		return
 	}
 
-	writeResult(w, types.NewResult(&a, nil, verification))
+
+
+	user, err := currentUser()
+	if user == nil || err != nil {
+		writeErrorResponse(w,"no sourch user",err,http.StatusBadRequest)
+		return
+	}
+
+	pubKey := user.DefaultKey();
+	if pubKey == "" {
+		writeErrorResponse(w,"invalid pubKey",nil,http.StatusBadRequest)
+		return
+	}
+	
+
+	// Make the artifact to be signed
+	var a api.Artifact
+	m := api.Metadata{}
+	m["version"] = "";
+	a.Hash = jsonRequest.Hash
+    a.Name = jsonRequest.Name
+    a.Size = jsonRequest.Size
+    a.Kind = jsonRequest.Kind
+    a.ContentType = jsonRequest.ContentType
+	a.Metadata =  m
+
+	verification, err := user.Sign(a, pubKey,  os.Getenv(meta.KeyStorePasswordEnv), 0, meta.VisibilityForString(jsonRequest.Visibility))
+	if err != nil {
+		writeErrorResponse(w,"sign error",err,http.StatusBadRequest)
+		return
+	}
+
+	writeResponse(w, types.NewResult(&a, nil, verification))
+
+
 }
 
 func verify(w http.ResponseWriter, r *http.Request) {
@@ -120,8 +189,7 @@ func verify(w http.ResponseWriter, r *http.Request) {
 
 	verification, err := api.BlockChainVerify(hash)
 	if err != nil {
-		writeErr(w, err)
-		return
+		panic(err)
 	}
 
 	var artifact *api.ArtifactResponse
@@ -129,7 +197,9 @@ func verify(w http.ResponseWriter, r *http.Request) {
 		artifact, _ = api.LoadArtifactForHash(user, hash, verification.MetaHash())
 	}
 
-	writeResult(w, types.NewResult(nil, artifact, verification))
+	
+	writeResponse(w, types.NewResult(nil, artifact, verification))
+
 }
 
 func index(w http.ResponseWriter, r *http.Request) {

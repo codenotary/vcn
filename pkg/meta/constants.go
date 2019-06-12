@@ -114,6 +114,23 @@ func VisibilityName(visibility Visibility) (name string) {
 	}
 }
 
+
+func VisibilityForString(text string) (visibility Visibility) {
+	switch text {
+	case "0":
+		return VisibilityPublic
+	case "1":
+		return VisibilityPrivate
+	case "PUBLIC":
+		return VisibilityPublic
+	case "PRIVATE":
+		return VisibilityPrivate
+	default:
+		return VisibilityPrivate
+	}
+}
+
+
 func VisibilityForFlag(public bool) (visibility Visibility) {
 	if public {
 		return VisibilityPublic
