@@ -37,16 +37,17 @@ func NewCmdServe() *cobra.Command {
 		Long:  ``,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceUsage = true
-			return Execute()
+			return Execute(cmd)
 		},
 		Args: cobra.NoArgs,
 	}
-
+	cmd.Flags().String("host", "", "The host address to serve the application on [default: locahost]")
+	cmd.Flags().String("port", "", "The port to serve the application on [default: 8080]")
 	return cmd
 }
 
 // Execute the login action
-func Execute() error {
+func Execute(cmd *cobra.Command) error {
 	//CHECK PASSphrase
 	passphrase := os.Getenv(meta.KeyStorePasswordEnv)
 	if passphrase == "" {
@@ -60,8 +61,28 @@ func Execute() error {
 	router.HandleFunc("/unsupport", signHander(meta.StatusUnsupported)).Methods("POST")
 	router.HandleFunc("/verify/{hash}", verify).Methods("GET")
 
-	fmt.Println("Starting server http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	host, err := cmd.Flags().GetString("host")
+	if err != nil {
+		return nil
+	}
+
+	if host == "" {
+		host = "localhost"
+	}
+
+	port, err := cmd.Flags().GetString("port")
+	if err != nil {
+		return nil
+	}
+
+	if port != "" {
+		host += ":" + port
+	} else {
+		host += ":8080"
+	}
+
+	fmt.Println("Starting server http://" + host)
+	log.Fatal(http.ListenAndServe(host, router))
 
 	return nil
 }
