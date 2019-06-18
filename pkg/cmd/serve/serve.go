@@ -37,7 +37,7 @@ func NewCmdServe() *cobra.Command {
 		Long:  ``,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceUsage = true
-			return Execute(cmd)
+			return runServe(cmd)
 		},
 		Args: cobra.NoArgs,
 	}
@@ -46,8 +46,7 @@ func NewCmdServe() *cobra.Command {
 	return cmd
 }
 
-// Execute the login action
-func Execute(cmd *cobra.Command) error {
+func runServe(cmd *cobra.Command) error {
 	//CHECK PASSphrase
 	passphrase := os.Getenv(meta.KeyStorePasswordEnv)
 	if passphrase == "" {
@@ -111,7 +110,6 @@ func writeErrorResponse(w http.ResponseWriter, message string, err error, code u
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(b)
-
 }
 
 func writeResponse(w http.ResponseWriter, r *types.Result) {
@@ -146,12 +144,11 @@ func sign(state meta.Status, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//check hash in request
+	// check hash in request
 	if jsonRequest.Hash == "" {
 		writeErrorResponse(w, "invalid hash", nil, http.StatusBadRequest)
 		return
 	}
-	//check hash in request
 	if jsonRequest.Size <= 0 {
 		writeErrorResponse(w, "invalid size", nil, http.StatusBadRequest)
 		return
@@ -184,7 +181,6 @@ func sign(state meta.Status, w http.ResponseWriter, r *http.Request) {
 	// Make the artifact to be signed
 	var a api.Artifact
 	m := api.Metadata{}
-	m["version"] = ""
 	a.Hash = jsonRequest.Hash
 	a.Name = jsonRequest.Name
 	a.Size = jsonRequest.Size
