@@ -43,6 +43,7 @@ func NewCmdServe() *cobra.Command {
 	}
 	cmd.Flags().String("host", "localhost", "host address to serve the application")
 	cmd.Flags().String("port", "8080", "port to serve the application")
+	cmd.Flags().StringP("key", "k", "", "specify which user's key to use for signing, if not set the last available is used")
 	return cmd
 }
 
@@ -50,27 +51,30 @@ func runServe(cmd *cobra.Command) error {
 	//CHECK PASSphrase
 	passphrase := os.Getenv(meta.KeyStorePasswordEnv)
 	if passphrase == "" {
-		return fmt.Errorf("Server needs KEYSTORE_PASSWORD env")
+		log.Printf(`%s not set: /sign, /untrust, and /unsupport won't work.`, meta.KeyStorePasswordEnv)
 	}
-
-	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/", index)
-	router.HandleFunc("/sign", signHander(meta.StatusTrusted)).Methods("POST")
-	router.HandleFunc("/untrust", signHander(meta.StatusUntrusted)).Methods("POST")
-	router.HandleFunc("/unsupport", signHander(meta.StatusUnsupported)).Methods("POST")
-	router.HandleFunc("/verify/{hash}", verify).Methods("GET")
 
 	host, err := cmd.Flags().GetString("host")
 	if err != nil {
 		return nil
 	}
-
 	port, err := cmd.Flags().GetString("port")
 	if err != nil {
 		return nil
 	}
-
 	host += ":" + port
+
+	key, err := cmd.Flags().GetString("key")
+	if err != nil {
+		return nil
+	}
+
+	router := mux.NewRouter().StrictSlash(true)
+	router.HandleFunc("/", index)
+	router.HandleFunc("/sign", signHander(meta.StatusTrusted, key)).Methods("POST")
+	router.HandleFunc("/untrust", signHander(meta.StatusUntrusted, key)).Methods("POST")
+	router.HandleFunc("/unsupport", signHander(meta.StatusUnsupported, key)).Methods("POST")
+	router.HandleFunc("/verify/{hash}", verify).Methods("GET")
 
 	fmt.Println("Starting server http://" + host)
 	log.Fatal(http.ListenAndServe(host, router))
@@ -127,14 +131,15 @@ func writeResponse(w http.ResponseWriter, r *types.Result) {
 	w.Write(b)
 }
 
-func signHander(state meta.Status) func(w http.ResponseWriter, r *http.Request) {
+func signHander(state meta.Status, pubKey string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s := state
-		sign(s, w, r)
+		p := pubKey
+		sign(s, p, w, r)
 	}
 }
 
-func sign(state meta.Status, w http.ResponseWriter, r *http.Request) {
+func sign(state meta.Status, pubKey string, w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	var jsonRequest api.ArtifactRequest
 	err := decoder.Decode(&jsonRequest)
@@ -168,25 +173,26 @@ func sign(state meta.Status, w http.ResponseWriter, r *http.Request) {
 
 	user, err := currentUser()
 	if user == nil || err != nil {
-		writeErrorResponse(w, "no sourch user", err, http.StatusBadRequest)
+		writeErrorResponse(w, "no such user", err, http.StatusBadRequest)
 		return
 	}
 
-	pubKey := user.DefaultKey()
 	if pubKey == "" {
-		writeErrorResponse(w, "invalid pubKey", nil, http.StatusBadRequest)
+		pubKey = user.DefaultKey()
+	}
+	if pubKey == "" {
+		writeErrorResponse(w, "no key available", nil, http.StatusBadRequest)
 		return
 	}
 
 	// Make the artifact to be signed
 	var a api.Artifact
-	m := api.Metadata{}
 	a.Hash = jsonRequest.Hash
 	a.Name = jsonRequest.Name
 	a.Size = jsonRequest.Size
 	a.Kind = jsonRequest.Kind
 	a.ContentType = jsonRequest.ContentType
-	a.Metadata = m
+	a.Metadata = jsonRequest.Metadata
 
 	verification, err := user.Sign(a, pubKey, os.Getenv(meta.KeyStorePasswordEnv), state, meta.VisibilityFromString(jsonRequest.Visibility))
 	if err != nil {
