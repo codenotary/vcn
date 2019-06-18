@@ -104,26 +104,37 @@ func currentUser() (*api.User, error) {
 }
 
 func writeErrorResponse(w http.ResponseWriter, message string, err error, code uint64) {
+	w.Header().Set("Content-Type", "application/json")
 	var errResponse errorResponse
 	errResponse.Message = message
 	errResponse.Code = code
 	if err != nil {
 		errResponse.Error = err
 	}
-	b, jerr := json.MarshalIndent(errResponse, "", "  ")
+	b, jerr := json.Marshal(errResponse)
 	w.WriteHeader(http.StatusBadRequest)
 	if jerr == nil {
 		fmt.Fprintln(w, string(b))
 	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(b)
+
 }
 
 func writeResponse(w http.ResponseWriter, r *types.Result) {
-	b, err := json.MarshalIndent(r, "", "  ")
+	b, err := json.Marshal(r)
 	if err != nil {
 		writeErrorResponse(w, "", err, 400)
 		return
 	}
-	fmt.Fprintln(w, string(b))
+	if b == nil {
+		writeErrorResponse(w, "", err, 400)
+		return
+
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(b)
 }
 
 func signHander(state meta.Status) func(w http.ResponseWriter, r *http.Request) {
@@ -201,8 +212,6 @@ func sign(state meta.Status, w http.ResponseWriter, r *http.Request) {
 func verify(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	hash := vars["hash"]
-	w.WriteHeader(http.StatusOK)
-
 	user, _ := currentUser()
 
 	verification, err := api.BlockChainVerify(hash)
