@@ -41,8 +41,8 @@ func NewCmdServe() *cobra.Command {
 		},
 		Args: cobra.NoArgs,
 	}
-	cmd.Flags().String("host", "", "The host address to serve the application on [default: locahost]")
-	cmd.Flags().String("port", "", "The port to serve the application on [default: 8080]")
+	cmd.Flags().String("host", "localhost", "host address to serve the application")
+	cmd.Flags().String("port", "8080", "port to serve the application")
 	return cmd
 }
 
@@ -66,20 +66,12 @@ func Execute(cmd *cobra.Command) error {
 		return nil
 	}
 
-	if host == "" {
-		host = "localhost"
-	}
-
 	port, err := cmd.Flags().GetString("port")
 	if err != nil {
 		return nil
 	}
 
-	if port != "" {
-		host += ":" + port
-	} else {
-		host += ":8080"
-	}
+	host += ":" + port
 
 	fmt.Println("Starting server http://" + host)
 	log.Fatal(http.ListenAndServe(host, router))
