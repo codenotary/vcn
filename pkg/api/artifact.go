@@ -48,7 +48,7 @@ type ArtifactRequest struct {
 	Kind        string `json:"kind"`
 	Name        string `json:"name"`
 	Hash        string `json:"hash"`
-	Size        uint64 `json:"size"`
+	Size        uint64 `json:"size,omitempty"`
 	ContentType string `json:"contentType"`
 	Url         string `json:"url"`
 
