@@ -22,7 +22,5 @@ func NewCmdUnsupport() *cobra.Command {
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		return runSignWithState(cmd, args, meta.StatusUnsupported)
 	}
-	cmd.Flags().String("hash", "", "specify the hash of an asset signed by you to unsupport, if set no arg(s) can be used")
-	cmd.Args = noArgsWhenHash
 	return cmd
 }

@@ -33,15 +33,14 @@ func NewCmdSign() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runSignWithState(cmd, args, meta.StatusTrusted)
 		},
-
-		Args: cobra.ExactArgs(1),
+		Args: noArgsWhenHash,
 	}
 
 	cmd.Flags().VarP(make(mapOpts), "attr", "a", "add user defined attributes (format: --attr key=value)")
 	cmd.Flags().StringP("key", "k", "", "specify which user's key to use for signing, if not set the last available is used")
 	cmd.Flags().StringP("name", "n", "", "set the asset's name")
 	cmd.Flags().BoolP("public", "p", false, "when signed as public, the asset name and the signer's identity will be visible to everyone")
-
+	cmd.Flags().String("hash", "", "specify the hash instead of using the asset, if set no arg(s) can be used")
 	cmd.SetUsageTemplate(
 		strings.Replace(cmd.UsageTemplate(), "{{.UseLine}}", "{{.UseLine}} ARG", 1),
 	)
@@ -97,14 +96,14 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 	// Make the artifact to be signed
 	var a *api.Artifact
 	if hash != "" {
-		// Load existing artifact
+		// Load existing artifact, if any, otherwise use an empty artifact
 		if ar, err := u.LoadArtifact(hash); err == nil && ar != nil {
 			a = ar.Artifact()
 		} else {
-			if err == nil {
-				return fmt.Errorf("no asset found for %s", hash)
+			if name == "" {
+				return fmt.Errorf("please set an asset name, by using --name")
 			}
-			return err
+			a = &api.Artifact{Hash: hash}
 		}
 	} else {
 		// Extract artifact from arg
