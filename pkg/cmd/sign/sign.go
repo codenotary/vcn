@@ -39,6 +39,7 @@ func NewCmdSign() *cobra.Command {
 
 	cmd.Flags().VarP(make(mapOpts), "attr", "a", "add user defined attributes (format: --attr key=value)")
 	cmd.Flags().StringP("key", "k", "", "specify which user's key to use for signing, if not set the last available is used")
+	cmd.Flags().StringP("name", "n", "", "set the asset's name")
 	cmd.Flags().BoolP("public", "p", false, "when signed as public, the asset name and the signer's identity will be visible to everyone")
 
 	cmd.SetUsageTemplate(
@@ -70,6 +71,11 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 	}
 
 	output, err := cmd.Flags().GetString("output")
+	if err != nil {
+		return err
+	}
+
+	name, err := cmd.Flags().GetString("name")
 	if err != nil {
 		return err
 	}
@@ -106,6 +112,11 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 		if err != nil {
 			return err
 		}
+	}
+
+	// Override the asset's name, if provided by --name
+	if name != "" {
+		a.Name = name
 	}
 
 	// Copy user provided custom attributes
