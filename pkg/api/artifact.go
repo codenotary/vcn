@@ -38,7 +38,7 @@ func (a Artifact) toRequest() *ArtifactRequest {
 	}
 
 	// promote url from custom metadata to root
-	aR.Url = a.Metadata.swipeString("url")
+	aR.URL = a.Metadata.swipeString("url")
 
 	return aR
 }
@@ -50,7 +50,7 @@ type ArtifactRequest struct {
 	Hash        string `json:"hash"`
 	Size        uint64 `json:"size,omitempty"`
 	ContentType string `json:"contentType"`
-	Url         string `json:"url"`
+	URL         string `json:"url"`
 
 	// custom metadata
 	Metadata Metadata `json:"metadata"`
@@ -72,7 +72,7 @@ type ArtifactResponse struct {
 	Hash        string `json:"hash" vcn:"Hash"`
 	Size        uint64 `json:"size" vcn:"Size"`
 	ContentType string `json:"contentType" vcn:"ContentType"`
-	Url         string `json:"url" vcn:"URL"`
+	URL         string `json:"url" vcn:"URL"`
 
 	// custom metadata
 	Metadata Metadata `json:"metadata" vcn:"Metadata"`
@@ -83,12 +83,10 @@ type ArtifactResponse struct {
 	Status            string `json:"status"`
 	CreatedAt         string `json:"createdAt"`
 	VerificationCount uint64 `json:"verificationCount"`
-	PublisherCount    uint64 `json:"publisherCount"`
-
-	// Publisher info
-	Publisher           string `json:"publisher" vcn:"Signer"`
-	PublisherCompany    string `json:"publisherCompany" vcn:"Company"`
-	PublisherWebsiteUrl string `json:"publisherWebsiteUrl" vcn:"Website"`
+	SignerCount       uint64 `json:"signerCount"`
+	Signer            string `json:"signer" vcn:"Signer"`
+	Company           string `json:"company" vcn:"Company"`
+	Website           string `json:"website" vcn:"Website"`
 }
 
 func (a ArtifactResponse) String() string {
