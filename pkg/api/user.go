@@ -95,7 +95,7 @@ func (u User) IsAuthenticated() (bool, error) {
 func (u User) IsExist() (bool, error) {
 	email := u.Email()
 	if email != "" {
-		return CheckPublisherExists(email)
+		return checkUserExists(email)
 	}
 	return false, nil
 }

@@ -26,10 +26,10 @@ func TestCheckTokenNoInput(t *testing.T) {
 }
 
 func TestPublisherExists(t *testing.T) {
-	ret, err := CheckPublisherExists(VERIFIED_USER)
+	ret, err := checkUserExists(VERIFIED_USER)
 
 	if ret == false || err != nil {
-		t.Error(fmt.Sprintf(`CheckPublisherExists() must return true for infamous <%s>`, VERIFIED_USER))
+		t.Error(fmt.Sprintf(`checkUserExists() must return true for infamous <%s>`, VERIFIED_USER))
 	}
 
 }

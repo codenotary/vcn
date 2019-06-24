@@ -16,12 +16,12 @@ import (
 	"github.com/vchain-us/vcn/pkg/meta"
 )
 
-type AuthRequest struct {
+type authRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-type TokenResponse struct {
+type tokenResponse struct {
 	Token string `token:"token"`
 }
 
@@ -33,26 +33,26 @@ type Error struct {
 	Error     string `json:"error"`
 }
 
-type PublisherExistsResponse struct {
+type publisherExistsResponse struct {
 	Exists bool `json:"exists"`
 }
 
-type PublisherExistsParams struct {
+type publisherExistsParams struct {
 	Email string `url:"email"`
 }
 
-func CheckPublisherExists(email string) (success bool, err error) {
-	response := new(PublisherExistsResponse)
+func checkUserExists(email string) (success bool, err error) {
+	response := new(publisherExistsResponse)
 	restError := new(Error)
 	r, err := sling.New().
 		Get(meta.PublisherEndpoint()+"/exists").
-		QueryStruct(&PublisherExistsParams{Email: email}).
+		QueryStruct(&publisherExistsParams{Email: email}).
 		Receive(&response, restError)
 	logger().WithFields(logrus.Fields{
 		"response":  response,
 		"err":       err,
 		"restError": restError,
-	}).Trace("CheckPublisherExists")
+	}).Trace("checkUserExists")
 	if err != nil {
 		return false, err
 	}
@@ -91,11 +91,11 @@ func checkToken(token string) (success bool, err error) {
 }
 
 func authenticateUser(email string, password string) (token string, err error) {
-	response := new(TokenResponse)
+	response := new(tokenResponse)
 	restError := new(Error)
 	r, err := sling.New().
 		Post(meta.PublisherEndpoint()+"/auth").
-		BodyJSON(AuthRequest{Email: email, Password: password}).
+		BodyJSON(authRequest{Email: email, Password: password}).
 		Receive(response, restError)
 	logger().WithFields(logrus.Fields{
 		"email":     email,
