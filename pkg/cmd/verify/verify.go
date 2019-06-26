@@ -134,19 +134,39 @@ func verify(cmd *cobra.Command, a *api.Artifact, keys []string, org string, user
 	var verification *api.BlockchainVerification
 	// if keys have been passed, check for a verification matching them
 	if len(keys) > 0 {
+		if output == "" {
+			if org == "" {
+				fmt.Printf("Searching for signature matching passed keys...\n")
+			} else {
+				fmt.Printf("Searching for signature matching organization's keys (%s)...\n", org)
+			}
+		}
 		verification, err = api.BlockChainVerifyMatchingPublicKeys(a.Hash, keys)
 	} else {
 		// if we have an user, check for verification matching user's keys first
 		if hasAuth, _ := user.IsAuthenticated(); hasAuth {
 			if userKeys := user.Keys(); len(userKeys) > 0 {
+				if output == "" {
+					fmt.Printf("Searching for signature matching local user keys (%s)...\n", user.Email())
+				}
 				verification, err = api.BlockChainVerifyMatchingPublicKeys(a.Hash, userKeys)
+				if output == "" && verification.Unknown() {
+					fmt.Printf("No signature matching local user keys found\n")
+				}
 			}
 		}
 		// if no user nor verification matching the user has found,
-		// fallback to the last with highest level avaiable verification
+		// fallback to the last with highest level available verification
 		if verification.Unknown() {
+			if output == "" {
+				fmt.Printf("Searching for the last with highest level available signature...\n")
+			}
 			verification, err = api.BlockChainVerify(a.Hash)
 		}
+	}
+
+	if output == "" {
+		fmt.Println()
 	}
 
 	if err != nil {
