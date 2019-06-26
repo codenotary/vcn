@@ -10,6 +10,7 @@ package verify
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -20,6 +21,10 @@ import (
 	"github.com/vchain-us/vcn/pkg/extractor"
 	"github.com/vchain-us/vcn/pkg/meta"
 	"github.com/vchain-us/vcn/pkg/store"
+)
+
+var (
+	keyRegExp = regexp.MustCompile("0x[0-9a-z]{40}")
 )
 
 // NewCmdVerify returns the cobra command for `vcn verify`
@@ -52,8 +57,8 @@ func NewCmdVerify() *cobra.Command {
 		strings.Replace(cmd.UsageTemplate(), "{{.UseLine}}", "{{.UseLine}} ...ARG(s)", 1),
 	)
 
-	cmd.Flags().StringSliceP("key", "k", nil, "accept only verification matching the passed key(s)")
-	cmd.Flags().String("org", "", "accept only verification matching the passed organisation's ID, if set no other key(s) can be used")
+	cmd.Flags().StringSliceP("key", "k", nil, "accept only signatures matching the passed key(s)")
+	cmd.Flags().StringP("org", "I", "", "accept only signatures matching the passed organisation's ID, if set no other key(s) can be used")
 	cmd.Flags().String("hash", "", "specify a hash to verify, if set no arg(s) can be used")
 
 	// Bind to VCN_KEY and VCN_ORG env vars
@@ -86,6 +91,16 @@ func runVerify(cmd *cobra.Command, args []string) error {
 		keys = bo.MembersKeys()
 	} else {
 		keys = viper.GetStringSlice("key")
+		// add 0x if missing, lower case, and check if format is correct
+		for i, k := range keys {
+			if !strings.HasPrefix(k, "0x") {
+				keys[i] = "0x" + k
+			}
+			keys[i] = strings.ToLower(keys[i])
+			if !keyRegExp.MatchString(keys[i]) {
+				return fmt.Errorf("invalid key format: %s", k)
+			}
+		}
 	}
 
 	user := api.NewUser(store.Config().CurrentContext)

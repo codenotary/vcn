@@ -74,6 +74,9 @@ func init() {
 	rootCmd.PersistentFlags().BoolP("quit", "q", true, "if false, ask for confirmation before quitting")
 	rootCmd.PersistentFlags().MarkHidden("quit")
 
+	// Root command flags
+	rootCmd.Flags().BoolP("version", "v", false, "version for vcn") // needed for -v shorthand
+
 	// Verification group
 	rootCmd.AddCommand(verify.NewCmdVerify())
 	rootCmd.AddCommand(list.NewCmdList())
