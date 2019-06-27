@@ -13,5 +13,12 @@ Code | Status | Color | Description | Error message | Explanation
 
 ## Levels
 
-*TODO* Explain levels
-
+Level | Label | Description 
+------------ | ------------- | ------------- 
+-1 | **DISABLED** | The signer's account is disabled.
+0 | **UNKNOWN** | The signer's identity is unknown.
+1 | **EMAIL_VERIFIED** | The signer's email is verified by CodeNotary platform.
+2 | **SOCIAL_VERIFIED** | The signer's identity is verified by social media profiles.
+3 | **ID_VERIFIED** | The signer provided an ID document.
+4 | **LOCATION_VERIFIED** | The signer provided a proof-of-address.
+99 | **VCHAIN** | *Reserved*
