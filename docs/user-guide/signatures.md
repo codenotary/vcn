@@ -1,6 +1,18 @@
 # Signatures
 
-*TODO* Asset signing explanation
+A signature is made by the user by using a key (*the signer*), usually by running the `vcn sign` command on an asset.
+
+Assets' signatures are stored onto the [ZTC](https://zerotrustconsortium.org/) blockchain and are used for verifications.
+
+Each signature includes the following:
+
+Field | Label | Description 
+------------ | ------------- | ------------- 
+`Owner` | **Key** | The signer's wallet address, also kwown as the signer key.
+`Level` | **Level** | The signer's [level](#Levels) at the time when the signature was made.
+`Status` | **Status** | The asset's [status](#Statuses) chosen by the signer at the time when the signature was made.
+`Timestamp` | **Date** | The date and time of the signature.
+> *Name* represents the [field stored onto the blockchain](https://github.com/vchain-us/vcn/blob/0.5.0/pkg/api/verify.go#L26), *Label* is used by `vcn` when priting results.
 
 ## Statuses
 
