@@ -36,6 +36,11 @@ func NewCmdVerify() *cobra.Command {
 		Short:   "Verify assets against blockchain",
 		Long:    ``,
 		RunE:    runVerify,
+		PreRun: func(cmd *cobra.Command, args []string) {
+			// Bind to VCN_KEY and VCN_ORG env vars (after flags were parsed)
+			viper.BindPFlag("key", cmd.Flags().Lookup("key"))
+			viper.BindPFlag("org", cmd.Flags().Lookup("org"))
+		},
 		Args: func(cmd *cobra.Command, args []string) error {
 			if org := viper.GetString("org"); org != "" {
 				if keys := viper.GetStringSlice("key"); len(keys) > 0 {
@@ -60,10 +65,6 @@ func NewCmdVerify() *cobra.Command {
 	cmd.Flags().StringSliceP("key", "k", nil, "accept only signatures matching the passed key(s)")
 	cmd.Flags().StringP("org", "I", "", "accept only signatures matching the passed organisation's ID, if set no other key(s) can be used")
 	cmd.Flags().String("hash", "", "specify a hash to verify, if set no arg(s) can be used")
-
-	// Bind to VCN_KEY and VCN_ORG env vars
-	viper.BindPFlag("key", cmd.Flags().Lookup("key"))
-	viper.BindPFlag("org", cmd.Flags().Lookup("org"))
 
 	return cmd
 }

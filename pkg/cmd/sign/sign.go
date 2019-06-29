@@ -14,6 +14,7 @@ import (
 
 	"github.com/caarlos0/spin"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/vchain-us/vcn/internal/assert"
 	"github.com/vchain-us/vcn/pkg/api"
 	"github.com/vchain-us/vcn/pkg/cmd/internal/cli"
@@ -30,6 +31,10 @@ func NewCmdSign() *cobra.Command {
 		Aliases: []string{"s"},
 		Short:   "Sign asset's hash onto the blockchain",
 		Long:    ``,
+		PreRun: func(cmd *cobra.Command, args []string) {
+			// Bind to VCN_KEY env vars (after flags were parsed)
+			viper.BindPFlag("key", cmd.Flags().Lookup("key"))
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runSignWithState(cmd, args, meta.StatusTrusted)
 		},
@@ -64,10 +69,7 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 		return err
 	}
 
-	pubKey, err := cmd.Flags().GetString("key")
-	if err != nil {
-		return err
-	}
+	pubKey := viper.GetString("key")
 
 	output, err := cmd.Flags().GetString("output")
 	if err != nil {

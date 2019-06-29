@@ -16,7 +16,7 @@ Stage | Directory | Note
 Name | Description | Example 
 ------------ | ------------- | -------------
 `VCN_USER`, `VCN_PASSWORD` | Credentials for non-interactive user login | `VCN_USER=example@example.net VCN_PASSWORD=<your_password> vcn login`
-`VCN_KEY` | List of keys to verify against | `VCN_KEY="0x0...0 0x0...1" vcn verify <asset>`
+`VCN_KEY` | For `vcn verify` acts as a list of keys (separated by space) to verify against, for `vcn sign` specify the key to use for signing | `VCN_KEY="0x0...0 0x0...1" vcn verify <asset>` or `VCN_KEY="0x0...0 <asset>` 
 `VCN_ORG` | Organization's ID to verify against | `VCN_ORG="vchain.us" vcn verify <asset>`
 `KEYSTORE_PASSWORD` | Keystore's passphrase for non-interactive signing | `KEYSTORE_PASSWORD=<your_passphrase> vcn sign <asset>`
 `LOG_LEVEL` | Logging verbosity. Accepted values: `TRACE, DEBUG, INFO, WARN, ERROR, FATAL, PANIC`  | `LOG_LEVEL=TRACE vcn login` 
