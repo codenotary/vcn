@@ -23,3 +23,4 @@ Name | Description | Example
 `VCN_NOTARIZATION_PASSWORD` | Notarization password for non-interactive notarization | `VCN_NOTARIZATION_PASSWORD=<your_notarization_passphrase> vcn notarize <asset>`
 `LOG_LEVEL` | Logging verbosity. Accepted values: `TRACE, DEBUG, INFO, WARN, ERROR, FATAL, PANIC`  | `LOG_LEVEL=TRACE vcn login` 
 `HTTP_PROXY` | HTTP Proxy configuration | `HTTP_PROXY=http://localhost:3128 vcn authenticate <asset>`
+ VCN_WRITE_VCNIGNORE | Write the default .vcnignore while interacting with a directory if it doesn't exist (checks the variable is set, not the value) | VCN_WRITE_VCIGNORE=1

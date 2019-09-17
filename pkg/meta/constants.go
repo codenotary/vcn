@@ -62,6 +62,7 @@ const (
 	VcnUserEnv              string = "VCN_USER"
 	VcnPasswordEnv          string = "VCN_PASSWORD"
 	VcnNotarizationPassword string = "VCN_NOTARIZATION_PASSWORD"
+    VcnWriteIgnoreFile      string = "VCN_WRITE_VCNIGNORE"
 )
 
 // UserAgent returns the vcn's User-Agent string

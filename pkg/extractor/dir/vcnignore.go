@@ -84,31 +84,54 @@ const (
 	ignorefileEOL           = "\n"
 )
 
-type nullMatcher struct{}
-
-func (n *nullMatcher) Match(path []string, isDir bool) bool {
-	return false
+func getIgnoreFileData(f *os.File) (data []byte, err error) {
+    if f != nil {
+	    data, err := ioutil.ReadAll(f)
+        return data, err
+    }
+    data = []byte(DefaultIgnoreFileContent)
+    err = nil
+    return
 }
 
 // newIgnoreFileMatcher reads and parses the ignore file in path and return a gitignore.Matcher.
-// If the ignore file does not exists, a matcher that will never match is returned instead.
+// If the ignore file does not exists, create a matcher based on our template
 func newIgnoreFileMatcher(path string) (m gitignore.Matcher, err error) {
+    // Try to open the .vcnignore file
 	f, err := os.Open(filepath.Join(path, IgnoreFilename))
 	if err != nil {
+        // That didn't go well, let's see if it's just because it isn't there
 		if os.IsNotExist(err) {
-			return &nullMatcher{}, nil
-		}
-		return
+            // File does not exist, let's use the template instead
+            f = nil
+            err = nil
+		} else {
+            // Unexpected error.. (possibly permission)
+            // Let's not continue. Something may be very wrong
+		    return
+        }
 	}
-	defer f.Close()
+
+    if f != nil {
+        // Ensure file is closed if we opened it
+	    defer f.Close()
+    }
+    // Create the git ignore pattern
 	ps := []gitignore.Pattern{}
-	if data, err := ioutil.ReadAll(f); err == nil {
-		for _, s := range strings.Split(string(data), ignorefileEOL) {
-			if !strings.HasPrefix(s, ignorefileCommentPrefix) && len(strings.TrimSpace(s)) > 0 {
-				ps = append(ps, gitignore.ParsePattern(s, nil))
-			}
-		}
-	}
+    // get the file contents of the .vcnignore file or the hardcoded template
+    data, err := getIgnoreFileData( f )
+    if err!= nil {
+        return
+    }
+    // Parse the contents of the file or template
+    for _, s := range strings.Split(string(data), ignorefileEOL) {
+        // Skip over empty lines and lines starting with a comment smbol
+        if !strings.HasPrefix(s, ignorefileCommentPrefix) && len(strings.TrimSpace(s)) > 0 {
+            // Useful line - add it to the parser
+            ps = append(ps, gitignore.ParsePattern(s, nil))
+        }
+    }
+    // Create a matcher from the paterns
 	m = gitignore.NewMatcher(ps)
 	return
 }

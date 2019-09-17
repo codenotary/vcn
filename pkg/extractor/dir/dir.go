@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/vchain-us/vcn/pkg/meta"
 	"github.com/vchain-us/vcn/pkg/api"
 	"github.com/vchain-us/vcn/pkg/bundle"
 	"github.com/vchain-us/vcn/pkg/uri"
@@ -54,9 +55,11 @@ func Artifact(u *uri.URI) (*api.Artifact, error) {
 	if !stat.IsDir() {
 		return nil, nil
 	}
-
-	if err := initIgnoreFile(path); err != nil {
-		return nil, err
+    _, isset := os.LookupEnv(meta.VcnWriteIgnoreFile);
+    if isset {
+	    if err := initIgnoreFile(path); err != nil {
+		    return nil, err
+        }
 	}
 
 	files, err := walk(path)
