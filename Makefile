@@ -51,6 +51,7 @@ build/xgo:
 	$(DOCKER) build \
 			-f ./build/xgo/Dockerfile \
 			-t vcn-xgo \
+			--pull=true \
 			./build/xgo
 
 .PHONY: build/makensis
