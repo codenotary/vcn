@@ -67,8 +67,13 @@ func Execute() error {
 		return err
 	}
 
+	otp, err := cli.ProvideOtp()
+	if err != nil {
+		return err
+	}
+
 	cfg.ClearContext()
-	if err := user.Authenticate(password); err != nil {
+	if err := user.Authenticate(password, otp); err != nil {
 		return err
 	}
 	cfg.CurrentContext = user.Email()

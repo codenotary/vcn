@@ -19,6 +19,7 @@ import (
 type authRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Otp      string `json:"otp"`
 }
 
 type tokenResponse struct {
@@ -86,12 +87,12 @@ func checkToken(token string) (success bool, err error) {
 	return false, fmt.Errorf("check token failed: %s", err)
 }
 
-func authenticateUser(email string, password string) (token string, err error) {
+func authenticateUser(email string, password string, otp string) (token string, err error) {
 	response := new(tokenResponse)
 	restError := new(Error)
 	r, err := sling.New().
 		Post(publisherEndpoint()+"/auth").
-		BodyJSON(authRequest{Email: email, Password: password}).
+		BodyJSON(authRequest{Email: email, Password: password, Otp: otp}).
 		Receive(response, restError)
 	logger().WithFields(logrus.Fields{
 		"email":     email,

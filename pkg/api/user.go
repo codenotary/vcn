@@ -45,7 +45,7 @@ func (u User) Email() string {
 
 // Authenticate the User against the CodeNotary platform.
 // If successful the auth token in stored within the User's config and used for subsequent API call.
-func (u *User) Authenticate(password string) (err error) {
+func (u *User) Authenticate(password string, otp string) (err error) {
 	if u == nil || u.Email() == "" {
 		return makeFatal("user not initialized", nil)
 	}
@@ -60,7 +60,7 @@ func (u *User) Authenticate(password string) (err error) {
 		return fmt.Errorf(`no such user "%s", please create an account at %s`, email, meta.DashboardURL())
 	}
 
-	token, err := authenticateUser(email, password)
+	token, err := authenticateUser(email, password, otp)
 	if err != nil {
 		return
 	}

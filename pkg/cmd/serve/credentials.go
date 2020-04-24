@@ -17,7 +17,8 @@ import (
 func getCredential(r *http.Request) (user *api.User, passphrase string, err error) {
 	if email, password, ok := r.BasicAuth(); ok {
 		user = api.NewUser(email)
-		err = user.Authenticate(password)
+		// we don't support otp from serve
+		err = user.Authenticate(password, "")
 		if err == nil {
 			if empty := r.Header.Get("x-notarization-password-empty"); empty == "" {
 				passphrase = r.Header.Get("x-notarization-password")

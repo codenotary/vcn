@@ -136,3 +136,24 @@ func ProvidePlatformPassword() (password string, err error) {
 	logs.LOG.Trace("Platform password provided (interactive)")
 	return password, nil
 }
+
+func ProvideOtp() (otp string, err error) {
+	otp = os.Getenv(meta.VcnOtp)
+	if otp != "" {
+		logs.LOG.Trace("Otp provided (environment)")
+		return otp, nil
+	}
+	fmt.Print("One time password: ")
+	w := bufio.NewReader(os.Stdin)
+	otp, err = w.ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+	otp = strings.TrimSpace(otp)
+	if otp != ""{
+		logs.LOG.WithFields(logrus.Fields{
+			"otp": otp,
+		}).Trace("Otp provided (interactive)")
+	}
+	return otp, nil
+}
