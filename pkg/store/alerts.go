@@ -56,7 +56,7 @@ func AlertFilepath(email string) (string, error) {
 	return filepath.Join(path, email+".yaml"), nil
 }
 
-func SaveAlert(userEmail string, alertID string, alert Alert) error {
+func SaveAlert(userEmail, alertID string, alert Alert) error {
 	path, err := AlertFilepath(userEmail)
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func SaveAlert(userEmail string, alertID string, alert Alert) error {
 	return saveAlerts(alerts, path)
 }
 
-func DeleteAlert(userEmail string, id string) error {
+func DeleteAlert(userEmail, id string) error {
 	path, err := AlertFilepath(userEmail)
 	if err != nil {
 		return err

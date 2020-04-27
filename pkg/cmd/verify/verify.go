@@ -358,7 +358,7 @@ func verify(cmd *cobra.Command, a *api.Artifact, keys []string, org string, user
 			meta.StatusUnsupported: "is unsupported",
 		}
 
-		switch true {
+		switch {
 		case org != "":
 			return fmt.Errorf(`%s %s by "%s"`, a.Hash, errLabels[verification.Status], org)
 		case len(keys) == 1:

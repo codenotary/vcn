@@ -37,7 +37,6 @@ func Parse(rawURI string) (*URI, error) {
 			Scheme: "",
 			Opaque: rawURI,
 		}, nil
-
 	}
 	if l == 2 {
 		return &URI{

@@ -146,8 +146,11 @@ func Print(output string, r *types.Result) error {
 func PrintSlice(output string, rs []types.Result) error {
 	switch output {
 	case "":
-		for _, r := range rs {
-			WriteResultTo(&r, colorable.NewColorableStdout())
+		for i := range rs {
+			_, err := WriteResultTo(&rs[i], colorable.NewColorableStdout())
+			if err != nil {
+				return err
+			}
 			fmt.Println()
 		}
 	case "yaml":
@@ -171,8 +174,8 @@ func PrintSlice(output string, rs []types.Result) error {
 func PrintList(output string, artifacts []api.ArtifactResponse) error {
 	switch output {
 	case "":
-		for _, a := range artifacts {
-			fmt.Print(a)
+		for i := range artifacts {
+			fmt.Print(artifacts[i])
 		}
 	case "yaml":
 		b, err := yaml.Marshal(artifacts)
@@ -217,7 +220,7 @@ func PrintError(output string, err *types.Error) error {
 	return nil
 }
 
-func PrintWarning(output string, message string) error {
+func PrintWarning(output, message string) error {
 	switch output {
 	case "":
 		fallthrough

@@ -10,6 +10,7 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/sirupsen/logrus"
@@ -27,16 +28,16 @@ type Artifact struct {
 }
 
 // Copy returns a deep copy of the artifact.
-func (a Artifact) Copy() Artifact {
+func (a *Artifact) Copy() Artifact {
 	c := a
 	if a.Metadata != nil {
 		c.Metadata = nil
 		c.Metadata.SetValues(a.Metadata)
 	}
-	return c
+	return *c
 }
 
-func (a Artifact) toRequest() *artifactRequest {
+func (a *Artifact) toRequest() *artifactRequest {
 	aR := &artifactRequest{
 		// root fields
 		Kind:        a.Kind,
@@ -109,13 +110,13 @@ type ArtifactResponse struct {
 	Website           string `json:"website" yaml:"website" vcn:"Website"`
 }
 
-func (a ArtifactResponse) String() string {
+func (a *ArtifactResponse) String() string {
 	return fmt.Sprintf("Name:\t%s\nHash:\t%s\nStatus:\t%s\n\n",
 		a.Name, a.Hash, a.Status)
 }
 
 // Artifact returns an new *Artifact from a
-func (a ArtifactResponse) Artifact() *Artifact {
+func (a *ArtifactResponse) Artifact() *Artifact {
 	return &Artifact{
 		// root fields
 		Kind:        a.Kind,
@@ -153,7 +154,9 @@ func (u User) createArtifact(verification *BlockchainVerification, walletAddress
 	if err != nil {
 		return err
 	}
-	if r.StatusCode != 200 {
+	defer r.Body.Close()
+
+	if r.StatusCode != http.StatusOK {
 		return fmt.Errorf("request failed: %s (%d)", restError.Message,
 			restError.Status)
 	}
@@ -173,13 +176,14 @@ func (u *User) LoadArtifact(hash string) (*ArtifactResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer r.Body.Close()
 
 	switch r.StatusCode {
-	case 200:
+	case http.StatusOK:
 		if len(response.Content) < 1 {
 			return notFound()
 		}
-	case 404:
+	case http.StatusNotFound:
 		return notFound()
 	default:
 		return nil, fmt.Errorf("request failed: %s (%d)",
@@ -209,8 +213,9 @@ func (u User) ListArtifacts(page uint) (*PagedArtifactResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer r.Body.Close()
 
-	if r.StatusCode == 200 {
+	if r.StatusCode == http.StatusOK {
 		return response, nil
 	}
 
@@ -224,7 +229,7 @@ func (u User) ListArtifacts(page uint) (*PagedArtifactResponse, error) {
 // LoadArtifact fetches and returns an artifact matching the given hash and optionally a given metahash.
 // Returned values depends on user permissions on the artifact, if user is nil then only
 // publicly disclosable values are returned.
-func LoadArtifact(user *User, hash string, metahash string) (*ArtifactResponse, error) {
+func LoadArtifact(user *User, hash, metahash string) (*ArtifactResponse, error) {
 	response := new(ArtifactResponse)
 	restError := new(Error)
 	r, err := newSling(user.token()).
@@ -235,13 +240,15 @@ func LoadArtifact(user *User, hash string, metahash string) (*ArtifactResponse, 
 		"err":       err,
 		"restError": restError,
 	}).Trace("LoadArtifact")
+	defer r.Body.Close()
 	if err != nil {
 		return nil, err
 	}
+
 	switch r.StatusCode {
-	case 200:
+	case http.StatusOK:
 		return response, nil
-	case 404:
+	case http.StatusNotFound:
 		return nil, fmt.Errorf("no artifact matching %s/%s found", hash, metahash)
 	}
 	return nil, fmt.Errorf("loading artifact failed: %+v", restError)

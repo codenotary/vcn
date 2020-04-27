@@ -270,7 +270,7 @@ func sign(u api.User, a api.Artifact, state meta.Status, visibility meta.Visibil
 			return fmt.Errorf("too many failed attempts: %s", err)
 		}
 
-		if interactive && err == api.WrongPassphraseErr {
+		if interactive && err == api.ErrWrongPassphrase {
 			s.Stop()
 			fmt.Printf("\nError: %s, please try again\n\n", err.Error())
 			continue

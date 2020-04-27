@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-const Platform_MachO = "Mach"
+const PlatformMachO = "Mach"
 
 func MachO(file *os.File) (*Data, error) {
 	f, err := macho.NewFile(file)
@@ -26,7 +26,7 @@ func MachO(file *os.File) (*Data, error) {
 
 	d := &Data{
 		Type:     f.Type.String(),
-		Platform: Platform_MachO,
+		Platform: PlatformMachO,
 		Arch:     cpu,
 		X64:      strings.HasSuffix(cpu, "64"),
 	}

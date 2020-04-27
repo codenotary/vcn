@@ -129,6 +129,6 @@ func preExitHook(cmd *cobra.Command) {
 	if quit, _ := cmd.PersistentFlags().GetBool("quit"); !quit || mousetrap.StartedByExplorer() {
 		fmt.Println()
 		fmt.Println("Press 'Enter' to continue...")
-		terminal.ReadPassword(int(syscall.Stdin))
+		terminal.ReadPassword(syscall.Stdin)
 	}
 }

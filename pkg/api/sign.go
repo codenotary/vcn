@@ -25,8 +25,8 @@ import (
 	"github.com/vchain-us/vcn/pkg/meta"
 )
 
-//
-var WrongPassphraseErr = goErr.New("incorrect notarization password")
+// ErrWrongPassphrase is error for incorrect password notarization
+var ErrWrongPassphrase = goErr.New("incorrect notarization password")
 
 // Sign is invoked by the User to notarize an artifact using the given functional options,
 // if successful a BlockchainVerification is returned.
@@ -35,9 +35,6 @@ var WrongPassphraseErr = goErr.New("incorrect notarization password")
 func (u User) Sign(artifact Artifact, options ...SignOption) (*BlockchainVerification, error) {
 	if artifact.Hash == "" {
 		return nil, makeError("hash is missing", nil)
-	}
-	if artifact.Size < 0 {
-		return nil, makeError("invalid size", nil)
 	}
 
 	hasAuth, err := u.IsAuthenticated()
@@ -84,7 +81,7 @@ func (u User) commitTransaction(
 	transactor, err := bind.NewTransactor(o.keyin, o.passphrase)
 	if err != nil {
 		if err.Error() == "could not decrypt key with given passphrase" {
-			err = WrongPassphraseErr
+			err = ErrWrongPassphrase
 		}
 		return
 	}

@@ -22,8 +22,8 @@ type Data struct {
 }
 
 func (d Data) ContentType() string {
-	switch true {
-	case d.Platform == Platform_MachO:
+	switch {
+	case d.Platform == PlatformMachO:
 		return "application/x-mach-binary"
 	case d.Platform == Platform_PE:
 		return "application/x-dosexec"

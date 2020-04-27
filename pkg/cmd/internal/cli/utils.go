@@ -17,7 +17,7 @@ import (
 
 func readPassword(msg string) (string, error) {
 	fmt.Print(msg)
-	password, err := terminal.ReadPassword(int(syscall.Stdin))
+	password, err := terminal.ReadPassword(syscall.Stdin)
 	fmt.Println(".")
 	if err != nil {
 		return "", err

@@ -32,7 +32,6 @@ func PromptMnemonic() (mnemonic string, err error) {
 }
 
 func PromptPassphrase() (passphrase string, err error) {
-
 	color.Set(meta.StyleAffordance())
 	fmt.Print(`
 Attention: If you lose this password you will not able to recover it anymore.

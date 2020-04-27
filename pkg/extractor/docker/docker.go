@@ -101,7 +101,7 @@ func (i image) inferVer() string {
 	return ""
 }
 
-func inspect(executable string, arg string) ([]image, error) {
+func inspect(executable, arg string) ([]image, error) {
 	cmd := exec.Command(executable, "inspect", arg, "--type", "image")
 	cmdOutput, err := cmd.Output()
 	if err != nil {

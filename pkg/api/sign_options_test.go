@@ -49,7 +49,6 @@ func TestSignWithStatus(t *testing.T) {
 func TestSignWithVisibility(t *testing.T) {
 	o := &signOpts{}
 	SignWithVisibility(meta.VisibilityPublic)(o)
-
 	assert.Equal(t, meta.VisibilityPublic, o.visibility)
 }
 

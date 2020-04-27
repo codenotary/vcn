@@ -74,7 +74,10 @@ func (v *BlockchainVerification) fromUnmarshaler(unmarshal func(interface{}) err
 	v.Level = meta.Level(data.Level)
 	v.Status = meta.Status(data.Status)
 	if data.Timestamp != "" {
-		v.Timestamp.UnmarshalText([]byte(data.Timestamp))
+		err := v.Timestamp.UnmarshalText([]byte(data.Timestamp))
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -111,7 +114,7 @@ func (v *BlockchainVerification) MetaHash() string {
 		v.Owner.Hex(),
 		int64(v.Level),
 		int64(v.Status),
-		int64(v.Timestamp.Unix()))
+		v.Timestamp.Unix())
 	metadataHashAsBytes := sha256.Sum256([]byte(metadata))
 	metahash := fmt.Sprintf("%x", metadataHashAsBytes)
 	logger().WithFields(logrus.Fields{
@@ -186,7 +189,7 @@ func Verify(hash string) (*BlockchainVerification, error) {
 
 // VerifyMatchingSignerIDWithFallback returns *BlockchainVerification for the hash matching a given SignerID,
 // if any, otherwise it returns the same result of Verify().
-func VerifyMatchingSignerIDWithFallback(hash string, signerID string) (*BlockchainVerification, error) {
+func VerifyMatchingSignerIDWithFallback(hash, signerID string) (*BlockchainVerification, error) {
 	logger().WithFields(logrus.Fields{
 		"hash":     hash,
 		"signerID": signerID,
@@ -200,7 +203,7 @@ func VerifyMatchingSignerIDWithFallback(hash string, signerID string) (*Blockcha
 }
 
 // VerifyMatchingSignerID returns *BlockchainVerification for hash matching a given SignerID.
-func VerifyMatchingSignerID(hash string, signerID string) (*BlockchainVerification, error) {
+func VerifyMatchingSignerID(hash, signerID string) (*BlockchainVerification, error) {
 	return VerifyMatchingSignerIDs(hash, []string{signerID})
 }
 

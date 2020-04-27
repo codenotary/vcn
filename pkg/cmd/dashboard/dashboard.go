@@ -38,7 +38,7 @@ func runDashboard(cmd *cobra.Command, args []string) {
 	// has expired the customer will have to log in.
 	url := meta.DashboardURL()
 	if output, _ := cmd.Flags().GetString("output"); output == "" {
-		fmt.Println(fmt.Sprintf("Taking you to <%s>", url))
+		fmt.Printf("Taking you to <%s> \n", url)
 	}
 	browser.OpenURL(url)
 }

@@ -16,7 +16,7 @@ import (
 	"github.com/vchain-us/vcn/pkg/bundle"
 )
 
-func ManifestFilepath(kind string, target string) (string, error) {
+func ManifestFilepath(kind, target string) (string, error) {
 	target, err := filepath.Abs(target)
 	if err != nil {
 		return "", err
@@ -30,7 +30,7 @@ func ManifestFilepath(kind string, target string) (string, error) {
 	return filepath.Join(path, fmt.Sprintf("%s_%x.json", kind, id)), nil
 }
 
-func SaveManifest(kind string, target string, manifest bundle.Manifest) error {
+func SaveManifest(kind, target string, manifest bundle.Manifest) error {
 	path, err := ManifestFilepath(kind, target)
 	if err != nil {
 		return err
@@ -38,7 +38,7 @@ func SaveManifest(kind string, target string, manifest bundle.Manifest) error {
 	return bundle.WriteManifest(manifest, path)
 }
 
-func ReadManifest(kind string, target string) (*bundle.Manifest, error) {
+func ReadManifest(kind, target string) (*bundle.Manifest, error) {
 	path, err := ManifestFilepath(kind, target)
 	if err != nil {
 		return nil, err

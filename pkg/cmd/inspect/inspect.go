@@ -91,7 +91,7 @@ func runInspect(cmd *cobra.Command, args []string) error {
 	return inspect(hash, u, output)
 }
 
-func extractInfo(arg string, output string) (hash string, err error) {
+func extractInfo(arg, output string) (hash string, err error) {
 	a, err := extractor.Extract(arg)
 	if err != nil {
 		return "", err

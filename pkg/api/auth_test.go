@@ -9,7 +9,6 @@
 package api
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -20,16 +19,14 @@ func TestCheckTokenNoInput(t *testing.T) {
 	ret, _ := checkToken(token)
 
 	if ret != false {
-		t.Error(fmt.Sprintf(`CheckToken() with empty string input must return false`))
+		t.Error("CheckToken() with empty string input must return false")
 	}
-
 }
 
 func TestPublisherExists(t *testing.T) {
 	ret, err := checkUserExists(verifiedUser)
 
 	if ret == false || err != nil {
-		t.Error(fmt.Sprintf(`checkUserExists() must return true for infamous <%s>`, verifiedUser))
+		t.Errorf("checkUserExists() must return true for infamous <%s> \n", verifiedUser)
 	}
-
 }

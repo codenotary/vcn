@@ -55,7 +55,6 @@ func TestManifest(t *testing.T) {
 		`{"schemaVersion":1,"items":[{"digest":"sha256:bef57ec7f53a6d40beb640a780a639c83bc29ac8a9816f1fc6c5c6dcd93c4721","size":6,"paths":["letters.txt"]},{"digest":"sha256:c775e7b757ede630cd0aa1113bd102661ab38829ca52a6422ab782862f268646","size":10,"paths":["digits.txt","dup-digits.txt"]}]}`,
 		string(j),
 	)
-
 }
 
 func TestWriteReadManifest(t *testing.T) {

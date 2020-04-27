@@ -32,7 +32,7 @@ func NewResult(a *api.Artifact, ar *api.ArtifactResponse, v *api.BlockchainVerif
 
 	var r Result
 
-	switch true {
+	switch {
 	case ar != nil:
 		r = Result{*ar, vv, nil}
 	case a != nil:

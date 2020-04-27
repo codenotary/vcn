@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+const DefaultGasLimit = 20000000
+
 // DashboardURL returns the CodeNotary's dashboard URL.
 func DashboardURL() string {
 	switch StageEnvironment() {
@@ -106,5 +108,5 @@ func GasPrice() *big.Int {
 
 // GasLimit for transactions.
 func GasLimit() uint64 {
-	return 20000000
+	return DefaultGasLimit
 }

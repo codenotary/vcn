@@ -40,7 +40,7 @@ func (r *diffReporter) Report(rs cmp.Result) {
 	if !rs.Equal() {
 		vx, vy := r.path.Last().Values()
 		var line string
-		switch true {
+		switch {
 		case !vx.IsValid():
 			line = fmt.Sprintf("%#v:\n\t+: %+v\n", r.path, vy)
 		case !vy.IsValid():
@@ -60,29 +60,29 @@ func (r *diffReporter) String() string {
 	return strings.Join(r.lines, "\n")
 }
 
+type modDiff struct {
+	path string
+	from Descriptor
+	to   Descriptor
+}
+
+type pathDiff struct {
+	desc Descriptor
+	from string
+	to   string
+}
+
+type itemDiff struct {
+	path string
+	desc Descriptor
+}
+
 // DiffByPath returns a human-readable report as string containing
 // additions, modifications, renamings, deletions of x.Items relative to m.Items
 // listed by path.
 //
 // Do not depend on this output being stable.
 func (m Manifest) DiffByPath(x Manifest) (report string, equal bool, err error) {
-	type modDiff struct {
-		path string
-		from Descriptor
-		to   Descriptor
-	}
-
-	type pathDiff struct {
-		desc Descriptor
-		from string
-		to   string
-	}
-
-	type itemDiff struct {
-		path string
-		desc Descriptor
-	}
-
 	adds := make([]itemDiff, 0)
 	mods := make([]modDiff, 0)
 	rens := make([]pathDiff, 0)
@@ -107,7 +107,6 @@ func (m Manifest) DiffByPath(x Manifest) (report string, equal bool, err error) 
 	}
 
 	for path, xd := range xByPath {
-
 		// try by path
 		if md, ok := mByPath[path]; ok {
 			if md.Digest != xd.Digest {
@@ -120,7 +119,6 @@ func (m Manifest) DiffByPath(x Manifest) (report string, equal bool, err error) 
 			}
 			// else:
 			// same content, so no diff
-
 		} else { // try by digest
 			byDig := xd.Digest
 			if mPaths, ok := newPaths[byDig]; ok && len(mPaths) > 0 {
@@ -140,9 +138,7 @@ func (m Manifest) DiffByPath(x Manifest) (report string, equal bool, err error) 
 					desc: xd,
 				})
 			}
-
 		}
-
 		delete(mByPath, path)
 	}
 

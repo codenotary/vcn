@@ -57,7 +57,9 @@ func TestSaveConfig(t *testing.T) {
 	err := SaveConfig()
 	assert.NoError(t, err)
 
-	LoadConfig()
+	err = LoadConfig()
+	assert.NoError(t, err)
+
 	assert.Equal(t, email, Config().CurrentContext)
 }
 

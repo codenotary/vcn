@@ -10,6 +10,7 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/vchain-us/vcn/pkg/meta"
 )
@@ -43,8 +44,7 @@ type AlertConfig struct {
 }
 
 // CreateAlert creates a platform alert and returns its UUID.
-func (u *User) CreateAlert(name string, email string, a Artifact, v BlockchainVerification, m Metadata) (alertConfig *AlertConfig, err error) {
-
+func (u *User) CreateAlert(name, email string, a Artifact, v BlockchainVerification, m Metadata) (alertConfig *AlertConfig, err error) {
 	restError := new(Error)
 	alertResponse := &alert{}
 	r, err := newSling(u.token()).
@@ -57,19 +57,20 @@ func (u *User) CreateAlert(name string, email string, a Artifact, v BlockchainVe
 			Metadata:         m,
 			Name:             name,
 		}).Receive(alertResponse, restError)
-
 	if err != nil {
 		return
 	}
+	defer r.Body.Close()
+
 	switch r.StatusCode {
-	case 200:
+	case http.StatusOK:
 		alertConfig = &AlertConfig{
 			AlertUUID: alertResponse.UUID,
 			Metadata:  m,
 		}
-	case 400:
+	case http.StatusBadRequest:
 		err = fmt.Errorf("%s", restError.Description)
-	case 413:
+	case http.StatusRequestEntityTooLarge:
 		err = fmt.Errorf("%s is not allowed, only email addresses using the same domain are allowed", email)
 	default:
 		err = fmt.Errorf("alert API request failed: %s (%d)", restError.Message,
@@ -120,17 +121,16 @@ func (u *User) GetAlert(uuid string) (*AlertResponse, error) {
 	r, err := newSling(u.token()).
 		Get(meta.APIEndpoint("alert/"+uuid)).
 		Receive(&response, restError)
-
 	if err != nil {
 		return nil, err
 	}
-
+	defer r.Body.Close()
 	switch r.StatusCode {
-	case 200:
+	case http.StatusOK:
 		return response, nil
-	case 403:
+	case http.StatusForbidden:
 		return nil, fmt.Errorf("illegal alert access: %s", restError.Message)
-	case 404:
+	case http.StatusNotFound:
 		return nil, fmt.Errorf(`no such alert found matching "%s"`, uuid)
 	default:
 		return nil, fmt.Errorf("alert API request failed: %s (%d)", restError.Message,
@@ -143,19 +143,19 @@ func (u *User) alertMessage(config AlertConfig, what string) (err error) {
 	r, err := newSling(u.token()).
 		Post(meta.APIEndpoint("alert/"+what)).
 		BodyJSON(config).Receive(nil, restError)
-
 	if err != nil {
 		return
 	}
+	defer r.Body.Close()
 
 	switch r.StatusCode {
-	case 200:
+	case http.StatusOK:
 		return nil
-	case 403:
+	case http.StatusForbidden:
 		return fmt.Errorf("illegal alert access: %s", restError.Message)
-	case 404:
+	case http.StatusNotFound:
 		return fmt.Errorf(`no such alert found matching "%s"`, config.AlertUUID)
-	case 412:
+	case http.StatusPreconditionFailed:
 		return fmt.Errorf(`notification already triggered for alert "%s"`, config.AlertUUID)
 	default:
 		return fmt.Errorf("alert API request failed: %s (%d)", restError.Message,

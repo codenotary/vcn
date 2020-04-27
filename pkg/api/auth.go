@@ -9,6 +9,7 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/dghubble/sling"
 	"github.com/sirupsen/logrus"
@@ -52,7 +53,9 @@ func checkUserExists(email string) (success bool, err error) {
 	if err != nil {
 		return false, err
 	}
-	if r.StatusCode == 200 {
+	defer r.Body.Close()
+
+	if r.StatusCode == http.StatusOK {
 		return response.Exists, nil
 	}
 	return false, fmt.Errorf("check publisher failed: %+v", restError)
@@ -63,18 +66,22 @@ func checkToken(token string) (success bool, err error) {
 	response, err := newSling(token).
 		Get(publisherEndpoint()+"/auth/check").
 		Receive(nil, restError)
+	if err != nil {
+		return false, fmt.Errorf("check token failed: %s", err)
+	}
 	logger().WithFields(logrus.Fields{
 		"response":  response,
 		"err":       err,
 		"restError": restError,
 	}).Trace("checkToken")
 	if response != nil {
+		defer response.Body.Close()
 		switch response.StatusCode {
-		case 200:
+		case http.StatusOK:
 			return true, nil
-		case 401:
+		case http.StatusUnauthorized:
 			fallthrough
-		case 403:
+		case http.StatusForbidden:
 			fallthrough
 		case 419:
 			return false, nil
@@ -86,7 +93,7 @@ func checkToken(token string) (success bool, err error) {
 	return false, fmt.Errorf("check token failed: %s", err)
 }
 
-func authenticateUser(email string, password string) (token string, err error) {
+func authenticateUser(email, password string) (token string, err error) {
 	response := new(tokenResponse)
 	restError := new(Error)
 	r, err := sling.New().
@@ -102,12 +109,13 @@ func authenticateUser(email string, password string) (token string, err error) {
 	if err != nil {
 		return "", err
 	}
+	r.Body.Close()
 	switch r.StatusCode {
-	case 200:
+	case http.StatusOK:
 		return response.Token, nil
-	case 400:
+	case http.StatusBadRequest:
 		return "", fmt.Errorf(errors.UnconfirmedEmail, email, meta.DashboardURL())
-	case 401:
+	case http.StatusUnauthorized:
 		return "", fmt.Errorf("invalid password")
 	}
 	if restError.Error != "" {

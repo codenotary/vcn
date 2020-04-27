@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -133,7 +134,8 @@ func (u User) getWallet() (address, keystore string, offline bool, err error) {
 	if err != nil {
 		return
 	}
-	if r.StatusCode != 200 {
+	r.Body.Close()
+	if r.StatusCode != http.StatusOK {
 		err = fmt.Errorf("request failed: %s (%d)", authError.Message, authError.Status)
 		return
 	}
@@ -162,7 +164,7 @@ func (u User) getWallet() (address, keystore string, offline bool, err error) {
 func (u User) Secret() (reader io.Reader, id string, offline bool, err error) {
 	id, keystore, offline, err := u.getWallet()
 
-	switch true {
+	switch {
 	case err != nil:
 		// passthru error
 	case id == "":
@@ -219,11 +221,12 @@ func (u User) UploadSecret(secret io.Reader, passphrase string) (err error) {
 		"err":       err,
 		"authError": authError,
 	}).Trace("UploadSecret")
-
 	if err != nil {
 		return
 	}
-	if r.StatusCode != 200 {
+	r.Body.Close()
+
+	if r.StatusCode != http.StatusOK {
 		err = fmt.Errorf("request failed: %s (%d)", authError.Message, authError.Status)
 		return
 	}
@@ -247,8 +250,9 @@ func (u User) RemainingSignOps() (uint64, error) {
 	if err != nil {
 		return 0, err
 	}
-	switch r.StatusCode {
-	case 200:
+	r.Body.Close()
+
+	if r.StatusCode == http.StatusOK {
 		return response.Count, nil
 	}
 	return 0, fmt.Errorf("count remaining sign operations failed: %+v", restError)
@@ -270,8 +274,8 @@ func (u User) trialExpired() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	switch r.StatusCode {
-	case 200:
+	r.Body.Close()
+	if r.StatusCode == http.StatusOK {
 		return response.TrialExpired, nil
 	}
 	return false, fmt.Errorf("cannot get user info from platform: %+v", restError)

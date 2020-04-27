@@ -10,6 +10,7 @@ package api
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/sirupsen/logrus"
 	"github.com/vchain-us/vcn/pkg/meta"
@@ -38,7 +39,7 @@ func trackingEvent() string {
 }
 
 // TrackVerify is deprecated and will be removed
-func TrackVerify(user *User, hash string, filename string) (err error) {
+func TrackVerify(user *User, hash, filename string) (err error) {
 	logger().WithFields(logrus.Fields{
 		"hash":     hash,
 		"filename": filename,
@@ -54,7 +55,8 @@ func TrackVerify(user *User, hash string, filename string) (err error) {
 	if err != nil {
 		return err
 	}
-	if r.StatusCode != 200 {
+	r.Body.Close()
+	if r.StatusCode != http.StatusOK {
 		return fmt.Errorf("TrackVerify failed: %+v", restError)
 	}
 	return nil
@@ -74,14 +76,16 @@ func TrackPublisher(user *User, event string) (err error) {
 	if err != nil {
 		return err
 	}
-	if r.StatusCode != 200 {
+	r.Body.Close()
+
+	if r.StatusCode != http.StatusOK {
 		return fmt.Errorf("TrackPublisher failed: %+v", restError)
 	}
 	return nil
 }
 
 // TrackSign is deprecated and will be removed
-func TrackSign(user *User, hash string, filename string, status meta.Status) (err error) {
+func TrackSign(user *User, hash, filename string, status meta.Status) (err error) {
 	logger().WithFields(logrus.Fields{
 		"hash":     hash,
 		"filename": filename,
@@ -98,7 +102,8 @@ func TrackSign(user *User, hash string, filename string, status meta.Status) (er
 	if err != nil {
 		return err
 	}
-	if r.StatusCode != 200 {
+	r.Body.Close()
+	if r.StatusCode != http.StatusOK {
 		return fmt.Errorf("TrackSign failed: %+v", restError)
 	}
 	return nil
