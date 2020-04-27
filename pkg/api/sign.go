@@ -32,7 +32,7 @@ var ErrWrongPassphrase = goErr.New("incorrect notarization password")
 // if successful a BlockchainVerification is returned.
 // By default, the artifact is notarized using status = meta.StatusTrusted, visibility meta.VisibilityPrivate.
 // At least the key (secret) must be provided using SignWithKey().
-func (u User) Sign(artifact Artifact, options ...SignOption) (*BlockchainVerification, error) {
+func (u *User) Sign(artifact *Artifact, options ...SignOption) (*BlockchainVerification, error) {
 	if artifact.Hash == "" {
 		return nil, makeError("hash is missing", nil)
 	}
@@ -68,16 +68,15 @@ func (u User) Sign(artifact Artifact, options ...SignOption) (*BlockchainVerific
 	)
 }
 
-func (u User) commitTransaction(
-	artifact Artifact,
+func (u *User) commitTransaction(
+	artifact *Artifact,
 	opts ...SignOption,
 ) (verification *BlockchainVerification, err error) {
 
-	o, err := makeSignOpts(u, opts...)
+	o, err := makeSignOpts(opts...)
 	if err != nil {
 		return
 	}
-
 	transactor, err := bind.NewTransactor(o.keyin, o.passphrase)
 	if err != nil {
 		if err.Error() == "could not decrypt key with given passphrase" {

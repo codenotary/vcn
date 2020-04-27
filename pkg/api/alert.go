@@ -44,7 +44,7 @@ type AlertConfig struct {
 }
 
 // CreateAlert creates a platform alert and returns its UUID.
-func (u *User) CreateAlert(name, email string, a Artifact, v BlockchainVerification, m Metadata) (alertConfig *AlertConfig, err error) {
+func (u *User) CreateAlert(name, email string, a *Artifact, v BlockchainVerification, m Metadata) (alertConfig *AlertConfig, err error) {
 	restError := new(Error)
 	alertResponse := &alert{}
 	r, err := newSling(u.token()).

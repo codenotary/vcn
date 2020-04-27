@@ -37,7 +37,7 @@ func NewUser(email string) *User {
 }
 
 // Email returns the User's email, if any, otherwise an empty string.
-func (u User) Email() string {
+func (u *User) Email() string {
 	if u.cfg != nil {
 		return u.cfg.Email
 	}
@@ -85,7 +85,7 @@ func (u *User) token() string {
 }
 
 // IsAuthenticated returns true if the stored auth token is still valid.
-func (u User) IsAuthenticated() (bool, error) {
+func (u *User) IsAuthenticated() (bool, error) {
 	if u.cfg == nil || u.cfg.Token == "" {
 		return false, nil
 	}
@@ -94,7 +94,7 @@ func (u User) IsAuthenticated() (bool, error) {
 }
 
 // IsExist returns true if the User's was registered on the CodeNotary platform.
-func (u User) IsExist() (bool, error) {
+func (u *User) IsExist() (bool, error) {
 	email := u.Email()
 	if email != "" {
 		return checkUserExists(email)
@@ -104,14 +104,14 @@ func (u User) IsExist() (bool, error) {
 
 // Config returns the User configuration object (see store.User), if any.
 // It returns nil if the User is not properly initialized.
-func (u User) Config() *store.User {
+func (u *User) Config() *store.User {
 	if u.cfg != nil {
 		return u.cfg
 	}
 	return nil
 }
 
-func (u User) getWallet() (address, keystore string, offline bool, err error) {
+func (u *User) getWallet() (address, keystore string, offline bool, err error) {
 	authError := new(Error)
 	pagedWalletResponse := new(struct {
 		Content []struct {
@@ -161,7 +161,7 @@ func (u User) getWallet() (address, keystore string, offline bool, err error) {
 }
 
 // Secret fetches the User's secret and returns an io.Reader for reading it.
-func (u User) Secret() (reader io.Reader, id string, offline bool, err error) {
+func (u *User) Secret() (reader io.Reader, id string, offline bool, err error) {
 	id, keystore, offline, err := u.getWallet()
 
 	switch {
@@ -181,7 +181,7 @@ func (u User) Secret() (reader io.Reader, id string, offline bool, err error) {
 }
 
 // SignerID retrives the User's SignerID (the public address derived from the secret) from the platform.
-func (u User) SignerID() (id string, err error) {
+func (u *User) SignerID() (id string, err error) {
 	id, _, _, err = u.getWallet()
 	if err == nil && id == "" {
 		err = fmt.Errorf("no SignerID found for %s", u.Email())
@@ -190,7 +190,7 @@ func (u User) SignerID() (id string, err error) {
 }
 
 // UploadSecret uploads the User's secret to the platform.
-func (u User) UploadSecret(secret io.Reader, passphrase string) (err error) {
+func (u *User) UploadSecret(secret io.Reader, passphrase string) (err error) {
 	var buf bytes.Buffer
 	tee := io.TeeReader(secret, &buf)
 	transactor, err := bind.NewTransactor(tee, passphrase)
@@ -234,7 +234,7 @@ func (u User) UploadSecret(secret io.Reader, passphrase string) (err error) {
 }
 
 // RemainingSignOps returns the number of remaining notarizations in the User's account subscription.
-func (u User) RemainingSignOps() (uint64, error) {
+func (u *User) RemainingSignOps() (uint64, error) {
 	response := new(struct {
 		Count uint64 `json:"count"`
 	})
@@ -258,7 +258,7 @@ func (u User) RemainingSignOps() (uint64, error) {
 	return 0, fmt.Errorf("count remaining sign operations failed: %+v", restError)
 }
 
-func (u User) trialExpired() (bool, error) {
+func (u *User) trialExpired() (bool, error) {
 	response := new(struct {
 		TrialExpired bool `json:"trialExpired"`
 	})

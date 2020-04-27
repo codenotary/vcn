@@ -30,7 +30,7 @@ type alertOptions struct {
 	email string
 }
 
-func handleAlert(opts *alertOptions, u api.User, a api.Artifact, v api.BlockchainVerification, output string) error {
+func handleAlert(opts *alertOptions, u api.User, a *api.Artifact, v api.BlockchainVerification, output string) error {
 	if opts == nil {
 		return nil
 	}

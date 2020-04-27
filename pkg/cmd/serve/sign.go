@@ -62,8 +62,8 @@ func sign(status meta.Status, kinds map[string]bool, w http.ResponseWriter, r *h
 	}
 
 	decoder := json.NewDecoder(r.Body)
-	var artifact api.Artifact
-	err = decoder.Decode(&artifact)
+	artifact := new(api.Artifact)
+	err = decoder.Decode(artifact)
 
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err)
@@ -101,5 +101,5 @@ func sign(status meta.Status, kinds map[string]bool, w http.ResponseWriter, r *h
 		ar, _ = api.LoadArtifact(user, artifact.Hash, verification.MetaHash())
 	}
 
-	writeResult(w, http.StatusOK, types.NewResult(&artifact, ar, verification))
+	writeResult(w, http.StatusOK, types.NewResult(artifact, ar, verification))
 }

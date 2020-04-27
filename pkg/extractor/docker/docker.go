@@ -79,18 +79,18 @@ type image struct {
 	Metadata      interface{} `json:"Metadata"`
 }
 
-func (i image) hash() string {
+func (i *image) hash() string {
 	return strings.TrimSpace(strings.Replace(fmt.Sprint(i.ID), "sha256:", "", 1))
 }
 
-func (i image) name() string {
+func (i *image) name() string {
 	if len(i.RepoTags) > 0 {
 		return i.RepoTags[0]
 	}
 	return i.hash()
 }
 
-func (i image) inferVer() string {
+func (i *image) inferVer() string {
 	if len(i.RepoTags) > 0 {
 		parts := strings.SplitN(i.RepoTags[0], ":", 2)
 		if len(parts) > 1 && parts[1] != "latest" {

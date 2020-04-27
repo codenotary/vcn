@@ -215,10 +215,10 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 	// Copy user provided custom attributes
 	a.Metadata.SetValues(metadata)
 
-	return sign(*u, *a, state, meta.VisibilityForFlag(public), output, silentMode, readOnly, alert)
+	return sign(*u, a, state, meta.VisibilityForFlag(public), output, silentMode, readOnly, alert)
 }
 
-func sign(u api.User, a api.Artifact, state meta.Status, visibility meta.Visibility, output string, silent bool, readOnly bool, alert *alertOptions) error {
+func sign(u api.User, a *api.Artifact, state meta.Status, visibility meta.Visibility, output string, silent bool, readOnly bool, alert *alertOptions) error {
 
 	if output == "" {
 		color.Set(meta.StyleAffordance())
@@ -228,7 +228,7 @@ func sign(u api.User, a api.Artifact, state meta.Status, visibility meta.Visibil
 		fmt.Println("Signer:\t" + u.Email())
 	}
 
-	hook := newHook(&a)
+	hook := newHook(a)
 
 	s := spin.New("%s Notarization in progress...")
 	s.Set(spin.Spin1)
@@ -304,7 +304,7 @@ func sign(u api.User, a api.Artifact, state meta.Status, visibility meta.Visibil
 		return cli.PrintWarning(output, err.Error())
 	}
 
-	cli.Print(output, types.NewResult(&a, artifact, verification))
+	cli.Print(output, types.NewResult(a, artifact, verification))
 
 	if err := handleAlert(alert, u, a, *verification, output); err != nil {
 		return cli.PrintWarning(output, err.Error())

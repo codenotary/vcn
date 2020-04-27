@@ -130,8 +130,8 @@ func (a *ArtifactResponse) Artifact() *Artifact {
 	}
 }
 
-func (u User) createArtifact(verification *BlockchainVerification, walletAddress string,
-	artifact Artifact, visibility meta.Visibility, status meta.Status, txHash common.Hash) error {
+func (u *User) createArtifact(verification *BlockchainVerification, walletAddress string,
+	artifact *Artifact, visibility meta.Visibility, status meta.Status, txHash common.Hash) error {
 
 	hasAuth, err := u.IsAuthenticated()
 	if err != nil {
@@ -199,7 +199,7 @@ func (u *User) LoadArtifact(hash string) (*ArtifactResponse, error) {
 }
 
 // ListArtifacts fetches and returns a paged list of user's artifacts.
-func (u User) ListArtifacts(page uint) (*PagedArtifactResponse, error) {
+func (u *User) ListArtifacts(page uint) (*PagedArtifactResponse, error) {
 	response := new(PagedArtifactResponse)
 	restError := new(Error)
 	url := fmt.Sprintf(

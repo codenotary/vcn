@@ -22,11 +22,9 @@ func testUser() User {
 }
 
 func TestMakeSignOpts(t *testing.T) {
-	u := testUser()
 	reader := strings.NewReader("Hi!")
 	pass := "word"
 	o, err := makeSignOpts(
-		u,
 		SignWithKey(reader, pass),
 	)
 	assert.NoError(t, err)

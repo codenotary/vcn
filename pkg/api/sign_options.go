@@ -24,7 +24,7 @@ type signOpts struct {
 	passphrase string
 }
 
-func makeSignOpts(u User, opts ...SignOption) (o *signOpts, err error) {
+func makeSignOpts(opts ...SignOption) (o *signOpts, err error) {
 	o = &signOpts{
 		status:     meta.StatusTrusted,
 		visibility: meta.VisibilityPrivate,

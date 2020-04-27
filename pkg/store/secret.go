@@ -64,7 +64,7 @@ func (u *User) defaultAccount() (acc *accounts.Account, err error) {
 	return &accs[0], nil
 }
 
-func (u User) defaultSecretFilepath() string {
+func (u *User) defaultSecretFilepath() string {
 	return filepath.Join(u.KeyStore, defaultSecretFile)
 }
 
