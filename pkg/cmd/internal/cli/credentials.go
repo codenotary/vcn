@@ -149,7 +149,7 @@ func ProvideOtp() (otp string, err error) {
 	if err != nil {
 		return "", err
 	}
-	otp = strings.TrimSpace(otp)
+	otp = strings.ReplaceAll(strings.TrimSpace(otp), " ", "")
 	if otp != ""{
 		logs.LOG.WithFields(logrus.Fields{
 			"otp": otp,
