@@ -49,7 +49,6 @@ require (
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/urfave/cli.v1 v1.20.0 // indirect
 	gopkg.in/yaml.v2 v2.2.2
-	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect
 )
 
 replace gopkg.in/urfave/cli.v1 v1.20.0 => github.com/urfave/cli v1.22.1
