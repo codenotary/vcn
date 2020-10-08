@@ -65,8 +65,8 @@ func (u LcUser) createArtifact(
 	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
-	key := AppendPrefix(meta.VcnLCPrefix, []byte(artifact.Hash))
-	key = AppendSignerId(aR.Signer, key)
+	key := AppendPrefix(meta.VcnLCPrefix, []byte(aR.Signer))
+	key = AppendSignerId(artifact.Hash, key)
 
 	_, err = u.Client.SafeSet(ctx, key, arJson)
 	if err != nil {
@@ -85,8 +85,8 @@ func (u *LcUser) LoadArtifact(hash string) (lc *LcArtifact, verified bool, err e
 	hasher.Write([]byte(u.LcApiKey()))
 	signerId := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 
-	key := AppendPrefix(meta.VcnLCPrefix, []byte(hash))
-	key = AppendSignerId(signerId, key)
+	key := AppendPrefix(meta.VcnLCPrefix, []byte(signerId))
+	key = AppendSignerId(hash, key)
 
 	jsonAr, err := u.Client.SafeGet(ctx, key)
 	if err != nil {
