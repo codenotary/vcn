@@ -65,10 +65,7 @@ func (u LcUser) createArtifact(
 	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
-	key := AppendPrefix(meta.VcnLCPrefix, []byte(aR.Signer))
-	key = AppendSignerId(artifact.Hash, key)
-
-	_, err = u.Client.SafeSet(ctx, key, arJson)
+	_, err = u.Client.SafeSet(ctx, []byte(artifact.Hash), arJson)
 	if err != nil {
 		return err
 	}
@@ -81,14 +78,7 @@ func (u *LcUser) LoadArtifact(hash string) (lc *LcArtifact, verified bool, err e
 	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
-	hasher := sha256.New()
-	hasher.Write([]byte(u.LcApiKey()))
-	signerId := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
-
-	key := AppendPrefix(meta.VcnLCPrefix, []byte(signerId))
-	key = AppendSignerId(hash, key)
-
-	jsonAr, err := u.Client.SafeGet(ctx, key)
+	jsonAr, err := u.Client.SafeGet(ctx, []byte(hash))
 	if err != nil {
 		return nil, false, err
 	}
@@ -100,18 +90,4 @@ func (u *LcUser) LoadArtifact(hash string) (lc *LcArtifact, verified bool, err e
 	}
 
 	return &lcArtifact, jsonAr.Verified, nil
-}
-
-func AppendPrefix(prefix string, key []byte) []byte {
-	var prefixed = make([]byte, len(prefix)+1+len(key))
-	copy(prefixed[0:], prefix+".")
-	copy(prefixed[len(prefix)+1:], key)
-	return prefixed
-}
-
-func AppendSignerId(signerId string, k []byte) []byte {
-	var prefixed = make([]byte, len(k)+len(signerId)+1)
-	copy(prefixed[0:], k)
-	copy(prefixed[len(k):], "."+signerId)
-	return prefixed
 }

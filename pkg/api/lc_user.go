@@ -11,6 +11,7 @@ package api
 import (
 	"github.com/vchain-us/ledger-compliance-go/grpcclient"
 	sdk "github.com/vchain-us/ledger-compliance-go/grpcclient"
+	"github.com/vchain-us/vcn/pkg/meta"
 	"github.com/vchain-us/vcn/pkg/store"
 	"strconv"
 )
@@ -25,7 +26,7 @@ type LcUser struct {
 func NewLcUser(lcApiKey string, host string, port string) *LcUser {
 	p, _ := strconv.Atoi(port)
 	return &LcUser{
-		Client: sdk.NewLcClient(sdk.ApiKey(lcApiKey), sdk.Host(host), sdk.Port(p), sdk.Dir(store.CurrentConfigFilePath())),
+		Client: sdk.NewLcClient(sdk.ApiKey(lcApiKey), sdk.Host(host), sdk.Port(p), sdk.Dir(store.CurrentConfigFilePath()), sdk.PluginPrefix(meta.VcnLCPrefix)),
 		cfg:    store.Config().NewLcUser(lcApiKey, host, port),
 	}
 }

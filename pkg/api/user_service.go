@@ -10,6 +10,7 @@ package api
 
 import (
 	sdk "github.com/vchain-us/ledger-compliance-go/grpcclient"
+	"github.com/vchain-us/vcn/pkg/meta"
 	"github.com/vchain-us/vcn/pkg/store"
 	"strconv"
 )
@@ -27,7 +28,7 @@ func GetUserFromContext(context store.CurrentContext) (interface{}, error) {
 			return nil, err
 		}
 		return &LcUser{
-			Client: sdk.NewLcClient(sdk.Host(context.LcHost), sdk.Port(p), sdk.ApiKey(context.LcApiKey), sdk.Dir(store.CurrentConfigFilePath())),
+			Client: sdk.NewLcClient(sdk.Host(context.LcHost), sdk.Port(p), sdk.ApiKey(context.LcApiKey), sdk.Dir(store.CurrentConfigFilePath()), sdk.PluginPrefix(meta.VcnLCPrefix)),
 			cfg:    store.Config().UserByLcApiKey(context.LcApiKey),
 		}, nil
 	}
