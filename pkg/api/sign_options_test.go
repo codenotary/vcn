@@ -9,7 +9,6 @@
 package api
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/vchain-us/vcn/pkg/meta"
@@ -22,11 +21,9 @@ func testUser() User {
 }
 
 func TestMakeSignOpts(t *testing.T) {
-	u := testUser()
-	reader := strings.NewReader("Hi!")
+	reader := "Hi!"
 	pass := "word"
 	o, err := makeSignOpts(
-		u,
 		SignWithKey(reader, pass),
 	)
 	assert.NoError(t, err)
@@ -54,7 +51,7 @@ func TestSignWithVisibility(t *testing.T) {
 }
 
 func TestSignWithKey(t *testing.T) {
-	reader := strings.NewReader("Hi!")
+	reader := "Hi!"
 	pass := "word"
 
 	o := &signOpts{}

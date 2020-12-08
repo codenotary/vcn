@@ -7,6 +7,7 @@ jobs:
       GO111MODULE: "on"
     steps:
       - checkout
+      - run: sudo apt-get update
       - run: sudo apt-get install -y bzr
       - run: make TEST_FLAGS="-timeout 60s -race -v" test
   test-go-1-13:
@@ -29,5 +30,5 @@ workflows:
   version: 2
   testing:
     jobs:
-      - test-go-1-12
       - test-go-1-13
+      - test-go-1-15

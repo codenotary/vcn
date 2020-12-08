@@ -1,3 +1,5 @@
+// +build integration
+
 /*
  * Copyright (c) 2018-2020 vChain, Inc. All Rights Reserved.
  * This software is released under GPL3.
@@ -40,7 +42,7 @@ func TestParallelNotarization(t *testing.T) {
 
 	su := &store.User{Email: userEmail}
 
-	user.User(su)
+	user.UserByCfg(su)
 
 	err := user.Authenticate(userPw, "")
 	assert.NoError(t, err)
@@ -89,7 +91,7 @@ func TestParallelNotarization(t *testing.T) {
 	fmt.Println("done")
 }
 
-func psign(user *api.User, a *api.Artifact, userPw string) (*api.BlockchainVerification, error) {
+func psign(user *api.User, a []*api.Artifact, userPw string) (*api.BlockchainVerification, error) {
 	keyin, _, _, err := user.Secret()
 	if err != nil {
 		log.Fatal(err)
@@ -99,7 +101,7 @@ func psign(user *api.User, a *api.Artifact, userPw string) (*api.BlockchainVerif
 		api.SignWithStatus(meta.StatusTrusted),
 	}
 
-	v, err := user.Sign(*a, opts...)
+	v, err := user.Sign(*a[0], opts...)
 	fmt.Printf("%s\n", v.Date())
 	return v, err
 }

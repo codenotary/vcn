@@ -20,6 +20,7 @@ import (
 
 const testUserEnv = "VCN_TEST_USER"
 const testPassEnv = "VCN_TEST_PASS"
+const testOtpEmptyEnv = "VCN_TEST_OTP_EMPTY"
 
 const testPassphrase = "dummy"
 
@@ -28,13 +29,15 @@ func TestLoginByEnv(t *testing.T) {
 
 	user := os.Getenv(testUserEnv)
 	password := os.Getenv(testPassEnv)
+	otp := os.Getenv(testOtpEmptyEnv)
 
-	if user == "" || password == "" {
+	if user == "" || password == "" || otp == "" {
 		t.Skip(
 			fmt.Sprintf(
-				"Please set %s and %s environment variables to run this test.",
+				"Please set %s, %s and %s environment variables to run this test.",
 				testUserEnv,
 				testPassEnv,
+				testOtpEmptyEnv,
 			),
 		)
 		return
@@ -51,6 +54,7 @@ func TestLoginByEnv(t *testing.T) {
 
 	os.Setenv(meta.VcnUserEnv, user)
 	os.Setenv(meta.VcnPasswordEnv, password)
+	os.Setenv(meta.VcnOtpEmpty, otp)
 
 	Execute()
 }

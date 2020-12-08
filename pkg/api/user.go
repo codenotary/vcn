@@ -110,6 +110,11 @@ func (u User) Config() *store.User {
 	return nil
 }
 
+// UserByCfg configures current user with a custom values
+func (u *User) UserByCfg(cfg *store.User) {
+	u.cfg = cfg
+}
+
 func (u User) getWallet() (address, keystore string, offline bool, err error) {
 	authError := new(Error)
 	pagedWalletResponse := new(struct {
