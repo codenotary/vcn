@@ -99,7 +99,7 @@ func GetLcResults(hash, signerID string, u *api.LcUser, first, last uint64, star
 
 func getSignerResults(ctx context.Context, key []byte, u *api.LcUser, first, last uint64) ([]*types.LcResult, error) {
 	var err error
-	var zitems *schema.ZStructuredItemExtList
+	var zitems *schema.ZItemExtList
 
 	reverse := false
 	var limit uint64 = 0
@@ -112,10 +112,10 @@ func getSignerResults(ctx context.Context, key []byte, u *api.LcUser, first, las
 		reverse = true
 	}
 
-	zitems, err = u.Client.ZScanExt(ctx, &immuschema.ZScanOptions{
-		Reverse: reverse,
-		Limit:   limit,
-		Set:     key,
+	zitems, err = u.Client.ZScanExt(ctx, &immuschema.ZScanRequest{
+		Desc:  reverse,
+		Limit: limit,
+		Set:   key,
 	})
 	if err != nil {
 		return nil, err
@@ -137,7 +137,7 @@ func getSignerResults(ctx context.Context, key []byte, u *api.LcUser, first, las
 
 func getHistoryResults(ctx context.Context, key []byte, u *api.LcUser, first, last uint64) ([]*types.LcResult, error) {
 	var err error
-	var items *schema.StructuredItemExtList
+	var items *schema.ItemExtList
 
 	reverse := true
 	var limit uint64 = 0
@@ -150,10 +150,10 @@ func getHistoryResults(ctx context.Context, key []byte, u *api.LcUser, first, la
 		reverse = false
 	}
 
-	items, err = u.Client.HistoryExt(ctx, &immuschema.HistoryOptions{
-		Reverse: reverse,
-		Limit:   limit,
-		Key:     key,
+	items, err = u.Client.HistoryExt(ctx, &immuschema.HistoryRequest{
+		Desc:  reverse,
+		Limit: limit,
+		Key:   key,
 	})
 	if err != nil {
 		return nil, err
@@ -177,7 +177,7 @@ func getHistoryResults(ctx context.Context, key []byte, u *api.LcUser, first, la
 
 func getTimeRangedResults(ctx context.Context, u *api.LcUser, set []byte, first, last uint64, start, end string) ([]*types.LcResult, error) {
 	var err error
-	var zitems *immuschema.ZStructuredItemList
+	var zitems *immuschema.ZItemList
 
 	var startScore *immuschema.Score = nil
 	var endScore *immuschema.Score = nil
@@ -213,12 +213,12 @@ func getTimeRangedResults(ctx context.Context, u *api.LcUser, set []byte, first,
 		reverse = true
 	}
 
-	zitems, err = u.Client.ZScan(ctx, &immuschema.ZScanOptions{
-		Set:     set,
-		Min:     startScore,
-		Max:     endScore,
-		Limit:   limit,
-		Reverse: reverse,
+	zitems, err = u.Client.ZScan(ctx, &immuschema.ZScanRequest{
+		Set:      set,
+		MinScore: startScore,
+		MaxScore: endScore,
+		Limit:    limit,
+		Desc:     reverse,
 	})
 	if err != nil {
 		return nil, err

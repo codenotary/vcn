@@ -35,9 +35,9 @@ func (a Artifact) toLcArtifact() *LcArtifact {
 
 	return aR
 }
-func ItemToLcArtifact(item *schema.StructuredItemExt) (*LcArtifact, error) {
+func ItemToLcArtifact(item *schema.ItemExt) (*LcArtifact, error) {
 	var lca LcArtifact
-	err := json.Unmarshal(item.Item.Value.Payload, &lca)
+	err := json.Unmarshal(item.Item.Value, &lca)
 	if err != nil {
 		return nil, err
 	}
@@ -46,9 +46,9 @@ func ItemToLcArtifact(item *schema.StructuredItemExt) (*LcArtifact, error) {
 	return &lca, nil
 }
 
-func ZItemToLcArtifact(ie *schema.ZStructuredItemExt) (*LcArtifact, error) {
+func ZItemToLcArtifact(ie *schema.ZItemExt) (*LcArtifact, error) {
 	var lca LcArtifact
-	err := json.Unmarshal(ie.Item.Item.Value.Payload, &lca)
+	err := json.Unmarshal(ie.Item.Item.Value, &lca)
 	if err != nil {
 		return nil, err
 	}
@@ -57,9 +57,9 @@ func ZItemToLcArtifact(ie *schema.ZStructuredItemExt) (*LcArtifact, error) {
 	return &lca, nil
 }
 
-func ZStructuredItemToLcArtifact(i *immuschema.ZStructuredItem) (*LcArtifact, error) {
+func ZStructuredItemToLcArtifact(i *immuschema.ZItem) (*LcArtifact, error) {
 	var lca LcArtifact
-	err := json.Unmarshal(i.Item.Value.Payload, &lca)
+	err := json.Unmarshal(i.Item.Value, &lca)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func ZStructuredItemToLcArtifact(i *immuschema.ZStructuredItem) (*LcArtifact, er
 	return &lca, nil
 }
 
-func VerifiedItemToLcArtifact(item *schema.VerifiedItemExt) (*LcArtifact, error) {
+func ItemExtToLcArtifact(item *schema.ItemExt) (*LcArtifact, error) {
 	var lca LcArtifact
 	err := json.Unmarshal(item.Item.Value, &lca)
 	if err != nil {
@@ -137,17 +137,17 @@ func (u *LcUser) LoadArtifact(hash, signerID string) (lc *LcArtifact, verified b
 	key := AppendPrefix(meta.VcnLCPrefix, []byte(signerID))
 	key = AppendSignerId(hash, key)
 
-	jsonAr, err := u.Client.SafeGetExt(ctx, key)
+	jsonAr, err := u.Client.VerifiedGetExt(ctx, key)
 	if err != nil {
 		return nil, false, err
 	}
 
-	lcArtifact, err := VerifiedItemToLcArtifact(jsonAr)
+	lcArtifact, err := ItemExtToLcArtifact(jsonAr)
 	if err != nil {
 		return nil, false, err
 	}
 
-	return lcArtifact, jsonAr.Item.Verified, nil
+	return lcArtifact, true, nil
 }
 
 func AppendPrefix(prefix string, key []byte) []byte {
