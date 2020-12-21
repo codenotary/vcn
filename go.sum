@@ -61,6 +61,12 @@ github.com/codenotary/immudb v0.8.1-0.20201218130601-42402e20c77a h1:Fq3KjdRjT2B
 github.com/codenotary/immudb v0.8.1-0.20201218130601-42402e20c77a/go.mod h1:/IpcypFjNwINA8qve96zgmdce96RKCEowlJ9PvcaWAo=
 github.com/codenotary/immudb v0.8.1-0.20201219194913-5f5ccc209c53 h1:FdTdpgAwiAWoWR2f4eDctxxdbc9qz196Q0OOU87gqjU=
 github.com/codenotary/immudb v0.8.1-0.20201219194913-5f5ccc209c53/go.mod h1:/IpcypFjNwINA8qve96zgmdce96RKCEowlJ9PvcaWAo=
+github.com/codenotary/immudb v0.8.1-0.20201221145250-fb9489231b72 h1:454cQT0M4ZD4Io2rWZJ/VqtInAW0At0BSZqWQ3t/+ec=
+github.com/codenotary/immudb v0.8.1-0.20201221145250-fb9489231b72/go.mod h1:/IpcypFjNwINA8qve96zgmdce96RKCEowlJ9PvcaWAo=
+github.com/codenotary/immudb v0.8.1-0.20201221160546-d8c945cac1f0 h1:CKDCladHhEdlGbGN1pb//ZJEURtKKz025rXSJBfw4ZI=
+github.com/codenotary/immudb v0.8.1-0.20201221160546-d8c945cac1f0/go.mod h1:/IpcypFjNwINA8qve96zgmdce96RKCEowlJ9PvcaWAo=
+github.com/codenotary/immudb v0.8.1-0.20201221161320-7716365a2b9e h1:f90NkUqDOIsdZOy/dqZ3hUi0HLdtCdC3u9BgJc0twYM=
+github.com/codenotary/immudb v0.8.1-0.20201221161320-7716365a2b9e/go.mod h1:/IpcypFjNwINA8qve96zgmdce96RKCEowlJ9PvcaWAo=
 github.com/coreos/bbolt v1.3.2/go.mod h1:iRUV2dpdMOn7Bo10OQBFzIJO9kkE559Wcmn+qkEiiKk=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
 github.com/coreos/etcd v3.3.13+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
@@ -342,6 +348,12 @@ github.com/vchain-us/ledger-compliance-go v0.0.0-20201218131458-3a6a20fc0472 h1:
 github.com/vchain-us/ledger-compliance-go v0.0.0-20201218131458-3a6a20fc0472/go.mod h1:5Pryn2COMn9dM7kOvnx2zEGQMmMgp1+/NaCNewqqgzs=
 github.com/vchain-us/ledger-compliance-go v0.0.0-20201221111540-f0b2a0d19571 h1:Z+JWmzOV4v071XgkYTUGsk1VfBNngqmGEukYKlJVHVo=
 github.com/vchain-us/ledger-compliance-go v0.0.0-20201221111540-f0b2a0d19571/go.mod h1:wV1kfc55R+PrbGjQb5TRbbbPGzf0YZyzz2JQJujhNDc=
+github.com/vchain-us/ledger-compliance-go v0.0.0-20201221155447-2b0e7e098895 h1:y6Y01hCj7n4c4s88IAESywPVW8CgENcxe+1jDctuTFc=
+github.com/vchain-us/ledger-compliance-go v0.0.0-20201221155447-2b0e7e098895/go.mod h1:zTteb63jvGvT+ka7KbyoUvRQIBNR8Hw1QE3C2wSYjzQ=
+github.com/vchain-us/ledger-compliance-go v0.0.0-20201221160734-689620b26b66 h1:/eTivoTdp0pRcxtG8Wv2F6W7Z9eziq/uNSTmNPtIJpg=
+github.com/vchain-us/ledger-compliance-go v0.0.0-20201221160734-689620b26b66/go.mod h1:LwqOfqnksIakT4fnvuXxwS9X2FkSEVI8ortWHLutEVk=
+github.com/vchain-us/ledger-compliance-go v0.0.0-20201221162029-dd03520c1b71 h1:ObJ81mb/wLyiz1Q0p0qtQDu1onz8zjLy23G4eQonkGk=
+github.com/vchain-us/ledger-compliance-go v0.0.0-20201221162029-dd03520c1b71/go.mod h1:2aw9r7+fd/QZsXUaW5WXb/j7gttjTjsQLhIkeeI7YAw=
 github.com/xanzy/ssh-agent v0.2.1 h1:TCbipTQL2JiiCprBWx9frJ2eJlCYT00NmctrHxVAr70=
 github.com/xanzy/ssh-agent v0.2.1/go.mod h1:mLlQY/MoOhWBj+gOGMQkOeiEvkx+8pJSI+0Bx9h2kr4=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
