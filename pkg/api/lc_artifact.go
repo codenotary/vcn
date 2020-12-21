@@ -48,7 +48,7 @@ func ItemToLcArtifact(item *schema.ItemExt) (*LcArtifact, error) {
 
 func ZItemToLcArtifact(ie *schema.ZItemExt) (*LcArtifact, error) {
 	var lca LcArtifact
-	err := json.Unmarshal(ie.Item.Item.Value, &lca)
+	err := json.Unmarshal(ie.Item.Entry.Value, &lca)
 	if err != nil {
 		return nil, err
 	}
@@ -57,9 +57,9 @@ func ZItemToLcArtifact(ie *schema.ZItemExt) (*LcArtifact, error) {
 	return &lca, nil
 }
 
-func ZStructuredItemToLcArtifact(i *immuschema.ZItem) (*LcArtifact, error) {
+func ZStructuredItemToLcArtifact(i *immuschema.ZEntry) (*LcArtifact, error) {
 	var lca LcArtifact
-	err := json.Unmarshal(i.Item.Value, &lca)
+	err := json.Unmarshal(i.Entry.Value, &lca)
 	if err != nil {
 		return nil, err
 	}

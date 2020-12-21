@@ -177,7 +177,7 @@ func getHistoryResults(ctx context.Context, key []byte, u *api.LcUser, first, la
 
 func getTimeRangedResults(ctx context.Context, u *api.LcUser, set []byte, first, last uint64, start, end string) ([]*types.LcResult, error) {
 	var err error
-	var zitems *immuschema.ZItemList
+	var zitems *immuschema.ZEntries
 
 	var startScore *immuschema.Score = nil
 	var endScore *immuschema.Score = nil
@@ -224,9 +224,9 @@ func getTimeRangedResults(ctx context.Context, u *api.LcUser, set []byte, first,
 		return nil, err
 	}
 
-	results := make([]*types.LcResult, len(zitems.Items))
+	results := make([]*types.LcResult, len(zitems.Entries))
 	var i = 0
-	for _, v := range zitems.Items {
+	for _, v := range zitems.Entries {
 		lca, err := api.ZStructuredItemToLcArtifact(v)
 		if err != nil {
 			return nil, err
