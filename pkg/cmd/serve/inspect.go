@@ -22,7 +22,7 @@ func (sh *handler) inspectHandler(w http.ResponseWriter, r *http.Request) {
 	var signerID string
 	keys, ok := r.URL.Query()["signerid"]
 
-	if ok || len(keys[0]) > 0 {
+	if ok && len(keys[0]) > 0 {
 		signerID = keys[0]
 	}
 

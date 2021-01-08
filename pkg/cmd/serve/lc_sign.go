@@ -33,10 +33,14 @@ func lcSign(user *api.LcUser, status meta.Status, kinds map[string]bool, w http.
 		api.LcSignWithStatus(status),
 	}
 
+	if r.Body == http.NoBody {
+		writeError(w, http.StatusBadRequest, fmt.Errorf("no artifact submitted"))
+		return
+	}
+
 	decoder := json.NewDecoder(r.Body)
 	var artifact api.Artifact
 	err = decoder.Decode(&artifact)
-
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err)
 		return
@@ -65,6 +69,10 @@ func lcSign(user *api.LcUser, status meta.Status, kinds map[string]bool, w http.
 	}
 
 	ar, verified, err := user.LoadArtifact(artifact.Hash, "")
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err)
+		return
+	}
 
 	writeLcResult(w, http.StatusOK, types.NewLcResult(ar, verified))
 }
