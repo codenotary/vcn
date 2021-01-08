@@ -143,6 +143,25 @@ Basically, `vcn` can notarize or authenticate any of the following kind of asset
 
 For detailed **command line usage** see [docs/cmd/vcn.md](https://github.com/vchain-us/vcn/blob/master/docs/cmd/vcn.md) or just run `vcn help`.
 
+### Local api server
+
+It's possible to start a local API server. All commands are supported.
+The notarization password can be submitted with the `x-notarization-password` header.
+Examples:
+
+```bash
+curl --location --request GET '127.0.0.1:8080/inspect/e2b58ab102dbadb3b1fd5139c8d2a937dc622b1b0d0907075edea163fe2cd093' \
+--header 'x-notarization-password: *********' \
+--header 'Authorization: Basic ****' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+	"Kind":		"file",
+	"Name":		"CONTRIBUTING.md",
+	"Hash":		"e2b58ab102dbadb3b1fd5139c8d2a937dc622b1b0d0907075edea163fe2cd093",
+	"Size":		1400,
+	"ContentType":	"text/plain; charset=utf-8"
+}'
+```
 ### Notarization
 
 Register an account with [codernotary.io](https://codenotary.io) first.
@@ -364,6 +383,52 @@ It's possible to filter results with a single signer identifier
 vcn inspect document.pdf --signerID CygBE_zb8XnprkkO6ncIrbbwYoUq5T1zfyEF6DhqcAI=
 ```
 
+### Local api server
+
+Local API server is supported.
+The `api key` can be submitted with the `x-notarization-lc-api-key` header.
+
+Notarize example:
+```bash
+curl --location --request POST '127.0.0.1:8082/notarize' \
+--header 'x-notarization-lc-api-key: oikfnlbjinhhclvjiotckgwfuyfjxntxmcau' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+"Kind":"file",
+"Name":"CONTRIBUTING.md",
+"Hash":"e2b58ab102dbadb3b1fd5139c8d2a937dc622b1b0d0907075edea163fe2cd093",
+"Size":1400,
+"ContentType":"text/plain; charset=utf-8"
+}'
+```
+Authenticate example:
+```bash
+curl --location --request GET '127.0.0.1:8081/authenticate/e2b58ab102dbadb3b1fd5139c8d2a937dc622b1b0d0907075edea163fe2cd093' \
+--header 'x-notarization-lc-api-key: oikfnlbjinhhclvjiotckgwfuyfjxntxmcau'
+```
+Inspect example:
+```bash
+curl --location --request GET '127.0.0.1:8082/authenticate/e2b58ab102dbadb3b1fd5139c8d2a937dc622b1b0d0907075edea163fe2cd093' \
+--header 'x-notarization-lc-api-key: oikfnlbjinhhclvjiotckgwfuyfjxntxmcau'
+```
+Inspect with signerID example:
+```bash
+curl --location --request GET '127.0.0.1:8081/inspect/e2b58ab102dbadb3b1fd5139c8d2a937dc622b1b0d0907075edea163fe2cd093?signerid=yZtm26ZgmZr37NQ41TXbJ2jStMVWZhE-3cp4Wb7gKQo=' \
+--header 'x-notarization-lc-api-key: oikfnlbjinhhclvjiotckgwfuyfjxntxmcau'
+```
+Untrust example:
+```bash
+curl --location --request POST '127.0.0.1:8081/untrust' \
+--header 'x-notarization-lc-api-key: oikfnlbjinhhclvjiotckgwfuyfjxntxmcau' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+	"Kind":		"file",
+	"Name":		"CONTRIBUTING.md",
+	"Hash":		"e2b58ab102dbadb3b1fd5139c8d2a937dc622b1b0d0907075edea163fe2cd093",
+	"Size":		1400,
+	"ContentType":	"text/plain; charset=utf-8"
+}'
+```
 ## Generating smart contracts on linux
 
 Clone https://github.com/ethereum/go-ethereum and compile `abigen` command in ./cmd/abigen
