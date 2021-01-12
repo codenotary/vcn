@@ -125,7 +125,8 @@ func (u LcUser) createArtifact(artifact Artifact, status meta.Status) (bool, err
 	key := AppendPrefix(meta.VcnLCPrefix, []byte(aR.Signer))
 	key = AppendSignerId(artifact.Hash, key)
 
-	_, err = u.Client.VerifiedSet(ctx, key, arJson)
+	// @todo use SafeSet when possible. Immudb need to support verifiableExecAll method
+	_, err = u.Client.Set(ctx, key, arJson)
 	if err != nil {
 		if err == errors.New("data is corrupted") {
 			return false, nil
