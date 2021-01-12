@@ -67,6 +67,10 @@ github.com/codenotary/immudb v0.8.1-0.20201221160546-d8c945cac1f0 h1:CKDCladHhEd
 github.com/codenotary/immudb v0.8.1-0.20201221160546-d8c945cac1f0/go.mod h1:/IpcypFjNwINA8qve96zgmdce96RKCEowlJ9PvcaWAo=
 github.com/codenotary/immudb v0.8.1-0.20201221161320-7716365a2b9e h1:f90NkUqDOIsdZOy/dqZ3hUi0HLdtCdC3u9BgJc0twYM=
 github.com/codenotary/immudb v0.8.1-0.20201221161320-7716365a2b9e/go.mod h1:/IpcypFjNwINA8qve96zgmdce96RKCEowlJ9PvcaWAo=
+github.com/codenotary/immudb v0.9.1-0.20210112025817-5bc3a1e0ccad h1:B7nGHpiMN7moLqsA0fd7UEs+AZ/mN9/hJ2XngZZvJC4=
+github.com/codenotary/immudb v0.9.1-0.20210112025817-5bc3a1e0ccad/go.mod h1:/IpcypFjNwINA8qve96zgmdce96RKCEowlJ9PvcaWAo=
+github.com/codenotary/immudb v0.9.1-0.20210112171619-0097fbe2c012 h1:jWrgFwQZZYRhoDK2yuHU86IL5DI64dsJyd05v8znq6g=
+github.com/codenotary/immudb v0.9.1-0.20210112171619-0097fbe2c012/go.mod h1:/IpcypFjNwINA8qve96zgmdce96RKCEowlJ9PvcaWAo=
 github.com/coreos/bbolt v1.3.2/go.mod h1:iRUV2dpdMOn7Bo10OQBFzIJO9kkE559Wcmn+qkEiiKk=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
 github.com/coreos/etcd v3.3.13+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
@@ -354,6 +358,8 @@ github.com/vchain-us/ledger-compliance-go v0.0.0-20201221160734-689620b26b66 h1:
 github.com/vchain-us/ledger-compliance-go v0.0.0-20201221160734-689620b26b66/go.mod h1:LwqOfqnksIakT4fnvuXxwS9X2FkSEVI8ortWHLutEVk=
 github.com/vchain-us/ledger-compliance-go v0.0.0-20201221162029-dd03520c1b71 h1:ObJ81mb/wLyiz1Q0p0qtQDu1onz8zjLy23G4eQonkGk=
 github.com/vchain-us/ledger-compliance-go v0.0.0-20201221162029-dd03520c1b71/go.mod h1:2aw9r7+fd/QZsXUaW5WXb/j7gttjTjsQLhIkeeI7YAw=
+github.com/vchain-us/ledger-compliance-go v0.0.0-20210112171931-1558593bdc1e h1:nwbGVuOmNw8qtXt0LpiENCs4OHsTuUtpIk7nUDbee4s=
+github.com/vchain-us/ledger-compliance-go v0.0.0-20210112171931-1558593bdc1e/go.mod h1:1MAN7pKuiD4BiGn9Sqo3hQMAhE3SQJU5n1PvriV8+lk=
 github.com/xanzy/ssh-agent v0.2.1 h1:TCbipTQL2JiiCprBWx9frJ2eJlCYT00NmctrHxVAr70=
 github.com/xanzy/ssh-agent v0.2.1/go.mod h1:mLlQY/MoOhWBj+gOGMQkOeiEvkx+8pJSI+0Bx9h2kr4=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=

@@ -13,6 +13,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	immuschema "github.com/codenotary/immudb/pkg/api/schema"
 	"github.com/vchain-us/ledger-compliance-go/schema"
 	"github.com/vchain-us/vcn/pkg/meta"
@@ -79,6 +80,16 @@ func ItemExtToLcArtifact(item *schema.ItemExt) (*LcArtifact, error) {
 	return &lca, nil
 }
 
+func VerifiableItemExtToLcArtifact(item *schema.VerifiableItemExt) (*LcArtifact, error) {
+	var lca LcArtifact
+	err := json.Unmarshal(item.Item.Entry.Value, &lca)
+	if err != nil {
+		return nil, err
+	}
+	lca.Timestamp = time.Unix(int64(item.Timestamp.GetSeconds()), int64(item.Timestamp.GetNanos())).UTC()
+	return &lca, nil
+}
+
 type LcArtifact struct {
 	// root fields
 	Kind        string    `json:"kind" yaml:"kind" vcn:"Kind"`
@@ -95,8 +106,7 @@ type LcArtifact struct {
 	Status meta.Status `json:"status" yaml:"status" vcn:"Status"`
 }
 
-func (u LcUser) createArtifact(
-	artifact Artifact, status meta.Status) error {
+func (u LcUser) createArtifact(artifact Artifact, status meta.Status) (bool, error) {
 
 	aR := artifact.toLcArtifact()
 	aR.Status = status
@@ -115,11 +125,14 @@ func (u LcUser) createArtifact(
 	key := AppendPrefix(meta.VcnLCPrefix, []byte(aR.Signer))
 	key = AppendSignerId(artifact.Hash, key)
 
-	_, err = u.Client.Set(ctx, key, arJson)
+	_, err = u.Client.VerifiedSet(ctx, key, arJson)
 	if err != nil {
-		return err
+		if err == errors.New("data is corrupted") {
+			return false, nil
+		}
+		return false, err
 	}
-	return nil
+	return true, nil
 }
 
 // LoadArtifact fetches and returns an *lcArtifact for the given hash and current u, if any.
@@ -139,10 +152,13 @@ func (u *LcUser) LoadArtifact(hash, signerID string) (lc *LcArtifact, verified b
 
 	jsonAr, err := u.Client.VerifiedGetExt(ctx, key)
 	if err != nil {
+		if err == errors.New("data is corrupted") {
+			return nil, false, nil
+		}
 		return nil, false, err
 	}
 
-	lcArtifact, err := ItemExtToLcArtifact(jsonAr)
+	lcArtifact, err := VerifiableItemExtToLcArtifact(jsonAr)
 	if err != nil {
 		return nil, false, err
 	}

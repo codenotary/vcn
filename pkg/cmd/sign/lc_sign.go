@@ -30,10 +30,19 @@ func LcSign(u *api.LcUser, artifacts []*api.Artifact, state meta.Status, output 
 	}
 
 	for _, a := range artifacts {
-		_, err := u.Sign(
+		verified, err := u.Sign(
 			*a,
 			api.LcSignWithStatus(state),
 		)
+
+		if !verified {
+			color.Set(meta.StyleError())
+			fmt.Println("the ledger is compromised. Please contact the CodeNotary Ledger Compliance administrators")
+			color.Unset()
+			fmt.Println()
+			return nil
+		}
+
 		if err != nil {
 			return cli.PrintWarning(output, err.Error())
 		}
@@ -52,6 +61,7 @@ func LcSign(u *api.LcUser, artifacts []*api.Artifact, state meta.Status, output 
 			color.Unset()
 			fmt.Println()
 			artifact.Status = meta.StatusUnknown
+			return nil
 		}
 
 		if lenArtifacts > 1 && output == "" {

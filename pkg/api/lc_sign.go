@@ -15,9 +15,5 @@ func (u LcUser) Sign(artifact Artifact, options ...LcSignOption) (bool, error) {
 		return false, err
 	}
 
-	err = u.createArtifact(artifact, o.status)
-	if err != nil {
-		return false, err
-	}
-	return true, nil
+	return u.createArtifact(artifact, o.status)
 }
