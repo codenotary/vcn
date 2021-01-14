@@ -7,13 +7,13 @@ import (
 )
 
 // Execute the login action
-func ExecuteLC(host, port, lcCert string, skipTlsVerify bool) error {
+func ExecuteLC(host, port, lcCert string, skipTlsVerify, lcNoTls bool) error {
 	apiKey, err := cli.ProvideLcApiKey()
 	if err != nil {
 		return err
 	}
 	if apiKey != "" {
-		_, err = api.NewLcUser(apiKey, host, port, lcCert, skipTlsVerify)
+		_, err = api.NewLcUser(apiKey, host, port, lcCert, skipTlsVerify, lcNoTls)
 		if err != nil {
 			return err
 		}

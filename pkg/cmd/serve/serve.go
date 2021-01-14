@@ -40,7 +40,7 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().String("lc-port", "443", meta.VcnLcPortFlagDesc)
 	cmd.Flags().String("lc-cert", "", meta.VcnLcCertPath)
 	cmd.Flags().Bool("skip-tls-verify", false, meta.VcnLcSkipTlsVerify)
-
+	cmd.Flags().Bool("no-tls", false, meta.VcnLcNoTls)
 	return cmd
 }
 
@@ -80,11 +80,16 @@ func runServe(cmd *cobra.Command) error {
 	if err != nil {
 		return err
 	}
+	noTls, err := cmd.Flags().GetBool("no-tls")
+	if err != nil {
+		return err
+	}
 	sh := handler{
 		lcHost:          lcHost,
 		lcPort:          lcPort,
 		lcCert:          lcCert,
 		lcSkipTlsVerify: skipTlsVerify,
+		lcNoTls:         noTls,
 	}
 
 	router := mux.NewRouter().StrictSlash(true)

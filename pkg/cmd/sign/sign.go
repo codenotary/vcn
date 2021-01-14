@@ -94,6 +94,7 @@ Assets are referenced by passed ARG with notarization only accepting
 	cmd.Flags().String("lc-port", "443", meta.VcnLcPortFlagDesc)
 	cmd.Flags().String("lc-cert", "", meta.VcnLcCertPath)
 	cmd.Flags().Bool("skip-tls-verify", false, meta.VcnLcSkipTlsVerify)
+	cmd.Flags().Bool("no-tls", false, meta.VcnLcNoTls)
 	cmd.SetUsageTemplate(
 		strings.Replace(cmd.UsageTemplate(), "{{.UseLine}}", "{{.UseLine}} ARG", 1),
 	)
@@ -199,6 +200,10 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 	if err != nil {
 		return err
 	}
+	noTls, err := cmd.Flags().GetBool("no-tls")
+	if err != nil {
+		return err
+	}
 	//check if an lcUser is present inside the context
 	var lcUser *api.LcUser
 	uif, err := api.GetUserFromContext(store.Config().CurrentContext)
@@ -216,7 +221,7 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 			return err
 		}
 		if apiKey != "" {
-			lcUser, err = api.NewLcUser(apiKey, host, port, lcCert, skipTlsVerify)
+			lcUser, err = api.NewLcUser(apiKey, host, port, lcCert, skipTlsVerify, noTls)
 			if err != nil {
 				return err
 			} // Store the new config

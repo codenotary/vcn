@@ -25,6 +25,7 @@ type handler struct {
 	lcPort          string
 	lcCert          string
 	lcSkipTlsVerify bool
+	lcNoTls         bool
 }
 
 func (sh *handler) signHandler(state meta.Status) func(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +37,7 @@ func (sh *handler) signHandler(state meta.Status) func(w http.ResponseWriter, r 
 		}
 		if sh.lcHost != "" && sh.lcPort != "" {
 			// todo @Michele move getLcUser in handler sh constructor
-			lcUser, err := getLcUser(r, sh.lcHost, sh.lcPort, sh.lcCert, sh.lcSkipTlsVerify)
+			lcUser, err := getLcUser(r, sh.lcHost, sh.lcPort, sh.lcCert, sh.lcSkipTlsVerify, sh.lcNoTls)
 			if err != nil {
 				writeError(w, http.StatusBadGateway, err)
 				return

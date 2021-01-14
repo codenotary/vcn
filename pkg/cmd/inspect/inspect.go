@@ -73,6 +73,7 @@ vcn inspect document.pdf --signerID CygBE_zb8XnprkkO6ncIrbbwYoUq5T1zfyEF6DhqcAI=
 	cmd.Flags().String("lc-port", "443", meta.VcnLcPortFlagDesc)
 	cmd.Flags().String("lc-cert", "", meta.VcnLcCertPath)
 	cmd.Flags().Bool("skip-tls-verify", false, meta.VcnLcSkipTlsVerify)
+	cmd.Flags().Bool("no-tls", false, meta.VcnLcNoTls)
 	cmd.Flags().String("signerID", "", "specify a signerID to refine inspection result on ledger compliance")
 
 	cmd.Flags().Uint64("first", 0, "set the limit for the first elements filter")
@@ -138,6 +139,10 @@ func runInspect(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	noTls, err := cmd.Flags().GetBool("no-tls")
+	if err != nil {
+		return err
+	}
 	//check if an lcUser is present inside the context
 	var lcUser *api.LcUser
 	uif, err := api.GetUserFromContext(store.Config().CurrentContext)
@@ -155,7 +160,7 @@ func runInspect(cmd *cobra.Command, args []string) error {
 			return err
 		}
 		if apiKey != "" {
-			lcUser, err = api.NewLcUser(apiKey, host, port, lcCert, skipTlsVerify)
+			lcUser, err = api.NewLcUser(apiKey, host, port, lcCert, skipTlsVerify, noTls)
 			if err != nil {
 				return err
 			} // Store the new config

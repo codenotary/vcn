@@ -24,15 +24,19 @@ import (
 )
 
 func NewLcClientByContext(context store.CurrentContext) (*sdk.LcClient, error) {
-	return NewLcClient(context.LcApiKey, context.LcHost, context.LcPort, context.LcCert, context.LcSkipTlsVerify)
+	return NewLcClient(context.LcApiKey, context.LcHost, context.LcPort, context.LcCert, context.LcSkipTlsVerify, context.LcNoTls)
 }
 
-func NewLcClient(lcApiKey, host, port, lcCertPath string, skipTlsVerify bool) (*sdk.LcClient, error) {
+func NewLcClient(lcApiKey, host, port, lcCertPath string, skipTlsVerify, noTls bool) (*sdk.LcClient, error) {
+	if skipTlsVerify && noTls {
+		return nil, errors.New("illegal parameters submitted: skip-tls-verify and no-tls arguments are both provided")
+	}
+
 	p, err := strconv.Atoi(port)
 	if err != nil {
 		return nil, errors.New("ledger compliance port is invalid")
 	}
-	dialOptions := []grpc.DialOption{
+	defaultOptions := []grpc.DialOption{
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
 			Time:                20 * time.Second,
 			Timeout:             10 * time.Second,
@@ -40,23 +44,29 @@ func NewLcClient(lcApiKey, host, port, lcCertPath string, skipTlsVerify bool) (*
 		}),
 	}
 
+	currentOptions := []grpc.DialOption{}
+	currentOptions = append(currentOptions, defaultOptions...)
 	if !skipTlsVerify {
 		if lcCertPath != "" {
 			tlsCredentials, err := loadTLSCertificate(lcCertPath)
 			if err != nil {
 				return nil, fmt.Errorf("cannot load TLS credentials: %s", err)
 			}
-			dialOptions = append(dialOptions, grpc.WithTransportCredentials(tlsCredentials))
+			currentOptions = append(currentOptions, grpc.WithTransportCredentials(tlsCredentials))
 		} else {
 			// automatic loading of local CA in os
-			dialOptions = append(dialOptions, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})))
+			currentOptions = append(currentOptions, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})))
 		}
 	} else {
-		//dialOptions = append(dialOptions, grpc.WithInsecure())
-		dialOptions = append(dialOptions, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})))
+		currentOptions = append(currentOptions, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})))
 	}
 
-	return sdk.NewLcClient(sdk.ApiKey(lcApiKey), sdk.Host(host), sdk.Port(p), sdk.Dir(store.CurrentConfigFilePath()), sdk.DialOptions(dialOptions)), nil
+	if noTls {
+		currentOptions = []grpc.DialOption{grpc.WithInsecure()}
+		currentOptions = append(currentOptions, defaultOptions...)
+	}
+
+	return sdk.NewLcClient(sdk.ApiKey(lcApiKey), sdk.Host(host), sdk.Port(p), sdk.Dir(store.CurrentConfigFilePath()), sdk.DialOptions(currentOptions)), nil
 }
 
 func loadTLSCertificate(certPath string) (credentials.TransportCredentials, error) {

@@ -77,7 +77,8 @@ const VcnLCPluginTypeHeaderValue string = "vcn"
 const VcnLcPortFlagDesc string = "if set with port, action will be route to ledger compliance"
 const VcnLcHostFlagDesc string = "if set with host, action will be route to ledger compliance"
 const VcnLcCertPath string = "local or absolute path to set up tls connection with an lc appliance"
-const VcnLcSkipTlsVerify string = "disables transport security"
+const VcnLcSkipTlsVerify string = "disables tls certificate verification"
+const VcnLcNoTls string = "allow insecure connections"
 
 // UserAgent returns the vcn's User-Agent string
 func UserAgent() string {

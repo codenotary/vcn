@@ -26,7 +26,7 @@ func (sh *handler) verify(w http.ResponseWriter, r *http.Request) {
 
 	if sh.lcHost != "" && sh.lcPort != "" {
 		// todo @Michele move getLcUser in handler sh constructor
-		lcUser, err := getLcUser(r, sh.lcHost, sh.lcPort, sh.lcCert, sh.lcSkipTlsVerify)
+		lcUser, err := getLcUser(r, sh.lcHost, sh.lcPort, sh.lcCert, sh.lcSkipTlsVerify, sh.lcNoTls)
 		if err != nil {
 			writeError(w, http.StatusBadGateway, err)
 			return

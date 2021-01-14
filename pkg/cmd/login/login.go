@@ -54,8 +54,12 @@ in a non-interactive environment.
 			if err != nil {
 				return err
 			}
+			noTls, err := cmd.Flags().GetBool("no-tls")
+			if err != nil {
+				return err
+			}
 			if lcHost != "" || lcPort != "" {
-				return ExecuteLC(lcHost, lcPort, lcCert, skipTlsVerify)
+				return ExecuteLC(lcHost, lcPort, lcCert, skipTlsVerify, noTls)
 			}
 
 			if err := Execute(); err != nil {
@@ -72,6 +76,7 @@ in a non-interactive environment.
 	cmd.Flags().String("lc-port", "443", meta.VcnLcPortFlagDesc)
 	cmd.Flags().String("lc-cert", "", meta.VcnLcCertPath)
 	cmd.Flags().Bool("skip-tls-verify", false, meta.VcnLcSkipTlsVerify)
+	cmd.Flags().Bool("no-tls", false, meta.VcnLcNoTls)
 	return cmd
 }
 
