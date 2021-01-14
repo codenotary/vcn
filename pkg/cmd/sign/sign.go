@@ -91,8 +91,9 @@ Assets are referenced by passed ARG with notarization only accepting
 	cmd.Flags().Bool("read-only", false, "if set, no files will be written into the targeted dir (affects dir:// only)")
 	cmd.Flags().BoolP("recursive", "r", false, "if set, wildcard usage will walk inside subdirectories of provided path")
 	cmd.Flags().String("lc-host", "", meta.VcnLcHostFlagDesc)
-	cmd.Flags().String("lc-port", "", meta.VcnLcPortFlagDesc)
+	cmd.Flags().String("lc-port", "443", meta.VcnLcPortFlagDesc)
 	cmd.Flags().String("lc-cert", "", meta.VcnLcCertPath)
+	cmd.Flags().Bool("skip-tls-verify", false, meta.VcnLcSkipTlsVerify)
 	cmd.SetUsageTemplate(
 		strings.Replace(cmd.UsageTemplate(), "{{.UseLine}}", "{{.UseLine}} ARG", 1),
 	)
@@ -194,7 +195,10 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 	if err != nil {
 		return err
 	}
-
+	skipTlsVerify, err := cmd.Flags().GetBool("skip-tls-verify")
+	if err != nil {
+		return err
+	}
 	//check if an lcUser is present inside the context
 	var lcUser *api.LcUser
 	uif, err := api.GetUserFromContext(store.Config().CurrentContext)
@@ -205,14 +209,14 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 		lcUser = lctmp
 	}
 
-	// use credentials if provided inline
-	if host != "" || port != "" {
+	// use credentials if host is at least host is provided
+	if host != "" {
 		apiKey, err := cli.ProvideLcApiKey()
 		if err != nil {
 			return err
 		}
 		if apiKey != "" {
-			lcUser, err = api.NewLcUser(apiKey, host, port, lcCert)
+			lcUser, err = api.NewLcUser(apiKey, host, port, lcCert, skipTlsVerify)
 			if err != nil {
 				return err
 			} // Store the new config

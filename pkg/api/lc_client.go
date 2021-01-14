@@ -11,6 +11,7 @@ package api
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	sdk "github.com/vchain-us/ledger-compliance-go/grpcclient"
 	"github.com/vchain-us/vcn/pkg/store"
@@ -22,9 +23,15 @@ import (
 	"time"
 )
 
-func NewLcClient(lcApiKey, host, port, lcCertPath string) (*sdk.LcClient, error) {
-	p, _ := strconv.Atoi(port)
+func NewLcClientByContext(context store.CurrentContext) (*sdk.LcClient, error) {
+	return NewLcClient(context.LcApiKey, context.LcHost, context.LcPort, context.LcCert, context.LcSkipTlsVerify)
+}
 
+func NewLcClient(lcApiKey, host, port, lcCertPath string, skipTlsVerify bool) (*sdk.LcClient, error) {
+	p, err := strconv.Atoi(port)
+	if err != nil {
+		return nil, errors.New("ledger compliance port is invalid")
+	}
 	dialOptions := []grpc.DialOption{
 		grpc.WithKeepaliveParams(keepalive.ClientParameters{
 			Time:                20 * time.Second,
@@ -32,12 +39,17 @@ func NewLcClient(lcApiKey, host, port, lcCertPath string) (*sdk.LcClient, error)
 			PermitWithoutStream: true,
 		}),
 	}
-	if lcCertPath != "" {
-		tlsCredentials, err := loadTLSCertificate(lcCertPath)
-		if err != nil {
-			return nil, fmt.Errorf("cannot load TLS credentials: %s", err)
+	if !skipTlsVerify {
+		if lcCertPath != "" {
+			tlsCredentials, err := loadTLSCertificate(lcCertPath)
+			if err != nil {
+				return nil, fmt.Errorf("cannot load TLS credentials: %s", err)
+			}
+			dialOptions = append(dialOptions, grpc.WithTransportCredentials(tlsCredentials))
+		} else {
+			// automatic loading of local CA in os
+			dialOptions = append(dialOptions, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})))
 		}
-		dialOptions = append(dialOptions, grpc.WithTransportCredentials(tlsCredentials))
 	} else {
 		dialOptions = append(dialOptions, grpc.WithInsecure())
 	}

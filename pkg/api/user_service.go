@@ -20,7 +20,7 @@ func GetUserFromContext(context store.CurrentContext) (interface{}, error) {
 		}, nil
 	}
 	if context.LcApiKey != "" {
-		client, err := NewLcClient(context.LcApiKey, context.LcHost, context.LcPort, context.LcCert)
+		client, err := NewLcClientByContext(context)
 		if err != nil {
 			return nil, err
 		}

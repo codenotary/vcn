@@ -50,8 +50,12 @@ in a non-interactive environment.
 			if err != nil {
 				return err
 			}
+			skipTlsVerify, err := cmd.Flags().GetBool("skip-tls-verify")
+			if err != nil {
+				return err
+			}
 			if lcHost != "" || lcPort != "" {
-				return ExecuteLC(lcHost, lcPort, lcCert)
+				return ExecuteLC(lcHost, lcPort, lcCert, skipTlsVerify)
 			}
 
 			if err := Execute(); err != nil {
@@ -65,8 +69,9 @@ in a non-interactive environment.
 		Args: cobra.MaximumNArgs(2),
 	}
 	cmd.Flags().String("lc-host", "", meta.VcnLcHostFlagDesc)
-	cmd.Flags().String("lc-port", "", meta.VcnLcPortFlagDesc)
+	cmd.Flags().String("lc-port", "443", meta.VcnLcPortFlagDesc)
 	cmd.Flags().String("lc-cert", "", meta.VcnLcCertPath)
+	cmd.Flags().Bool("skip-tls-verify", false, meta.VcnLcSkipTlsVerify)
 	return cmd
 }
 

@@ -21,9 +21,10 @@ import (
 )
 
 type handler struct {
-	lcHost string
-	lcPort string
-	lcCert string
+	lcHost          string
+	lcPort          string
+	lcCert          string
+	lcSkipTlsVerify bool
 }
 
 func (sh *handler) signHandler(state meta.Status) func(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +36,7 @@ func (sh *handler) signHandler(state meta.Status) func(w http.ResponseWriter, r 
 		}
 		if sh.lcHost != "" && sh.lcPort != "" {
 			// todo @Michele move getLcUser in handler sh constructor
-			lcUser, err := getLcUser(r, sh.lcHost, sh.lcPort, sh.lcCert)
+			lcUser, err := getLcUser(r, sh.lcHost, sh.lcPort, sh.lcCert, sh.lcSkipTlsVerify)
 			if err != nil {
 				writeError(w, http.StatusBadGateway, err)
 				return

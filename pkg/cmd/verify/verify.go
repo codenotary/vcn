@@ -117,8 +117,9 @@ ARG must be one of:
 	cmd.Flags().Bool("alerts", false, "specify to authenticate and monitor for the configured alerts, if set no ARG(s) can be used")
 	cmd.Flags().Bool("raw-diff", false, "print raw a diff, if any")
 	cmd.Flags().String("lc-host", "", meta.VcnLcHostFlagDesc)
-	cmd.Flags().String("lc-port", "", meta.VcnLcPortFlagDesc)
+	cmd.Flags().String("lc-port", "443", meta.VcnLcPortFlagDesc)
 	cmd.Flags().String("lc-cert", "", meta.VcnLcCertPath)
+	cmd.Flags().Bool("skip-tls-verify", false, meta.VcnLcSkipTlsVerify)
 	cmd.Flags().MarkHidden("raw-diff")
 
 	return cmd
@@ -156,6 +157,10 @@ func runVerify(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	skipTlsVerify, err := cmd.Flags().GetBool("skip-tls-verify")
+	if err != nil {
+		return err
+	}
 	//check if an lcUser is present inside the context
 	var lcUser *api.LcUser
 	uif, err := api.GetUserFromContext(store.Config().CurrentContext)
@@ -166,14 +171,14 @@ func runVerify(cmd *cobra.Command, args []string) error {
 		lcUser = lctmp
 	}
 
-	// use credentials if provided inline
-	if host != "" || port != "" {
+	// use credentials if host is at least host is provided
+	if host != "" {
 		apiKey, err := cli.ProvideLcApiKey()
 		if err != nil {
 			return err
 		}
 		if apiKey != "" {
-			lcUser, err = api.NewLcUser(apiKey, host, port, lcCert)
+			lcUser, err = api.NewLcUser(apiKey, host, port, lcCert, skipTlsVerify)
 			if err != nil {
 				return err
 			}

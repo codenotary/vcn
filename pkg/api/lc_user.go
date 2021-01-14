@@ -21,14 +21,14 @@ type LcUser struct {
 }
 
 // NewUser returns a new User instance for the given email.
-func NewLcUser(lcApiKey, host, port, lcCert string) (*LcUser, error) {
-	client, err := NewLcClient(lcApiKey, host, port, lcCert)
+func NewLcUser(lcApiKey, host, port, lcCert string, skipTlsVerify bool) (*LcUser, error) {
+	client, err := NewLcClient(lcApiKey, host, port, lcCert, skipTlsVerify)
 	if err != nil {
 		return nil, err
 	}
 	return &LcUser{
 		Client: client,
-		cfg:    store.Config().NewLcUser(lcApiKey, host, port, lcCert),
+		cfg:    store.Config().NewLcUser(lcApiKey, host, port, lcCert, skipTlsVerify),
 	}, nil
 }
 

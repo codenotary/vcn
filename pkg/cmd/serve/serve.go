@@ -37,8 +37,9 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().String("tls-key-file", "", "TLS key file")
 
 	cmd.Flags().String("lc-host", "", meta.VcnLcHostFlagDesc)
-	cmd.Flags().String("lc-port", "", meta.VcnLcPortFlagDesc)
+	cmd.Flags().String("lc-port", "443", meta.VcnLcPortFlagDesc)
 	cmd.Flags().String("lc-cert", "", meta.VcnLcCertPath)
+	cmd.Flags().Bool("skip-tls-verify", false, meta.VcnLcSkipTlsVerify)
 
 	return cmd
 }
@@ -75,10 +76,15 @@ func runServe(cmd *cobra.Command) error {
 	if err != nil {
 		return err
 	}
+	skipTlsVerify, err := cmd.Flags().GetBool("skip-tls-verify")
+	if err != nil {
+		return err
+	}
 	sh := handler{
-		lcHost: lcHost,
-		lcPort: lcPort,
-		lcCert: lcCert,
+		lcHost:          lcHost,
+		lcPort:          lcPort,
+		lcCert:          lcCert,
+		lcSkipTlsVerify: skipTlsVerify,
 	}
 
 	router := mux.NewRouter().StrictSlash(true)

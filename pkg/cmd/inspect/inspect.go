@@ -70,8 +70,9 @@ vcn inspect document.pdf --signerID CygBE_zb8XnprkkO6ncIrbbwYoUq5T1zfyEF6DhqcAI=
 	cmd.Flags().Bool("extract-only", false, "if set, print only locally extracted info")
 	// ledger compliance flags
 	cmd.Flags().String("lc-host", "", meta.VcnLcHostFlagDesc)
-	cmd.Flags().String("lc-port", "", meta.VcnLcPortFlagDesc)
+	cmd.Flags().String("lc-port", "443", meta.VcnLcPortFlagDesc)
 	cmd.Flags().String("lc-cert", "", meta.VcnLcCertPath)
+	cmd.Flags().Bool("skip-tls-verify", false, meta.VcnLcSkipTlsVerify)
 	cmd.Flags().String("signerID", "", "specify a signerID to refine inspection result on ledger compliance")
 
 	cmd.Flags().Uint64("first", 0, "set the limit for the first elements filter")
@@ -133,6 +134,10 @@ func runInspect(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	skipTlsVerify, err := cmd.Flags().GetBool("skip-tls-verify")
+	if err != nil {
+		return err
+	}
 	//check if an lcUser is present inside the context
 	var lcUser *api.LcUser
 	uif, err := api.GetUserFromContext(store.Config().CurrentContext)
@@ -143,14 +148,14 @@ func runInspect(cmd *cobra.Command, args []string) error {
 		lcUser = lctmp
 	}
 
-	// use credentials if provided inline
-	if host != "" || port != "" {
+	// use credentials if host is at least host is provided
+	if host != "" {
 		apiKey, err := cli.ProvideLcApiKey()
 		if err != nil {
 			return err
 		}
 		if apiKey != "" {
-			lcUser, err = api.NewLcUser(apiKey, host, port, lcCert)
+			lcUser, err = api.NewLcUser(apiKey, host, port, lcCert, skipTlsVerify)
 			if err != nil {
 				return err
 			} // Store the new config
