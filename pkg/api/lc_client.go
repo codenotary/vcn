@@ -39,6 +39,7 @@ func NewLcClient(lcApiKey, host, port, lcCertPath string, skipTlsVerify bool) (*
 			PermitWithoutStream: true,
 		}),
 	}
+
 	if !skipTlsVerify {
 		if lcCertPath != "" {
 			tlsCredentials, err := loadTLSCertificate(lcCertPath)
@@ -51,7 +52,8 @@ func NewLcClient(lcApiKey, host, port, lcCertPath string, skipTlsVerify bool) (*
 			dialOptions = append(dialOptions, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})))
 		}
 	} else {
-		dialOptions = append(dialOptions, grpc.WithInsecure())
+		//dialOptions = append(dialOptions, grpc.WithInsecure())
+		dialOptions = append(dialOptions, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{InsecureSkipVerify: true})))
 	}
 
 	return sdk.NewLcClient(sdk.ApiKey(lcApiKey), sdk.Host(host), sdk.Port(p), sdk.Dir(store.CurrentConfigFilePath()), sdk.DialOptions(dialOptions)), nil
