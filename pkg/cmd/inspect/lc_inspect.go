@@ -22,6 +22,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"math"
 	"time"
 )
 
@@ -101,21 +102,31 @@ func getSignerResults(ctx context.Context, key []byte, u *api.LcUser, first, las
 	var err error
 	var zitems *schema.ZItemExtList
 
-	reverse := false
+	desc := false
 	var limit uint64 = 0
+	var seekKey []byte
 
 	if first > 0 {
 		limit = first
 	}
 	if last > 0 {
 		limit = last
-		reverse = true
+		desc = true
+		seekKey = make([]byte, 1024)
+		for i := 0; i < 1024; i++ {
+			seekKey[i] = 0xFF
+		}
 	}
 
 	zitems, err = u.Client.ZScanExt(ctx, &immuschema.ZScanRequest{
-		Desc:  reverse,
-		Limit: limit,
-		Set:   key,
+		Set:       key,
+		SeekKey:   seekKey,
+		SeekScore: math.MaxFloat64,
+		SeekAtTx:  math.MaxUint64,
+		Limit:     limit,
+		Desc:      desc,
+		SinceTx:   math.MaxUint64,
+		NoWait:    true,
 	})
 	if err != nil {
 		return nil, err
@@ -139,7 +150,7 @@ func getHistoryResults(ctx context.Context, key []byte, u *api.LcUser, first, la
 	var err error
 	var items *schema.ItemExtList
 
-	reverse := true
+	desc := false
 	var limit uint64 = 0
 
 	if first > 0 {
@@ -147,13 +158,13 @@ func getHistoryResults(ctx context.Context, key []byte, u *api.LcUser, first, la
 	}
 	if last > 0 {
 		limit = last
-		reverse = false
+		desc = true
 	}
 
 	items, err = u.Client.HistoryExt(ctx, &immuschema.HistoryRequest{
-		Desc:  reverse,
-		Limit: limit,
 		Key:   key,
+		Limit: limit,
+		Desc:  desc,
 	})
 	if err != nil {
 		return nil, err
@@ -202,23 +213,34 @@ func getTimeRangedResults(ctx context.Context, u *api.LcUser, set []byte, first,
 		}
 	}
 
-	reverse := false
+	desc := false
+
 	var limit uint64 = 0
+	var seekKey []byte
 
 	if first > 0 {
 		limit = first
 	}
 	if last > 0 {
 		limit = last
-		reverse = true
+		desc = true
+		seekKey = make([]byte, 1024)
+		for i := 0; i < 1024; i++ {
+			seekKey[i] = 0xFF
+		}
 	}
 
 	zitems, err = u.Client.ZScan(ctx, &immuschema.ZScanRequest{
-		Set:      set,
-		MinScore: startScore,
-		MaxScore: endScore,
-		Limit:    limit,
-		Desc:     reverse,
+		Set:       set,
+		SeekKey:   seekKey,
+		SeekScore: math.MaxFloat64,
+		SeekAtTx:  math.MaxUint64,
+		Limit:     limit,
+		Desc:      desc,
+		MinScore:  startScore,
+		MaxScore:  endScore,
+		SinceTx:   math.MaxUint64,
+		NoWait:    true,
 	})
 	if err != nil {
 		return nil, err
