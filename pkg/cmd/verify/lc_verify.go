@@ -15,7 +15,9 @@ func lcVerify(a *api.Artifact, user *api.LcUser, signerID string, output string)
 	if err != nil {
 		return cli.PrintWarning(output, err.Error())
 	}
-
+	if err != nil {
+		return err
+	}
 	if !verified {
 		color.Set(meta.StyleError())
 		fmt.Println("the ledger is compromised. Please contact the CodeNotary Ledger Compliance administrators")
