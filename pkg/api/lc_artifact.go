@@ -96,7 +96,7 @@ type LcArtifact struct {
 	Name        string    `json:"name" yaml:"name" vcn:"Name"`
 	Hash        string    `json:"hash" yaml:"hash" vcn:"Hash"`
 	Size        uint64    `json:"size" yaml:"size" vcn:"Size"`
-	Timestamp   time.Time `json:"timestamp" yaml:"timestamp" vcn:"Timestamp"`
+	Timestamp   time.Time `json:"timestamp,omitempty" yaml:"timestamp" vcn:"Timestamp"`
 	ContentType string    `json:"contentType" yaml:"contentType" vcn:"ContentType"`
 
 	// custom metadata
@@ -106,7 +106,7 @@ type LcArtifact struct {
 	Status meta.Status `json:"status" yaml:"status" vcn:"Status"`
 }
 
-func (u LcUser) createArtifact(artifact Artifact, status meta.Status) (bool, error) {
+func (u LcUser) createArtifact(artifact Artifact, status meta.Status) (bool, uint64, error) {
 
 	aR := artifact.toLcArtifact()
 	aR.Status = status
@@ -126,18 +126,18 @@ func (u LcUser) createArtifact(artifact Artifact, status meta.Status) (bool, err
 	key = AppendSignerId(artifact.Hash, key)
 
 	// @todo use SafeSet when possible. Immudb need to support verifiableExecAll method
-	_, err = u.Client.Set(ctx, key, arJson)
+	txMeta, err := u.Client.Set(ctx, key, arJson)
 	if err != nil {
 		if err == errors.New("data is corrupted") {
-			return false, nil
+			return false, 0, nil
 		}
-		return false, err
+		return false, 0, err
 	}
-	return true, nil
+	return true, txMeta.Id, nil
 }
 
 // LoadArtifact fetches and returns an *lcArtifact for the given hash and current u, if any.
-func (u *LcUser) LoadArtifact(hash, signerID string) (lc *LcArtifact, verified bool, err error) {
+func (u *LcUser) LoadArtifact(hash, signerID string, sinceTx uint64) (lc *LcArtifact, verified bool, err error) {
 
 	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
@@ -151,7 +151,7 @@ func (u *LcUser) LoadArtifact(hash, signerID string) (lc *LcArtifact, verified b
 	key := AppendPrefix(meta.VcnLCPrefix, []byte(signerID))
 	key = AppendSignerId(hash, key)
 
-	jsonAr, err := u.Client.VerifiedGetExt(ctx, key)
+	jsonAr, err := u.Client.VerifiedGetExtSince(ctx, key, sinceTx)
 	if err != nil {
 		if err == errors.New("data is corrupted") {
 			return nil, false, nil

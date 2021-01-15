@@ -30,7 +30,7 @@ func LcSign(u *api.LcUser, artifacts []*api.Artifact, state meta.Status, output 
 	}
 
 	for _, a := range artifacts {
-		verified, err := u.Sign(
+		verified, sinceTx, err := u.Sign(
 			*a,
 			api.LcSignWithStatus(state),
 		)
@@ -50,7 +50,7 @@ func LcSign(u *api.LcUser, artifacts []*api.Artifact, state meta.Status, output 
 			fmt.Println()
 		}
 
-		artifact, verified, err := u.LoadArtifact(a.Hash, "")
+		artifact, verified, err := u.LoadArtifact(a.Hash, "", sinceTx)
 		if err != nil {
 			return cli.PrintWarning(output, err.Error())
 		}

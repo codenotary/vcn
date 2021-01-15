@@ -11,7 +11,7 @@ import (
 
 func lcVerify(a *api.Artifact, user *api.LcUser, signerID string, output string) (err error) {
 
-	ar, verified, err := user.LoadArtifact(a.Hash, signerID)
+	ar, verified, err := user.LoadArtifact(a.Hash, signerID, 0)
 	if err != nil {
 		return cli.PrintWarning(output, err.Error())
 	}
