@@ -151,7 +151,7 @@ func (u *LcUser) LoadArtifact(hash, signerID string, sinceTx uint64) (lc *LcArti
 	key := AppendPrefix(meta.VcnLCPrefix, []byte(signerID))
 	key = AppendSignerId(hash, key)
 
-	jsonAr, err := u.Client.VerifiedGetExtSince(ctx, key, sinceTx)
+	jsonAr, err := u.Client.VerifiedGetExtAt(ctx, key, sinceTx)
 	if err != nil {
 		if err == errors.New("data is corrupted") {
 			return nil, false, nil
