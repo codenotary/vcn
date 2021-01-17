@@ -137,7 +137,7 @@ func (u LcUser) createArtifact(artifact Artifact, status meta.Status) (bool, uin
 }
 
 // LoadArtifact fetches and returns an *lcArtifact for the given hash and current u, if any.
-func (u *LcUser) LoadArtifact(hash, signerID string, sinceTx uint64) (lc *LcArtifact, verified bool, err error) {
+func (u *LcUser) LoadArtifact(hash, signerID string, tx uint64) (lc *LcArtifact, verified bool, err error) {
 
 	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
@@ -151,7 +151,7 @@ func (u *LcUser) LoadArtifact(hash, signerID string, sinceTx uint64) (lc *LcArti
 	key := AppendPrefix(meta.VcnLCPrefix, []byte(signerID))
 	key = AppendSignerId(hash, key)
 
-	jsonAr, err := u.Client.VerifiedGetExtAt(ctx, key, sinceTx)
+	jsonAr, err := u.Client.VerifiedGetExtAt(ctx, key, tx)
 	if err != nil {
 		if err == errors.New("data is corrupted") {
 			return nil, false, nil

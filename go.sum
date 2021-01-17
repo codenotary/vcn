@@ -75,6 +75,8 @@ github.com/codenotary/immudb v0.9.1-0.20210114032458-a6fc30f0d6ce h1:EYObmp48sYe
 github.com/codenotary/immudb v0.9.1-0.20210114032458-a6fc30f0d6ce/go.mod h1:/IpcypFjNwINA8qve96zgmdce96RKCEowlJ9PvcaWAo=
 github.com/codenotary/immudb v0.9.1-0.20210115104255-a020f9d20c25 h1:3KGDBt6afKfOczRUeu+lZ1vvkUnn3sxrF6kU5ADEu80=
 github.com/codenotary/immudb v0.9.1-0.20210115104255-a020f9d20c25/go.mod h1:/IpcypFjNwINA8qve96zgmdce96RKCEowlJ9PvcaWAo=
+github.com/codenotary/immudb v0.9.1-0.20210116234611-354c138186a5 h1:49DOuBy1TIZ3Y5mO7Z0ud+gAMHFn/B85QxkrnrWcFuY=
+github.com/codenotary/immudb v0.9.1-0.20210116234611-354c138186a5/go.mod h1:jaycynQMhlxXjM6at6dtm6U1YLCbK1m6qdINwfxV++k=
 github.com/coreos/bbolt v1.3.2/go.mod h1:iRUV2dpdMOn7Bo10OQBFzIJO9kkE559Wcmn+qkEiiKk=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
 github.com/coreos/etcd v3.3.13+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
@@ -299,6 +301,8 @@ github.com/rjeczalik/notify v0.9.2/go.mod h1:aErll2f0sUX9PXZnVNyeiObbmTlk5jnMoCa
 github.com/robfig/cron v1.2.0/go.mod h1:JGuDeoQd7Z6yL4zQhZ3OPEVHB7fL6Ka6skscFHfmt2k=
 github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6SoW27p1b0cqNHllgS5HIMJraePCO15w5zCzIWYg=
 github.com/rogpeppe/fastuuid v1.2.0/go.mod h1:jVj6XXZzXRy/MSR5jhDC/2q6DgLz+nrA6LYCDYWNEvQ=
+github.com/rogpeppe/go-internal v1.6.2 h1:aIihoIOHCiLZHxyoNQ+ABL4NKhFTgKLBdMLyEAh98m0=
+github.com/rogpeppe/go-internal v1.6.2/go.mod h1:xXDCJY+GAPziupqXw64V24skbSoqbTEfhy4qGm1nDQc=
 github.com/rs/cors v1.7.0 h1:+88SsELBHx5r+hZ8TCkggzSstaWNbDvThkVK8H6f9ik=
 github.com/rs/cors v1.7.0/go.mod h1:gFx+x8UowdsKA9AchylcLynDq+nNFfI8FkUZdN/jGCU=
 github.com/rs/xid v1.2.1 h1:mhH9Nq+C1fY2l1XIpgxIiUOfNpRBYH1kKcr+qfKgjRc=
@@ -370,6 +374,8 @@ github.com/vchain-us/ledger-compliance-go v0.0.0-20210115104628-1bae4f085fbb h1:
 github.com/vchain-us/ledger-compliance-go v0.0.0-20210115104628-1bae4f085fbb/go.mod h1:FDiiaDsxBVhQAyDvBEcULZmIMxITfzGANDrXjdhydDg=
 github.com/vchain-us/ledger-compliance-go v0.0.0-20210115140003-35d5b318aa26 h1:hYU6sEnIK/tzgts6OsELVMfKiFiBpAlLxOUWJ7X3bMw=
 github.com/vchain-us/ledger-compliance-go v0.0.0-20210115140003-35d5b318aa26/go.mod h1:FDiiaDsxBVhQAyDvBEcULZmIMxITfzGANDrXjdhydDg=
+github.com/vchain-us/ledger-compliance-go v0.0.0-20210117000217-59111236283e h1:hu8l8DZi/JJ3yE4l0zFxuWZKy7l4xxuCo4PPVu2wCHI=
+github.com/vchain-us/ledger-compliance-go v0.0.0-20210117000217-59111236283e/go.mod h1:l4VK1vx2zZRs5roicYXrhDnz3GcKO1M25ajQ7ybwaZ8=
 github.com/xanzy/ssh-agent v0.2.1 h1:TCbipTQL2JiiCprBWx9frJ2eJlCYT00NmctrHxVAr70=
 github.com/xanzy/ssh-agent v0.2.1/go.mod h1:mLlQY/MoOhWBj+gOGMQkOeiEvkx+8pJSI+0Bx9h2kr4=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
@@ -504,6 +510,7 @@ gopkg.in/alecthomas/kingpin.v2 v2.2.6/go.mod h1:FMv+mEhP44yOT+4EoQTLFTRgOQ1FBLks
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/errgo.v2 v2.1.0/go.mod h1:hNsd1EY+bozCKY1Ytp96fpM3vjJbqLJn88ws8XvfDNI=
 gopkg.in/fsnotify.v1 v1.4.7/go.mod h1:Tz8NjZHkW78fSQdbUxIjBTcgA1z1m8ZHf0WmKUhAMys=
 gopkg.in/ini.v1 v1.51.0 h1:AQvPpx3LzTDM0AjnIRlVFwFFGC+npRopjZxLJj6gdno=
 gopkg.in/ini.v1 v1.51.0/go.mod h1:pNLf8WUiyNEtQjuu5G5vTm06TEv9tsIgeAvK8hOrP4k=
