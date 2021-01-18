@@ -29,8 +29,12 @@ func NewCommand() *cobra.Command {
 VCN_USER and VCN_PASSWORD env vars can be used to pass credentials
 in a non-interactive environment.
 `,
-		Example: `./vcn login
-				  ./vcn login --lc-port 33443 --lc-host lc.vchain.us --lc-cert lc.vchain.us`,
+		Example: `  # blockchain login:
+  ./vcn login
+  # Codenotary Ledger Compliance login:
+  ./vcn login --lc-port 33443 --lc-host lc.vchain.us --lc-cert lc.vchain.us
+  ./vcn login --lc-port 3324 --lc-host 127.0.0.1 --lc-no-tls
+  ./vcn login --lc-port 443 --lc-host lc.vchain.us --lc-cert lc.vchain.us --llc-skip-tls-verify`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cmd.SilenceUsage = true
 			output, err := cmd.Flags().GetString("output")
@@ -50,15 +54,15 @@ in a non-interactive environment.
 			if err != nil {
 				return err
 			}
-			skipTlsVerify, err := cmd.Flags().GetBool("skip-tls-verify")
+			skipTlsVerify, err := cmd.Flags().GetBool("lc-skip-tls-verify")
 			if err != nil {
 				return err
 			}
-			noTls, err := cmd.Flags().GetBool("no-tls")
+			noTls, err := cmd.Flags().GetBool("lc-no-tls")
 			if err != nil {
 				return err
 			}
-			if lcHost != "" || lcPort != "" {
+			if lcHost != "" {
 				return ExecuteLC(lcHost, lcPort, lcCert, skipTlsVerify, noTls)
 			}
 
@@ -75,8 +79,8 @@ in a non-interactive environment.
 	cmd.Flags().String("lc-host", "", meta.VcnLcHostFlagDesc)
 	cmd.Flags().String("lc-port", "443", meta.VcnLcPortFlagDesc)
 	cmd.Flags().String("lc-cert", "", meta.VcnLcCertPath)
-	cmd.Flags().Bool("skip-tls-verify", false, meta.VcnLcSkipTlsVerify)
-	cmd.Flags().Bool("no-tls", false, meta.VcnLcNoTls)
+	cmd.Flags().Bool("lc-skip-tls-verify", false, meta.VcnLcSkipTlsVerify)
+	cmd.Flags().Bool("lc-no-tls", false, meta.VcnLcNoTls)
 	return cmd
 }
 

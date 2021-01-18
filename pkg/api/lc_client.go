@@ -29,7 +29,7 @@ func NewLcClientByContext(context store.CurrentContext) (*sdk.LcClient, error) {
 
 func NewLcClient(lcApiKey, host, port, lcCertPath string, skipTlsVerify, noTls bool) (*sdk.LcClient, error) {
 	if skipTlsVerify && noTls {
-		return nil, errors.New("illegal parameters submitted: skip-tls-verify and no-tls arguments are both provided")
+		return nil, errors.New("illegal parameters submitted: lc-skip-tls-verify and lc-no-tls arguments are both provided")
 	}
 
 	p, err := strconv.Atoi(port)

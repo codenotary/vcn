@@ -39,8 +39,8 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().String("lc-host", "", meta.VcnLcHostFlagDesc)
 	cmd.Flags().String("lc-port", "443", meta.VcnLcPortFlagDesc)
 	cmd.Flags().String("lc-cert", "", meta.VcnLcCertPath)
-	cmd.Flags().Bool("skip-tls-verify", false, meta.VcnLcSkipTlsVerify)
-	cmd.Flags().Bool("no-tls", false, meta.VcnLcNoTls)
+	cmd.Flags().Bool("lc-skip-tls-verify", false, meta.VcnLcSkipTlsVerify)
+	cmd.Flags().Bool("lc-no-tls", false, meta.VcnLcNoTls)
 	return cmd
 }
 
@@ -76,11 +76,11 @@ func runServe(cmd *cobra.Command) error {
 	if err != nil {
 		return err
 	}
-	skipTlsVerify, err := cmd.Flags().GetBool("skip-tls-verify")
+	skipTlsVerify, err := cmd.Flags().GetBool("lc-skip-tls-verify")
 	if err != nil {
 		return err
 	}
-	noTls, err := cmd.Flags().GetBool("no-tls")
+	noTls, err := cmd.Flags().GetBool("lc-no-tls")
 	if err != nil {
 		return err
 	}

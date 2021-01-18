@@ -74,11 +74,11 @@ const VcnLCPrefix string = "vcn"
 const VcnLCPluginTypeHeaderName string = "lc-plugin-type"
 const VcnLCPluginTypeHeaderValue string = "vcn"
 
-const VcnLcPortFlagDesc string = "if set with port, action will be route to ledger compliance"
-const VcnLcHostFlagDesc string = "if set with host, action will be route to ledger compliance"
-const VcnLcCertPath string = "local or absolute path to set up tls connection with an lc appliance"
-const VcnLcSkipTlsVerify string = "disables tls certificate verification"
-const VcnLcNoTls string = "allow insecure connections"
+const VcnLcHostFlagDesc string = "if set with host, action will be route to a Codenotary Ledger Compliance server"
+const VcnLcPortFlagDesc string = "set port for set up a connection to a Codenotary Ledger Compliance server"
+const VcnLcCertPath string = "local or absolute path to a certificate file needed to set up tls connection to a Codenotary Ledger Compliance server"
+const VcnLcSkipTlsVerify string = "disables tls certificate verification when connecting to a Codenotary Ledger Compliance server"
+const VcnLcNoTls string = "allow insecure connections when connecting to a Codenotary Ledger Compliance server"
 
 // UserAgent returns the vcn's User-Agent string
 func UserAgent() string {
