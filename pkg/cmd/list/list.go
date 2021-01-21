@@ -54,6 +54,12 @@ func runList(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	cmd.SilenceUsage = true
+
+	if store.Config().CurrentContext.LcApiKey != "" {
+		fmt.Printf("Not supported with CodeNotary Ledger Compliance credentials\n")
+		return nil
+	}
+
 	if err := assert.UserLogin(); err != nil {
 		return err
 	}
