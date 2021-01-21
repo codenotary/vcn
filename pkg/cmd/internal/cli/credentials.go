@@ -175,6 +175,12 @@ func ProvideLcApiKey() (ak string, err error) {
 		return "", err
 	}
 	ak = strings.ReplaceAll(strings.TrimSpace(ak), " ", "")
+	if ak == "" {
+		logs.LOG.WithFields(logrus.Fields{
+			"lc-api-key": ak,
+		}).Trace("empty lc api key provided (interactive)")
+		return "", fmt.Errorf("empty api key provided")
+	}
 	if ak != "" {
 		logs.LOG.WithFields(logrus.Fields{
 			"lc-api-key": ak,
