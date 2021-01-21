@@ -63,7 +63,14 @@ in a non-interactive environment.
 				return err
 			}
 			if lcHost != "" {
-				return ExecuteLC(lcHost, lcPort, lcCert, skipTlsVerify, noTls)
+				err = ExecuteLC(lcHost, lcPort, lcCert, skipTlsVerify, noTls)
+				if err != nil {
+					return err
+				}
+				if output == "" {
+					fmt.Println("Login successful.")
+				}
+				return nil
 			}
 
 			if err := Execute(); err != nil {

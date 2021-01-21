@@ -11,7 +11,7 @@ package serve
 import (
 	"fmt"
 	"github.com/vchain-us/vcn/pkg/api"
-	inspect2 "github.com/vchain-us/vcn/pkg/cmd/inspect"
+	insp "github.com/vchain-us/vcn/pkg/cmd/inspect"
 	"net/http"
 )
 
@@ -26,7 +26,7 @@ func lcInspect(user *api.LcUser, hash, signerID string, w http.ResponseWriter) {
 		return
 	}
 
-	results, err := inspect2.GetLcResults(hash, signerID, user, 0, 0, "", "")
+	results, err := insp.GetLcResults(hash, signerID, user, 0, 0, "", "")
 	if err != nil {
 		writeError(w, http.StatusBadGateway, err)
 		return
