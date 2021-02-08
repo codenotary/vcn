@@ -7,19 +7,19 @@ Authenticate assets against the blockchain
 
 Authenticate assets against the blockchain.
 
-Authentication is the process of matching the hash of a local asset to 
-a hash on the blockchain. 
+Authentication is the process of matching the hash of a local asset to
+a hash on the blockchain.
 If matched, the returned result (the authentication) is the blockchain-stored
-metadata that’s bound to the matching hash. 
+metadata that’s bound to the matching hash.
 Otherwise, the returned result status equals UNKNOWN.
 
 Note that your assets will not be uploaded but processed locally.
 
-The exit code will be 0 only if all assets' statuses are equal to TRUSTED. 
+The exit code will be 0 only if all assets' statuses are equal to TRUSTED.
 Otherwise, the exit code will be 1.
 
-Assets are referenced by the passed ARG(s), with authentication accepting 
-1 or more ARG(s) at a time. Multiple assets can be authenticated at the 
+Assets are referenced by the passed ARG(s), with authentication accepting
+1 or more ARG(s) at a time. Multiple assets can be authenticated at the
 same time while passing them within ARG(s).
 
 ARG must be one of:
@@ -57,7 +57,7 @@ vcn authenticate [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.vcn/config.json)
+      --vcnpath string  config files (default is /tmp/.vcn/config.json on linux, c:\\temp\\config.json or c:\\windows\\temp\\config.json on Windows)
   -o, --output string   output format, one of: --output=json|--output=yaml|--output=''
   -S, --silent          silent mode, don't show progress spinner, but it will still output the result
 ```

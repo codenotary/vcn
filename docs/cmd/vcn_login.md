@@ -6,7 +6,7 @@ Log in to codenotary.io
 
 Log in to codenotary.io.
 
-VCN_USER and VCN_PASSWORD env vars can be used to pass credentials 
+VCN_USER and VCN_PASSWORD env vars can be used to pass credentials
 in a non-interactive environment.
 
 
@@ -23,7 +23,7 @@ vcn login [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.vcn/config.json)
+      --vcnpath string  config files (default is /tmp/.vcn/config.json on linux, c:\\temp\\config.json or c:\\windows\\temp\\config.json on Windows)
   -o, --output string   output format, one of: --output=json|--output=yaml|--output=''
   -S, --silent          silent mode, don't show progress spinner, but it will still output the result
 ```

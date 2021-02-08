@@ -7,18 +7,18 @@ Notarize an asset onto the blockchain
 
 Notarize an asset onto the blockchain.
 
-Notarization calculates the SHA-256 hash of a digital asset 
-(file, directory, container's image). 
-The hash (not the asset) and the desired status of TRUSTED are then 
-cryptographically signed by the signer's secret (private key). 
+Notarization calculates the SHA-256 hash of a digital asset
+(file, directory, container's image).
+The hash (not the asset) and the desired status of TRUSTED are then
+cryptographically signed by the signer's secret (private key).
 Next, these signed objects are sent to the blockchain where the signer’s
-trust level and a timestamp are added. 
+trust level and a timestamp are added.
 When complete, a new blockchain entry is created that binds the asset’s
-signed hash, signed status, level, and timestamp together. 
+signed hash, signed status, level, and timestamp together.
 
 Note that your assets will not be uploaded. They will be processed locally.
 
-Assets are referenced by passed ARG with notarization only accepting 
+Assets are referenced by passed ARG with notarization only accepting
 1 ARG at a time.
 
 ARG must be one of:
@@ -51,7 +51,7 @@ vcn notarize [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.vcn/config.json)
+      --vcnpath string  config files (default is /tmp/.vcn/config.json on linux, c:\\temp\\config.json or c:\\windows\\temp\\config.json on Windows)
   -o, --output string   output format, one of: --output=json|--output=yaml|--output=''
   -S, --silent          silent mode, don't show progress spinner, but it will still output the result
 ```

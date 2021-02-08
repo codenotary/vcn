@@ -12,7 +12,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mitchellh/go-homedir"
 	"github.com/vchain-us/vcn/pkg/meta"
 )
 
@@ -32,13 +31,10 @@ func defaultConfigFilepath() string {
 	return filepath.Join(dir, configFilename)
 }
 
-// SetDefaultDir sets the default store working directory (eg. ~/.vcn)
+// SetDefaultDir sets the default store working directory (eg. /tmp/.vcn)
 func SetDefaultDir() error {
 	// Find home directory
-	home, err := homedir.Dir()
-	if err != nil {
-		return err
-	}
+	tmpDir := os.TempDir()
 	var vcn string
 	switch meta.StageEnvironment() {
 	case meta.StageStaging:
@@ -48,11 +44,11 @@ func SetDefaultDir() error {
 	default:
 		vcn = DefaultDirName
 	}
-	SetDir(filepath.Join(home, vcn))
+	SetDir(filepath.Join(tmpDir, vcn))
 	return nil
 }
 
-// SetDir sets the store working directory (eg. ~/.vcn)
+// SetDir sets the store working directory (eg. /tmp/.vcn)
 func SetDir(p string) {
 	dir = p
 }
@@ -65,12 +61,12 @@ func ConfigFile() string {
 	return configFilepath
 }
 
-// SetConfigFile sets the config file path (e.g. ~/.vcn/config.json)
+// SetConfigFile sets the config file path (e.g. /tmp/.vcn/config.json)
 func SetConfigFile(filepath string) {
 	configFilepath = filepath
 }
 
-// CurrentConfigFilePath returns the current config file path (e.g. ~/.vcn/config.json)
+// CurrentConfigFilePath returns the current config file path (e.g. /tmp/.vcn/config.json)
 func CurrentConfigFilePath() string {
 	return dir
 }

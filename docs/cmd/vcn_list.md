@@ -20,7 +20,7 @@ vcn list [flags]
 ### Options inherited from parent commands
 
 ```
-      --config string   config file (default is $HOME/.vcn/config.json)
+      --vcnpath string  config files (default is /tmp/.vcn/config.json on linux, c:\\temp\\config.json or c:\\windows\\temp\\config.json on Windows)
   -o, --output string   output format, one of: --output=json|--output=yaml|--output=''
   -S, --silent          silent mode, don't show progress spinner, but it will still output the result
 ```
