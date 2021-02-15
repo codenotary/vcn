@@ -68,6 +68,11 @@ const (
 	VcnOtp                       string = "VCN_OTP"
 	VcnOtpEmpty                  string = "VCN_OTP_EMPTY"
 	VcnLcApiKey                  string = "VCN_LC_API_KEY"
+	VcnLcHost                    string = "VCN_LC_HOST"
+	VcnLcPort                    string = "VCN_LC_PORT"
+	VcnLcCert                    string = "VCN_LC_CERT"
+	VcnLcNoTls                   string = "VCN_LC_NO_TLS"
+	VcnLcSkipTlsVerify           string = "VCN_LC_SKIP_TLS_VERIFY"
 )
 
 const VcnExitCode string = "override default exit codes in case of success"

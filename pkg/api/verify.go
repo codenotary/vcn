@@ -12,7 +12,11 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"github.com/vchain-us/vcn/internal/errors"
+	"github.com/vchain-us/vcn/internal/logs"
+
 	"math/big"
+	"os"
 	"strings"
 	"time"
 
@@ -220,4 +224,42 @@ func VerifyMatchingSignerIDs(hash string, signerIDs []string) (*BlockchainVerifi
 	return callVerifyFunc(func(instance *blockchain.AssetsRelay) (common.Address, *big.Int, *big.Int, *big.Int, error) {
 		return instance.VerifyAgainstPublishers(nil, hash, addresses)
 	})
+}
+
+// Verify returns the most recent *BlockchainVerification with highest level available for the given hash.
+func LcVerify(hash string) (a *LcArtifact, err error) {
+	logger().WithFields(logrus.Fields{
+		"hash": hash,
+	}).Trace("LcVerify")
+
+	apiKey := os.Getenv(meta.VcnLcApiKey)
+	if apiKey != "" {
+		logs.LOG.Trace("Lc api key provided (environment)")
+		return nil, errors.ErrNoLcApiKeyEnv
+	}
+	lcHost := os.Getenv(meta.VcnLcHost)
+	lcPort := os.Getenv(meta.VcnLcPort)
+	lcCert := os.Getenv(meta.VcnLcCert)
+	lcSkipTlsVerify := os.Getenv(meta.VcnLcSkipTlsVerify)
+	lcNoTls := os.Getenv(meta.VcnLcNoTls)
+
+	lcUser, err := NewLcUser(apiKey,"", lcHost, lcPort, lcCert, lcSkipTlsVerify == "true", lcNoTls == "true")
+	if err != nil {
+		return nil, err
+	}
+
+	err = lcUser.Client.Connect()
+	if err != nil {
+		return nil, err
+	}
+
+	if hash != "" {
+		a, _, err = lcUser.LoadArtifact(hash, "", 0)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return a, nil
+
 }
