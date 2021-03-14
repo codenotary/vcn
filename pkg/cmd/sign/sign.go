@@ -79,6 +79,9 @@ Note that your assets will not be uploaded. They will be processed locally.
 Assets are referenced by passed ARG with notarization only accepting
 1 ARG at a time.
 
+Pipe mode:
+If '-' is provided (echo my-file | vcn n -) stdin is read and parsed. Only pipe ARGs are processed.
+
 Environment variables:
 VCN_USER=
 VCN_PASSWORD=
@@ -98,7 +101,8 @@ VCN_LC_API_KEY=
 			return viper.BindPFlags(cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if pipeMode() {
+			if pipeMode() && len(args) > 0 && args[0] == "-" {
+				args = make([]string, 0)
 				scanner := bufio.NewScanner(os.Stdin)
 				scanner.Split(bufio.ScanWords)
 				for scanner.Scan() {
@@ -114,7 +118,7 @@ VCN_LC_API_KEY=
 		Args: noArgsWhenHashOrPipe,
 		Example: `vcn notarize my-file"
 vcn notarize -r "*.md"
-echo my-file | vcn n`,
+echo my-file | vcn n -`,
 	}
 
 	cmd.Flags().VarP(make(mapOpts), "attr", "a", "add user defined attributes (repeat --attr for multiple entries)")
