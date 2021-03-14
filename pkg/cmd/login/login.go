@@ -29,25 +29,13 @@ func NewCommand() *cobra.Command {
 				return err
 			}
 			// set port for set up a connection to a CodeNotary Ledger Compliance server (default 443). If --lc-no-tls is provided default port will be 80
-			lcPort, err := cmd.Flags().GetString("lc-port")
-			if err != nil {
-				return err
-			}
-			noTls, err := cmd.Flags().GetBool("lc-no-tls")
-			if err != nil {
-				return err
-			}
+			lcPort := viper.GetString("lc-port")
+			noTls := viper.GetBool("lc-no-tls")
 			if noTls && lcPort == "" {
-				err = cmd.Flags().Set("lc-port", "80")
-				if err != nil {
-					return err
-				}
+				viper.Set("lc-port", "80")
 			}
 			if noTls == false && lcPort == "" {
-				err = cmd.Flags().Set("lc-port", "443")
-				if err != nil {
-					return err
-				}
+				viper.Set("lc-port", "443")
 			}
 			return nil
 		},
