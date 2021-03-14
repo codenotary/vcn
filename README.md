@@ -1,16 +1,16 @@
-# vcn  <img align="right" src="https://github.com/vchain-us/vcn/blob/master/docs/img/cn-color.eeadbabe.svg" width="160px"/>
+# vcn  <img align="right" src="https://github.com/codenotary/vcn/blob/master/docs/img/cn-color.eeadbabe.svg" width="160px"/>
 > **_vChain CodeNotary_**
 
-[![CircleCI](https://circleci.com/gh/vchain-us/vcn.svg?style=shield)](https://circleci.com/gh/vchain-us/vcn)
-[![Go Report Card](https://goreportcard.com/badge/github.com/vchain-us/vcn?style=flat-square)](https://goreportcard.com/report/github.com/vchain-us/vcn)
-[![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/vchain-us/vcn)
+[![CircleCI](https://circleci.com/gh/codenotary/vcn.svg?style=shield)](https://circleci.com/gh/codenotary/vcn)
+[![Go Report Card](https://goreportcard.com/badge/github.com/codenotary/vcn?style=flat-square)](https://goreportcard.com/report/github.com/codenotary/vcn)
+[![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/codenotary/vcn)
 [![Docker pulls](https://img.shields.io/docker/pulls/codenotary/vcn?style=flat-square)](https://hub.docker.com/r/codenotary/vcn)
-[![Changelog](https://img.shields.io/badge/CHANGELOG-.md-blue?style=flat-square)](https://github.com/vchain-us/vcn/blob/master/CHANGELOG.md)
-[![Release](https://img.shields.io/github/release/vchain-us/vcn.svg?style=flat-square)](https://github.com/vchain-us/vcn/releases/latest)
+[![Changelog](https://img.shields.io/badge/CHANGELOG-.md-blue?style=flat-square)](https://github.com/codenotary/vcn/blob/master/CHANGELOG.md)
+[![Release](https://img.shields.io/github/release/codenotary/vcn.svg?style=flat-square)](https://github.com/codenotary/vcn/releases/latest)
 ## The Trust and Integrity platform for the Cloud native environment
 Give any digital asset a meaningful, globally-unique, immutable identity that is authentic, verifiable, traceable from anywhere.
 
-<img align="right" src="https://github.com/vchain-us/vcn/blob/master/docs/img/codenotary_mascot.png" width="256px"/>
+<img align="right" src="https://github.com/codenotary/vcn/blob/master/docs/img/codenotary_mascot.png" width="256px"/>
 When using CodeNotary vcn in source code, release, deployment or at runtime, you allow a continuous trust verification that can be used to detect unusual or unwanted activity in your workload and act on it.
 <br/>
 Powered by CodeNotary's digital identity infrastructure, vcn lets you notarize all of your digital assets that add a trust level of your choice, custom attributes and a meaningful status without touching or appending anything (unlike digital certificates).
@@ -37,7 +37,7 @@ Everything is done in a global, collaborative way to break the common silo solut
 
 1. **Download CodeNotary vcn.** There are releases for different platforms:
 
-- [Download the latest release](https://github.com/vchain-us/vcn/releases/latest) and then read the [Usage](#usage) section below.
+- [Download the latest release](https://github.com/codenotary/vcn/releases/latest) and then read the [Usage](#usage) section below.
 - We recommend storing `vcn` in your `PATH` - Linux example:
    ```bash
    cp vcn-v<version>-linux-amd64 /usr/local/bin/vcn
@@ -92,7 +92,7 @@ not just containers, also virtual machines -  [check out vCenter Connector, in c
 
 
 ## How it works
-![vcn How it works](https://raw.githubusercontent.com/vchain-us/vcn/master/docs/vcn_hiwb.png "How it works")
+![vcn How it works](https://raw.githubusercontent.com/codenotary/vcn/master/docs/vcn_hiwb.png "How it works")
 
 ## Installation
 
@@ -219,7 +219,7 @@ To output results in `json` or `yaml` formats:
 vcn authenticate --output=json <asset>
 vcn authenticate --output=yaml <asset>
 ```
-> Check out the [user guide](https://github.com/vchain-us/vcn/blob/master/docs/user-guide/formatted-output.md) for further details.
+> Check out the [user guide](https://github.com/codenotary/vcn/blob/master/docs/user-guide/formatted-output.md) for further details.
 
 
 ## Integrations
@@ -235,11 +235,11 @@ vcn authenticate --output=yaml <asset>
 
 ## Documentation
 
-* [Command line usage](https://github.com/vchain-us/vcn/blob/master/docs/cmd/vcn.md)
-* [Configuration](https://github.com/vchain-us/vcn/blob/master/docs/user-guide/configuration.md)
-* [Environments](https://github.com/vchain-us/vcn/blob/master/docs/user-guide/environments.md)
-* [Formatted output (json/yaml)](https://github.com/vchain-us/vcn/blob/master/docs/user-guide/formatted-output.md)
-* [Notarization explained](https://github.com/vchain-us/vcn/blob/master/docs/user-guide/notarization.md)
+* [Command line usage](https://github.com/codenotary/vcn/blob/master/docs/cmd/vcn.md)
+* [Configuration](https://github.com/codenotary/vcn/blob/master/docs/user-guide/configuration.md)
+* [Environments](https://github.com/codenotary/vcn/blob/master/docs/user-guide/environments.md)
+* [Formatted output (json/yaml)](https://github.com/codenotary/vcn/blob/master/docs/user-guide/formatted-output.md)
+* [Notarization explained](https://github.com/codenotary/vcn/blob/master/docs/user-guide/notarization.md)
 
 ## Examples
 
