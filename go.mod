@@ -16,7 +16,7 @@ require (
 	github.com/caarlos0/spin v1.1.0
 	github.com/cespare/cp v1.1.1 // indirect
 	github.com/cmars/basen v0.0.0-20150613233007-fe3947df716e // indirect
-	github.com/codenotary/immudb v0.9.2-0.20210210174910-dc27e4a6729f
+	github.com/codenotary/immudb v0.9.2-0.20210311132031-0714110a5092
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/dghubble/sling v1.3.0
 	github.com/dustin/go-humanize v1.0.0
@@ -40,7 +40,6 @@ require (
 	github.com/karalabe/hid v1.0.0 // indirect
 	github.com/mattn/go-colorable v0.1.4
 	github.com/mitchellh/copystructure v1.0.0 // indirect
-	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/mwitkow/go-proto-validators v0.3.2 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1
@@ -57,7 +56,7 @@ require (
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/tyler-smith/go-bip32 v0.0.0-20170922074101-2c9cfd177564
 	github.com/tyler-smith/go-bip39 v1.0.2
-	github.com/vchain-us/ledger-compliance-go v0.0.0-20210211142051-20bd91359b7f
+	github.com/vchain-us/ledger-compliance-go v0.9.2-0.20210316175849-381d5ad282b9
 	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9
 	google.golang.org/grpc v1.34.0
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect

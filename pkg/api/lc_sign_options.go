@@ -18,12 +18,14 @@ type LcSignOption func(*lcSignOpts) error
 type lcSignOpts struct {
 	status     meta.Status
 	visibility meta.Visibility
+	upload     bool
 }
 
 func makeLcSignOpts(opts ...LcSignOption) (o *lcSignOpts, err error) {
 	o = &lcSignOpts{
 		status:     meta.StatusTrusted,
 		visibility: meta.VisibilityPrivate,
+		upload:     false,
 	}
 
 	for _, option := range opts {
@@ -50,6 +52,14 @@ func LcSignWithStatus(status meta.Status) LcSignOption {
 func LcSignWithVisibility(visibility meta.Visibility) LcSignOption {
 	return func(o *lcSignOpts) error {
 		o.visibility = visibility
+		return nil
+	}
+}
+
+// SignWithUpload returns the functional option for the given status.
+func LcSignWithUpload(upload bool) LcSignOption {
+	return func(o *lcSignOpts) error {
+		o.upload = upload
 		return nil
 	}
 }

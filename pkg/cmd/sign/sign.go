@@ -40,6 +40,8 @@ required notarization password in a non-interactive environment.
 const helpMsgFooter = `
 ARG must be one of:
   wildcard
+  file
+  directory
   file://<file>
   dir://<directory>
   git://<repository>
@@ -134,6 +136,7 @@ echo my-file | vcn n -`,
 	cmd.Flags().Bool("lc-skip-tls-verify", false, meta.VcnLcSkipTlsVerifyDesc)
 	cmd.Flags().Bool("lc-no-tls", false, meta.VcnLcNoTlsDesc)
 	cmd.Flags().String("lc-api-key", "", meta.VcnLcApiKeyDesc)
+	cmd.Flags().String("upload", "", meta.VcnLcUploadDesc)
 	cmd.SetUsageTemplate(
 		strings.Replace(cmd.UsageTemplate(), "{{.UseLine}}", "{{.UseLine}} ARG", 1),
 	)
@@ -228,6 +231,7 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 	skipTlsVerify := viper.GetBool("lc-skip-tls-verify")
 	noTls := viper.GetBool("lc-no-tls")
 	lcApiKey := viper.GetString("lc-api-key")
+	upload := viper.GetBool("upload")
 
 	//check if an lcUser is present inside the context
 	var lcUser *api.LcUser
@@ -282,7 +286,7 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 				return err
 			}
 		}
-		return LcSign(lcUser, artifacts, state, output, name, metadata)
+		return LcSign(lcUser, artifacts, state, output, name, metadata, upload)
 	}
 
 	// User

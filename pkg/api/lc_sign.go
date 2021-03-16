@@ -15,5 +15,5 @@ func (u LcUser) Sign(artifact Artifact, options ...LcSignOption) (bool, uint64, 
 		return false, 0, err
 	}
 
-	return u.createArtifact(artifact, o.status)
+	return u.createArtifact(artifact, o.status, o.upload)
 }

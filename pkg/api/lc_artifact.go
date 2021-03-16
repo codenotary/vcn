@@ -9,6 +9,7 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -16,6 +17,7 @@ import (
 	"github.com/vchain-us/ledger-compliance-go/schema"
 	"github.com/vchain-us/vcn/pkg/meta"
 	"google.golang.org/grpc/metadata"
+	"io/ioutil"
 	"time"
 )
 
@@ -104,7 +106,7 @@ type LcArtifact struct {
 	Status meta.Status `json:"status" yaml:"status" vcn:"Status"`
 }
 
-func (u LcUser) createArtifact(artifact Artifact, status meta.Status) (bool, uint64, error) {
+func (u LcUser) createArtifact(artifact Artifact, status meta.Status, upload bool) (bool, uint64, error) {
 
 	aR := artifact.toLcArtifact()
 	aR.Status = status
@@ -119,12 +121,39 @@ func (u LcUser) createArtifact(artifact Artifact, status meta.Status) (bool, uin
 	key := AppendPrefix(meta.VcnPrefix, []byte(aR.Signer))
 	key = AppendSignerId(artifact.Hash, key)
 
-	// @todo use SafeSet when possible. Immudb need to support verifiableExecAll method
-	txMeta, err := u.Client.Set(ctx, key, arJson)
-	if err != nil {
-		if err == errors.New("data is corrupted") {
-			return false, 0, nil
+	var txMeta *immuschema.TxMetadata
+	eor := &immuschema.SetRequest{}
+	if upload && artifact.Kind == "file" {
+		fkey := bytes.Join([][]byte{key, []byte(`:attach`)}, nil)
+		fc, err := ioutil.ReadFile(artifact.Name)
+		if err != nil {
+			return false, 0, err
 		}
+		eor = &immuschema.SetRequest{
+			KVs: []*immuschema.KeyValue{
+				{
+					Key:   key,
+					Value: arJson,
+				},
+				{
+					Key:   fkey,
+					Value: fc,
+				},
+			},
+		}
+	} else {
+		eor = &immuschema.SetRequest{
+			KVs: []*immuschema.KeyValue{
+				{
+					Key:   key,
+					Value: arJson,
+				},
+			},
+		}
+
+	}
+	txMeta, err = u.Client.SetAll(ctx, eor)
+	if err != nil {
 		return false, 0, err
 	}
 	return true, txMeta.Id, nil

@@ -83,6 +83,7 @@ const VcnLcCertPathDesc string = "local or absolute path to a certificate file n
 const VcnLcSkipTlsVerifyDesc string = "disables tls certificate verification when connecting to a CodeNotary Ledger Compliance server"
 const VcnLcNoTlsDesc string = "allow insecure connections when connecting to a CodeNotary Ledger Compliance server"
 const VcnLcApiKeyDesc string = "CodeNotary Ledger Compliance server api key"
+const VcnLcUploadDesc string = "if set the artifact file source is uploaded. It works only for files artifact type"
 
 // UserAgent returns the vcn's User-Agent string
 func UserAgent() string {
