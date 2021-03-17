@@ -83,7 +83,7 @@ const VcnLcCertPathDesc string = "local or absolute path to a certificate file n
 const VcnLcSkipTlsVerifyDesc string = "disables tls certificate verification when connecting to a CodeNotary Ledger Compliance server"
 const VcnLcNoTlsDesc string = "allow insecure connections when connecting to a CodeNotary Ledger Compliance server"
 const VcnLcApiKeyDesc string = "CodeNotary Ledger Compliance server api key"
-const VcnLcUploadDesc string = "if set the artifact file source is uploaded. It works only for files artifact type"
+const VcnLcAttachDesc string = "add user defined file attachments. Ex. vcn n myfile --attach mysecondfile. (repeat --attach for multiple entries). "
 
 // UserAgent returns the vcn's User-Agent string
 func UserAgent() string {
@@ -165,3 +165,5 @@ const DateShortForm = "2006/1/2-15:04:05"
 const IndexDateRangePrefix = "_INDEX.ITEM.INSERTION-DATE."
 
 const VcnDefaultExitCode = 0
+
+const AttachmentSeparator = ".attach."

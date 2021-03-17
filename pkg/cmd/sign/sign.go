@@ -136,7 +136,8 @@ echo my-file | vcn n -`,
 	cmd.Flags().Bool("lc-skip-tls-verify", false, meta.VcnLcSkipTlsVerifyDesc)
 	cmd.Flags().Bool("lc-no-tls", false, meta.VcnLcNoTlsDesc)
 	cmd.Flags().String("lc-api-key", "", meta.VcnLcApiKeyDesc)
-	cmd.Flags().String("upload", "", meta.VcnLcUploadDesc)
+	cmd.Flags().Var(make(mapOpts), "attach", meta.VcnLcAttachDesc)
+	//cmd.Flags().StringArray("attach", nil, meta.VcnLcAttachDesc)
 	cmd.SetUsageTemplate(
 		strings.Replace(cmd.UsageTemplate(), "{{.UseLine}}", "{{.UseLine}} ARG", 1),
 	)
@@ -231,7 +232,8 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 	skipTlsVerify := viper.GetBool("lc-skip-tls-verify")
 	noTls := viper.GetBool("lc-no-tls")
 	lcApiKey := viper.GetString("lc-api-key")
-	upload := viper.GetBool("upload")
+
+	attachments := cmd.Flags().Lookup("attach").Value.(mapOpts).KeysToValues()
 
 	//check if an lcUser is present inside the context
 	var lcUser *api.LcUser
@@ -286,7 +288,7 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 				return err
 			}
 		}
-		return LcSign(lcUser, artifacts, state, output, name, metadata, upload)
+		return LcSign(lcUser, artifacts, state, output, name, metadata, attachments)
 	}
 
 	// User

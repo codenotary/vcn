@@ -85,6 +85,23 @@ func WriteLcResultTo(r *types.LcResult, out io.Writer) (n int64, err error) {
 					}
 					value = strings.TrimPrefix(value, "\n")
 				}
+			case "Attachments":
+				if attachments, ok := f.Interface().([]api.Attachment); ok {
+					for _, attach := range attachments {
+						if attach.Filename == "" {
+							continue
+						}
+						v := reflect.ValueOf(attach)
+
+						for i := 0; i < v.NumField(); i++ {
+							sep := "\n\t  %s:\t%s"
+							if i == 0 {
+								sep = "\n\t- %s:\t%s"
+							}
+							value += fmt.Sprintf(sep, v.Type().Field(i).Name, v.Field(i).String())
+						}
+					}
+				}
 			case "Status":
 				err = printf("Status:\t%s\n", meta.StatusNameStyled(r.Status))
 				if err != nil {

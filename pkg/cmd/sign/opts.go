@@ -45,3 +45,11 @@ func (m mapOpts) StringToInterface() map[string]interface{} {
 	}
 	return r
 }
+
+func (m mapOpts) KeysToValues() []string {
+	var as []string
+	for k, _ := range m {
+		as = append(as, k)
+	}
+	return as
+}

@@ -9,15 +9,20 @@
 package api
 
 import (
-	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	immuschema "github.com/codenotary/immudb/pkg/api/schema"
 	"github.com/vchain-us/ledger-compliance-go/schema"
 	"github.com/vchain-us/vcn/pkg/meta"
 	"google.golang.org/grpc/metadata"
+	"io"
 	"io/ioutil"
+	"net/http"
+	"os"
+	"path"
 	"time"
 )
 
@@ -100,58 +105,80 @@ type LcArtifact struct {
 	ContentType string    `json:"contentType" yaml:"contentType" vcn:"ContentType"`
 
 	// custom metadata
-	Metadata Metadata `json:"metadata" yaml:"metadata" vcn:"Metadata"`
+	Metadata    Metadata     `json:"metadata" yaml:"metadata" vcn:"Metadata"`
+	Attachments []Attachment `json:"attachments" yaml:"attachments" vcn:"Attachments"`
 
 	Signer string      `json:"signer" yaml:"signer" vcn:"Signer"`
 	Status meta.Status `json:"status" yaml:"status" vcn:"Status"`
 }
 
-func (u LcUser) createArtifact(artifact Artifact, status meta.Status, upload bool) (bool, uint64, error) {
+func (u LcUser) createArtifact(artifact Artifact, status meta.Status, attach []string) (bool, uint64, error) {
 
 	aR := artifact.toLcArtifact()
 	aR.Status = status
 
 	aR.Signer = GetSignerIDByApiKey(u.Client.ApiKey)
 
+	key := AppendPrefix(meta.VcnPrefix, []byte(aR.Signer))
+	key = AppendSignerId(artifact.Hash, key)
+
+	// Attachments handler
+	// attachments info generation and multi kv preparation
+	var aKVs []*immuschema.KeyValue
+	var aRattachment []Attachment
+	for _, a := range attach {
+		f, err := os.Open(a)
+		if err != nil {
+			return false, 0, err
+		}
+		defer f.Close()
+
+		fc, err := ioutil.ReadFile(a)
+		if err != nil {
+			return false, 0, err
+		}
+		h := sha256.New()
+		if _, err := io.Copy(h, f); err != nil {
+			return false, 0, err
+		}
+		checksum := h.Sum(nil)
+		hash := hex.EncodeToString(checksum)
+		akey := AppendAttachment(hash, key)
+		kv := &immuschema.KeyValue{
+			Key:   akey,
+			Value: fc,
+		}
+
+		aKVs = append(aKVs, kv)
+
+		mime := http.DetectContentType(fc)
+		at := Attachment{
+			Filename: path.Base(a),
+			Hash:     hash,
+			Mime:     mime,
+		}
+		aRattachment = append(aRattachment, at)
+
+	}
+	aR.Attachments = aRattachment
 	arJson, err := json.Marshal(aR)
 
 	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
-	key := AppendPrefix(meta.VcnPrefix, []byte(aR.Signer))
-	key = AppendSignerId(artifact.Hash, key)
-
 	var txMeta *immuschema.TxMetadata
-	eor := &immuschema.SetRequest{}
-	if upload && artifact.Kind == "file" {
-		fkey := bytes.Join([][]byte{key, []byte(`:attach`)}, nil)
-		fc, err := ioutil.ReadFile(artifact.Name)
-		if err != nil {
-			return false, 0, err
-		}
-		eor = &immuschema.SetRequest{
-			KVs: []*immuschema.KeyValue{
-				{
-					Key:   key,
-					Value: arJson,
-				},
-				{
-					Key:   fkey,
-					Value: fc,
-				},
+	eor := &immuschema.SetRequest{
+		KVs: []*immuschema.KeyValue{
+			{
+				Key:   key,
+				Value: arJson,
 			},
-		}
-	} else {
-		eor = &immuschema.SetRequest{
-			KVs: []*immuschema.KeyValue{
-				{
-					Key:   key,
-					Value: arJson,
-				},
-			},
-		}
-
+		},
 	}
+	if len(aKVs) > 0 {
+		eor.KVs = append(eor.KVs, aKVs...)
+	}
+
 	txMeta, err = u.Client.SetAll(ctx, eor)
 	if err != nil {
 		return false, 0, err
@@ -199,5 +226,13 @@ func AppendSignerId(signerId string, k []byte) []byte {
 	var prefixed = make([]byte, len(k)+len(signerId)+1)
 	copy(prefixed[0:], k)
 	copy(prefixed[len(k):], "."+signerId)
+	return prefixed
+}
+
+func AppendAttachment(attachHash string, key []byte) []byte {
+	//vcn.$AssetHash.Attachment.$AttachmentHash
+	var prefixed = make([]byte, len(attachHash)+len(meta.AttachmentSeparator)+len(key))
+	copy(prefixed[0:], key)
+	copy(prefixed[len(key):], meta.AttachmentSeparator+attachHash)
 	return prefixed
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/vchain-us/vcn/pkg/meta"
 )
 
-func LcSign(u *api.LcUser, artifacts []*api.Artifact, state meta.Status, output string, name string, metadata map[string]interface{}, upload bool) error {
+func LcSign(u *api.LcUser, artifacts []*api.Artifact, state meta.Status, output string, name string, metadata map[string]interface{}, attach []string) error {
 
 	if output == "" {
 		color.Set(meta.StyleAffordance())
@@ -47,7 +47,7 @@ func LcSign(u *api.LcUser, artifacts []*api.Artifact, state meta.Status, output 
 		verified, tx, err := u.Sign(
 			*a,
 			api.LcSignWithStatus(state),
-			api.LcSignWithUpload(upload),
+			api.LcSignWithAttachments(attach),
 		)
 		if err != nil {
 			return err
