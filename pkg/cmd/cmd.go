@@ -60,11 +60,13 @@ func Execute() {
 	var cmd *cobra.Command
 	var output string
 	if cmd, err = rootCmd.ExecuteC(); err != nil {
+		if !viper.IsSet("exit-code") {
+			viper.Set("exit-code", 1)
+		}
 		output, _ = rootCmd.PersistentFlags().GetString("output")
 		if output != "" && !cmd.SilenceErrors {
 			cli.PrintError(output, types.NewError(err))
 		}
-		defer os.Exit(1)
 	}
 	// disable version check on lc context
 	var versionCheck = false
