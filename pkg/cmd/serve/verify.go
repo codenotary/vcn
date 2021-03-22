@@ -16,7 +16,6 @@ import (
 
 	"github.com/vchain-us/vcn/pkg/api"
 	"github.com/vchain-us/vcn/pkg/cmd/internal/types"
-	"github.com/vchain-us/vcn/pkg/meta"
 )
 
 func verify(w http.ResponseWriter, r *http.Request) {
@@ -81,18 +80,10 @@ func verify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	name := ""
 	var artifact *api.ArtifactResponse
 	if !verification.Unknown() {
 		artifact, _ = api.LoadArtifact(user, hash, verification.MetaHash())
-		if artifact != nil {
-			name = artifact.Name
-		}
 	}
-
-	// todo(ameingast/leogr): remove reduntat event - need backend improvement
-	api.TrackPublisher(user, meta.VcnVerifyEvent)
-	api.TrackVerify(user, hash, name)
 
 	writeResult(w, http.StatusOK, types.NewResult(nil, artifact, verification))
 }
