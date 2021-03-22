@@ -28,6 +28,8 @@ func PrintLc(output string, r *types.LcResult) error {
 	switch output {
 	case "":
 		WriteLcResultTo(r, colorable.NewColorableStdout())
+	case "attachments":
+		WriteLcResultTo(r, colorable.NewColorableStdout())
 	case "yaml":
 		b, err := yaml.Marshal(r)
 		if err != nil {

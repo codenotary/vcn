@@ -112,7 +112,7 @@ VCN_LC_API_KEY=
 					args = append(args, string(token))
 				}
 				if err := scanner.Err(); err != nil {
-					fmt.Errorf("error parsing stdin input: %s", err)
+					return fmt.Errorf("error parsing stdin input: %s", err)
 				}
 			}
 			return runSignWithState(cmd, args, meta.StatusTrusted)

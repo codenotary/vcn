@@ -3,6 +3,7 @@ package verify
 import (
 	"fmt"
 	"github.com/fatih/color"
+	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/vchain-us/vcn/pkg/api"
@@ -26,6 +27,25 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 			viper.Set("exit-code", strconv.Itoa(meta.StatusUnknown.Int()))
 		}
 		return cli.PrintWarning(output, err.Error())
+	}
+	if output == "attachments" {
+		color.Set(meta.StyleAffordance())
+		fmt.Println("downloading attachments ...")
+		color.Unset()
+		var bar *progressbar.ProgressBar
+		lenAttachments := len(ar.Attachments)
+		if lenAttachments >= 1 {
+			bar = progressbar.Default(int64(lenAttachments))
+		}
+
+		for _, a := range ar.Attachments {
+			_ = bar.Add(1)
+			err := user.DownloadAttachment(&a, ar, 0)
+			if err != nil {
+				return err
+			}
+		}
+		fmt.Println()
 	}
 	if !verified {
 		color.Set(meta.StyleError())

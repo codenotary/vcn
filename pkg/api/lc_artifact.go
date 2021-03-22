@@ -236,3 +236,21 @@ func AppendAttachment(attachHash string, key []byte) []byte {
 	copy(prefixed[len(key):], meta.AttachmentSeparator+attachHash)
 	return prefixed
 }
+
+// DownloadAttachment download locally all the attachments linked to the assets
+func (u *LcUser) DownloadAttachment(attach *Attachment, ar *LcArtifact, tx uint64) (err error) {
+
+	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+	key := AppendPrefix(meta.VcnPrefix, []byte(ar.Signer))
+	key = AppendSignerId(ar.Hash, key)
+	attachmentKey := AppendAttachment(attach.Hash, key)
+
+	attachEntry, err := u.Client.VerifiedGetAt(ctx, attachmentKey, tx)
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(attach.Filename, attachEntry.Value, 0644)
+}
