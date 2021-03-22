@@ -9,7 +9,7 @@ jobs:
       - checkout
       - run: sudo apt-get update
       - run: sudo apt-get install -y bzr
-      - run: make TEST_FLAGS="-timeout 60s -race -v" test
+      - run: make TEST_FLAGS="-timeout 120s -race -v" test
   test-go-1-13:
     docker:
       - image: circleci/golang:1.13
@@ -18,14 +18,14 @@ jobs:
     steps:
       - checkout
       - run: sudo apt-get install -y bzr
-      - run: make TEST_FLAGS="-timeout 60s -coverprofile cover.out -race -v" test
+      - run: make TEST_FLAGS="-timeout 120s -coverprofile cover.out -race -v" test
   test-go-1-15:
     docker:
       - image: circleci/golang:1.15
     steps:
       - checkout
       - run: sudo apt-get install -y bzr
-      - run: make TEST_FLAGS="-timeout 60s -coverprofile cover.out -race -v" test
+      - run: make TEST_FLAGS="-timeout 120s -coverprofile cover.out -race -v" test
 workflows:
   version: 2
   testing:
