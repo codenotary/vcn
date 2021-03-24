@@ -22,6 +22,7 @@ import (
 	"reflect"
 	"strings"
 	"text/tabwriter"
+	"time"
 )
 
 func PrintLc(output string, r *types.LcResult) error {
@@ -86,6 +87,18 @@ func WriteLcResultTo(r *types.LcResult, out io.Writer) (n int64, err error) {
 						}
 					}
 					value = strings.TrimPrefix(value, "\n")
+				}
+			case "Apikey revoked":
+				if f.IsZero() {
+					value = color.New(meta.StyleWarning()).Sprintf("not available")
+				} else {
+					if revoked, ok := f.Interface().(*time.Time); ok {
+						if revoked.IsZero() {
+							value = color.New(meta.StyleAffordance()).Sprintf("no")
+						} else {
+							value = color.New(meta.StyleError()).Sprintf(revoked.Format(time.UnixDate))
+						}
+					}
 				}
 			case "Attachments":
 				if attachments, ok := f.Interface().([]api.Attachment); ok {

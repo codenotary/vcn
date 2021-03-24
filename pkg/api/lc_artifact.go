@@ -91,7 +91,15 @@ func VerifiableItemExtToLcArtifact(item *schema.VerifiableItemExt) (*LcArtifact,
 	if err != nil {
 		return nil, err
 	}
-	lca.Timestamp = time.Unix(int64(item.Timestamp.GetSeconds()), int64(item.Timestamp.GetNanos())).UTC()
+	// if ApikeyRevoked == nil no revoked infos available. Old key type
+	if item.ApikeyRevoked != nil {
+		if item.ApikeyRevoked.GetSeconds() > 0 {
+			t := time.Unix(item.ApikeyRevoked.GetSeconds(), int64(item.ApikeyRevoked.Nanos)).UTC()
+			lca.Revoked = &t
+		} else {
+			lca.Revoked = &time.Time{}
+		}
+	}
 	return &lca, nil
 }
 
@@ -108,8 +116,9 @@ type LcArtifact struct {
 	Metadata    Metadata     `json:"metadata" yaml:"metadata" vcn:"Metadata"`
 	Attachments []Attachment `json:"attachments" yaml:"attachments" vcn:"Attachments"`
 
-	Signer string      `json:"signer" yaml:"signer" vcn:"Signer"`
-	Status meta.Status `json:"status" yaml:"status" vcn:"Status"`
+	Signer  string      `json:"signer" yaml:"signer" vcn:"Signer"`
+	Revoked *time.Time  `json:"revoked,omitempty" yaml:"revoked" vcn:"Apikey revoked"`
+	Status  meta.Status `json:"status" yaml:"status" vcn:"Status"`
 }
 
 func (u LcUser) createArtifact(artifact Artifact, status meta.Status, attach []string) (bool, uint64, error) {
