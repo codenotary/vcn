@@ -48,7 +48,15 @@ func ItemToLcArtifact(item *schema.ItemExt) (*LcArtifact, error) {
 		return nil, err
 	}
 	lca.Timestamp = time.Unix(int64(item.Timestamp.GetSeconds()), int64(item.Timestamp.GetNanos())).UTC()
-
+	// if ApikeyRevoked == nil no revoked infos available. Old key type
+	if item.ApikeyRevoked != nil {
+		if item.ApikeyRevoked.GetSeconds() > 0 {
+			t := time.Unix(item.ApikeyRevoked.GetSeconds(), int64(item.ApikeyRevoked.Nanos)).UTC()
+			lca.Revoked = &t
+		} else {
+			lca.Revoked = &time.Time{}
+		}
+	}
 	return &lca, nil
 }
 
@@ -59,29 +67,15 @@ func ZItemToLcArtifact(ie *schema.ZItemExt) (*LcArtifact, error) {
 		return nil, err
 	}
 	lca.Timestamp = time.Unix(int64(ie.Timestamp.GetSeconds()), int64(ie.Timestamp.GetNanos())).UTC()
-
-	return &lca, nil
-}
-
-func ZStructuredItemToLcArtifact(i *immuschema.ZEntry) (*LcArtifact, error) {
-	var lca LcArtifact
-	err := json.Unmarshal(i.Entry.Value, &lca)
-	if err != nil {
-		return nil, err
+	// if ApikeyRevoked == nil no revoked infos available. Old key type
+	if ie.ApikeyRevoked != nil {
+		if ie.ApikeyRevoked.GetSeconds() > 0 {
+			t := time.Unix(ie.ApikeyRevoked.GetSeconds(), int64(ie.ApikeyRevoked.Nanos)).UTC()
+			lca.Revoked = &t
+		} else {
+			lca.Revoked = &time.Time{}
+		}
 	}
-	timestamp := time.Unix(0, int64(i.Score))
-	lca.Timestamp = timestamp.UTC()
-
-	return &lca, nil
-}
-
-func ItemExtToLcArtifact(item *schema.ItemExt) (*LcArtifact, error) {
-	var lca LcArtifact
-	err := json.Unmarshal(item.Item.Value, &lca)
-	if err != nil {
-		return nil, err
-	}
-	lca.Timestamp = time.Unix(int64(item.Timestamp.GetSeconds()), int64(item.Timestamp.GetNanos())).UTC()
 	return &lca, nil
 }
 
@@ -91,6 +85,7 @@ func VerifiableItemExtToLcArtifact(item *schema.VerifiableItemExt) (*LcArtifact,
 	if err != nil {
 		return nil, err
 	}
+	lca.Timestamp = time.Unix(int64(item.Timestamp.GetSeconds()), int64(item.Timestamp.GetNanos())).UTC()
 	// if ApikeyRevoked == nil no revoked infos available. Old key type
 	if item.ApikeyRevoked != nil {
 		if item.ApikeyRevoked.GetSeconds() > 0 {
@@ -116,7 +111,7 @@ type LcArtifact struct {
 	Metadata    Metadata     `json:"metadata" yaml:"metadata" vcn:"Metadata"`
 	Attachments []Attachment `json:"attachments" yaml:"attachments" vcn:"Attachments"`
 
-	Signer  string      `json:"signer" yaml:"signer" vcn:"Signer"`
+	Signer  string      `json:"signer" yaml:"signer" vcn:"SignerID"`
 	Revoked *time.Time  `json:"revoked,omitempty" yaml:"revoked" vcn:"Apikey revoked"`
 	Status  meta.Status `json:"status" yaml:"status" vcn:"Status"`
 }

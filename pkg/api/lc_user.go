@@ -14,6 +14,7 @@ import (
 	sdk "github.com/vchain-us/ledger-compliance-go/grpcclient"
 	"github.com/vchain-us/vcn/pkg/store"
 	"strconv"
+	"strings"
 )
 
 // User represent a CodeNotary platform user.
@@ -52,7 +53,12 @@ func (u User) User() *store.User {
 }
 
 func GetSignerIDByApiKey(lcApiKey string) string {
-	hasher := sha256.New()
-	hasher.Write([]byte(lcApiKey))
-	return base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+	ris := strings.Split(lcApiKey, ".")
+	// new apikey format {friendlySignerID}.{secret}
+	if len(ris) > 1 {
+		return ris[0]
+	}
+	// old apikey format {secret}
+	hash := sha256.Sum256([]byte(lcApiKey))
+	return base64.URLEncoding.EncodeToString(hash[:])
 }

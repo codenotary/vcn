@@ -12,6 +12,7 @@ import (
 	"context"
 	"fmt"
 	immuschema "github.com/codenotary/immudb/pkg/api/schema"
+	"github.com/fatih/color"
 	"github.com/vchain-us/ledger-compliance-go/schema"
 	"github.com/vchain-us/vcn/pkg/api"
 	"github.com/vchain-us/vcn/pkg/cmd/internal/cli"
@@ -46,12 +47,13 @@ func lcInspect(hash string, signerID string, u *api.LcUser, first, last uint64, 
 	}
 	l := len(results)
 	if output == "" {
-		fmt.Printf(
-			`current signer ID "%s"
-%d notarizations found for "%s"
-
-`,
-			contextSignerID, l, hash)
+		fmt.Printf(`current signerID `)
+		color.Set(meta.StyleAffordance())
+		fmt.Printf("%s\n", contextSignerID)
+		color.Unset()
+		fmt.Printf(`%d notarizations found for "%s"`, l, hash)
+		fmt.Println()
+		fmt.Println()
 	}
 
 	return cli.PrintLcSlice(output, results)
@@ -108,8 +110,8 @@ func getSignerResults(ctx context.Context, key []byte, u *api.LcUser, first, las
 	if last > 0 {
 		limit = last
 		desc = true
-		seekKey = make([]byte, 1024)
-		for i := 0; i < 1024; i++ {
+		seekKey = make([]byte, 256)
+		for i := 0; i < 256; i++ {
 			seekKey[i] = 0xFF
 		}
 	}
@@ -184,7 +186,7 @@ func getHistoryResults(ctx context.Context, key []byte, u *api.LcUser, first, la
 
 func getTimeRangedResults(ctx context.Context, u *api.LcUser, set []byte, first, last uint64, start, end string) ([]*types.LcResult, error) {
 	var err error
-	var zitems *immuschema.ZEntries
+	var zitems *schema.ZItemExtList
 
 	var startScore *immuschema.Score = nil
 	var endScore *immuschema.Score = nil
@@ -226,7 +228,7 @@ func getTimeRangedResults(ctx context.Context, u *api.LcUser, set []byte, first,
 		}
 	}
 
-	zitems, err = u.Client.ZScan(ctx, &immuschema.ZScanRequest{
+	zitems, err = u.Client.ZScanExt(ctx, &immuschema.ZScanRequest{
 		Set:       set,
 		SeekKey:   seekKey,
 		SeekScore: math.MaxFloat64,
@@ -242,17 +244,15 @@ func getTimeRangedResults(ctx context.Context, u *api.LcUser, set []byte, first,
 		return nil, err
 	}
 
-	results := make([]*types.LcResult, len(zitems.Entries))
+	results := make([]*types.LcResult, len(zitems.Items))
 	var i = 0
-	for _, v := range zitems.Entries {
-		lca, err := api.ZStructuredItemToLcArtifact(v)
-		if err != nil {
-			return nil, err
-		}
-		results[i] = types.NewLcResult(lca, true)
+	for _, v := range zitems.Items {
+		lca, err := api.ZItemToLcArtifact(v)
 		if err != nil {
 			results[i].AddError(err)
 		}
+		results[i] = types.NewLcResult(lca, true)
+
 		i++
 	}
 	return results, nil
