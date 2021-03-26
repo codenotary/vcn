@@ -9,6 +9,7 @@
 package login
 
 import (
+	"errors"
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/spf13/viper"
@@ -40,8 +41,8 @@ func NewCommand() *cobra.Command {
 			return nil
 		},
 		Use:   "login",
-		Short: "Log in to codenotary.io or CodeNotary Ledger Compliance",
-		Long: `Log in to codenotary.io or CodeNotary Ledger Compliance.
+		Short: "Log in to CodeNotary.io or CodeNotary Ledger Compliance",
+		Long: `Log in to CodeNotary.io or CodeNotary Ledger Compliance.
 
 Environment variables:
 VCN_USER=
@@ -112,6 +113,14 @@ VCN_LC_API_KEY=
 
 // Execute the login action
 func Execute() error {
+
+	if store.CNLCContext() == true {
+		return errors.New("Already logged on CodeNotary Ledger Compliance. Please logout first.")
+	}
+
+	color.Set(meta.StyleAffordance())
+	fmt.Println("Logging into CodeNotary.io blockchain.")
+	color.Unset()
 
 	cfg := store.Config()
 

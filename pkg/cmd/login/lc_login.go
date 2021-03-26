@@ -10,7 +10,10 @@ package login
 
 import (
 	"context"
-	"github.com/vchain-us/vcn/internal/errors"
+	"errors"
+	"fmt"
+	"github.com/fatih/color"
+	vcnerr "github.com/vchain-us/vcn/internal/errors"
 	"github.com/vchain-us/vcn/pkg/api"
 	"github.com/vchain-us/vcn/pkg/meta"
 	"github.com/vchain-us/vcn/pkg/store"
@@ -19,6 +22,13 @@ import (
 
 // Execute the login action
 func ExecuteLC(host, port, lcCert, lcApiKey string, skipTlsVerify, lcNoTls bool) error {
+	if store.CNioContext() == true {
+		return errors.New("Already logged on CodeNotary.io blockchain. Please logout first.")
+	}
+
+	color.Set(meta.StyleAffordance())
+	fmt.Println("Logging into CodeNotary Ledger Compliance.")
+	color.Unset()
 
 	if lcApiKey != "" {
 		u, err := api.NewLcUser(lcApiKey, host, port, lcCert, skipTlsVerify, lcNoTls)
@@ -43,7 +53,7 @@ func ExecuteLC(host, port, lcCert, lcApiKey string, skipTlsVerify, lcNoTls bool)
 		}
 	}
 	if lcApiKey == "" {
-		return errors.ErrNoLcApiKeyEnv
+		return vcnerr.ErrNoLcApiKeyEnv
 	}
 	// shouldn't happen
 	return nil

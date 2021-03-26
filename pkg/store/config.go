@@ -200,3 +200,13 @@ func (c *ConfigRoot) ClearContext() {
 	}
 	c.CurrentContext = CurrentContext{}
 }
+
+func CNLCContext() bool {
+	cfg := Config()
+	return cfg.CurrentContext.LcHost != ""
+}
+
+func CNioContext() bool {
+	cfg := Config()
+	return cfg.CurrentContext.Email != ""
+}
