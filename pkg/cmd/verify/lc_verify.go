@@ -28,6 +28,9 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 		}
 		return cli.PrintWarning(output, err.Error())
 	}
+	if ar.Revoked != nil && !ar.Revoked.IsZero() {
+		viper.Set("exit-code", strconv.Itoa(meta.StatusApikeyRevoked.Int()))
+	}
 	if output == "attachments" {
 		color.Set(meta.StyleAffordance())
 		fmt.Println("downloading attachments ...")
@@ -62,7 +65,8 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 	}
 	// if exitCode == VcnDefaultExitCode user didn't specify to use a custom exit code in case of success.
 	// In that case we return the ar.Status as exit code.
-	if exitCode == meta.VcnDefaultExitCode {
+	// User defined exit code is returned only if the viper exit-code status is == 0 (status trusted)
+	if exitCode == meta.VcnDefaultExitCode && viper.GetInt("exit-code") == 0 {
 		viper.Set("exit-code", strconv.Itoa(ar.Status.Int()))
 	}
 

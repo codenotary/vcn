@@ -38,10 +38,11 @@ const (
 
 // Allowed Status values
 const (
-	StatusTrusted     Status = 0
-	StatusUntrusted   Status = 1
-	StatusUnknown     Status = 2
-	StatusUnsupported Status = 3
+	StatusTrusted       Status = 0
+	StatusUntrusted     Status = 1
+	StatusUnknown       Status = 2
+	StatusUnsupported   Status = 3
+	StatusApikeyRevoked Status = 4
 )
 
 // Allowed Visibility values
