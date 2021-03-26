@@ -23,7 +23,7 @@ import (
 // Execute the login action
 func ExecuteLC(host, port, lcCert, lcApiKey string, skipTlsVerify, lcNoTls bool) error {
 	if store.CNioContext() == true {
-		return errors.New("Already logged on CodeNotary.io blockchain. Please logout first.")
+		return errors.New("Already logged on CodeNotary.io. Please logout first.")
 	}
 
 	color.Set(meta.StyleAffordance())

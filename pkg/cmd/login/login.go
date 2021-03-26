@@ -119,7 +119,7 @@ func Execute() error {
 	}
 
 	color.Set(meta.StyleAffordance())
-	fmt.Println("Logging into CodeNotary.io blockchain.")
+	fmt.Println("Logging into CodeNotary.io.")
 	color.Unset()
 
 	cfg := store.Config()
