@@ -84,6 +84,7 @@ VCN_LC_CERT=
 VCN_LC_SKIP_TLS_VERIFY=false
 VCN_LC_NO_TLS=false
 VCN_LC_API_KEY=
+VCN_LC_LEDGER=
 `,
 		RunE: runVerify,
 		PreRun: func(cmd *cobra.Command, args []string) {
@@ -138,6 +139,7 @@ VCN_LC_API_KEY=
 	cmd.Flags().Bool("lc-skip-tls-verify", false, meta.VcnLcSkipTlsVerifyDesc)
 	cmd.Flags().Bool("lc-no-tls", false, meta.VcnLcNoTlsDesc)
 	cmd.Flags().String("lc-api-key", "", meta.VcnLcApiKeyDesc)
+	cmd.Flags().String("lc-ledger", "", meta.VcnLcLedgerDesc)
 
 	cmd.Flags().MarkHidden("raw-diff")
 
@@ -169,9 +171,10 @@ func runVerify(cmd *cobra.Command, args []string) error {
 	skipTlsVerify := viper.GetBool("lc-skip-tls-verify")
 	noTls := viper.GetBool("lc-no-tls")
 	lcApiKey := viper.GetString("lc-api-key")
+	lcLedger := viper.GetString("lc-ledger")
 	//check if an lcUser is present inside the context
 	var lcUser *api.LcUser
-	uif, err := api.GetUserFromContext(store.Config().CurrentContext, lcApiKey)
+	uif, err := api.GetUserFromContext(store.Config().CurrentContext, lcApiKey, lcLedger)
 	if err != nil {
 		return err
 	}
@@ -181,7 +184,7 @@ func runVerify(cmd *cobra.Command, args []string) error {
 
 	// use credentials if host is at least host is provided
 	if lcHost != "" && lcApiKey != "" {
-		lcUser, err = api.NewLcUser(lcApiKey, lcHost, lcPort, lcCert, skipTlsVerify, noTls)
+		lcUser, err = api.NewLcUser(lcApiKey, lcLedger, lcHost, lcPort, lcCert, skipTlsVerify, noTls)
 		if err != nil {
 			return err
 		}

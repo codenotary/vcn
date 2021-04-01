@@ -13,21 +13,23 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"strconv"
+	"time"
+
 	sdk "github.com/vchain-us/ledger-compliance-go/grpcclient"
+	"github.com/vchain-us/vcn/pkg/meta"
 	"github.com/vchain-us/vcn/pkg/store"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
-	"io/ioutil"
-	"strconv"
-	"time"
 )
 
-func NewLcClientByContext(context store.CurrentContext, lcApiKey string) (*sdk.LcClient, error) {
-	return NewLcClient(lcApiKey, context.LcHost, context.LcPort, context.LcCert, context.LcSkipTlsVerify, context.LcNoTls)
+func NewLcClientByContext(context store.CurrentContext, lcApiKey string, lcLedger string) (*sdk.LcClient, error) {
+	return NewLcClient(lcApiKey, lcLedger, context.LcHost, context.LcPort, context.LcCert, context.LcSkipTlsVerify, context.LcNoTls)
 }
 
-func NewLcClient(lcApiKey, host, port, lcCertPath string, skipTlsVerify, noTls bool) (*sdk.LcClient, error) {
+func NewLcClient(lcApiKey, lcLedger, host, port, lcCertPath string, skipTlsVerify, noTls bool) (*sdk.LcClient, error) {
 	if skipTlsVerify && noTls {
 		return nil, errors.New("illegal parameters submitted: lc-skip-tls-verify and lc-no-tls arguments are both provided")
 	}
@@ -66,7 +68,7 @@ func NewLcClient(lcApiKey, host, port, lcCertPath string, skipTlsVerify, noTls b
 		currentOptions = append(currentOptions, defaultOptions...)
 	}
 
-	return sdk.NewLcClient(sdk.ApiKey(lcApiKey), sdk.Host(host), sdk.Port(p), sdk.Dir(store.CurrentConfigFilePath()), sdk.DialOptions(currentOptions)), nil
+	return sdk.NewLcClient(sdk.ApiKey(lcApiKey), sdk.MetadataPairs([]string{meta.VcnLCLedgerHeaderName, lcLedger}), sdk.Host(host), sdk.Port(p), sdk.Dir(store.CurrentConfigFilePath()), sdk.DialOptions(currentOptions)), nil
 }
 
 func loadTLSCertificate(certPath string) (credentials.TransportCredentials, error) {

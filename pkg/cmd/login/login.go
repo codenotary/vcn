@@ -11,6 +11,7 @@ package login
 import (
 	"errors"
 	"fmt"
+
 	"github.com/fatih/color"
 	"github.com/spf13/viper"
 
@@ -57,6 +58,7 @@ VCN_LC_CERT=
 VCN_LC_SKIP_TLS_VERIFY=false
 VCN_LC_NO_TLS=false
 VCN_LC_API_KEY=
+VCN_LC_LEDGER=
 `,
 		Example: `  # Codenotary.io login:
   ./vcn login
@@ -77,9 +79,10 @@ VCN_LC_API_KEY=
 			skipTlsVerify := viper.GetBool("lc-skip-tls-verify")
 			noTls := viper.GetBool("lc-no-tls")
 			lcApiKey := viper.GetString("lc-api-key")
+			lcLedger := viper.GetString("lc-ledger")
 
 			if lcHost != "" {
-				err = ExecuteLC(lcHost, lcPort, lcCert, lcApiKey, skipTlsVerify, noTls)
+				err = ExecuteLC(lcHost, lcPort, lcCert, lcApiKey, lcLedger, skipTlsVerify, noTls)
 				if err != nil {
 					return err
 				}
@@ -107,6 +110,7 @@ VCN_LC_API_KEY=
 	cmd.Flags().Bool("lc-skip-tls-verify", false, meta.VcnLcSkipTlsVerifyDesc)
 	cmd.Flags().Bool("lc-no-tls", false, meta.VcnLcNoTlsDesc)
 	cmd.Flags().String("lc-api-key", "", meta.VcnLcApiKeyDesc)
+	cmd.Flags().String("lc-ledger", "", meta.VcnLcLedgerDesc)
 
 	return cmd
 }

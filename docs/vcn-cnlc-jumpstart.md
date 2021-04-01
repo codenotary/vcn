@@ -309,6 +309,21 @@ It's possible to filter results by signer identifier:
 vcn inspect document.pdf --signerID CygBE_zb8XnprkkO6ncIrbbwYoUq5T1zfyEF6DhqcAI=
 ```
 
+#### Using Cross-Ledgers API Keys
+
+When using Ledger Compliance server, it is possible to use API keys that are not
+specific to one ledger. This kind of keys is supported only by the `authenticate`
+and `inspect` sub-commands. If such an API key is used, the ledger must be explicitly
+specified:
+
+```shell script
+vcn authenticate --signerID <signer-id> --lc-ledger <ledger-name>
+vcn inspect --signerID <signer-id> --lc-ledger <ledger-name>
+```
+
+Alternatively, for using `vcn` in non-interactive mode, the user can supply the API
+Key via the `VCN_LC_LEDGER` environment variable.
+
 ### Local API server
 
 Local API server is supported.

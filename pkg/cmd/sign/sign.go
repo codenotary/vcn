@@ -11,10 +11,11 @@ package sign
 import (
 	"bufio"
 	"fmt"
-	"github.com/spf13/viper"
-	"github.com/vchain-us/vcn/pkg/extractor/wildcard"
 	"os"
 	"strings"
+
+	"github.com/spf13/viper"
+	"github.com/vchain-us/vcn/pkg/extractor/wildcard"
 
 	"github.com/vchain-us/vcn/pkg/extractor/dir"
 
@@ -238,7 +239,7 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 	//check if an lcUser is present inside the context
 	var lcUser *api.LcUser
 
-	uif, err := api.GetUserFromContext(store.Config().CurrentContext, lcApiKey)
+	uif, err := api.GetUserFromContext(store.Config().CurrentContext, lcApiKey, "")
 	if err != nil {
 		return err
 	}
@@ -248,7 +249,7 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 
 	// use credentials if at least ledger compliance host is provided
 	if lcHost != "" && lcApiKey != "" {
-		lcUser, err = api.NewLcUser(lcApiKey, lcHost, lcPort, lcCert, skipTlsVerify, noTls)
+		lcUser, err = api.NewLcUser(lcApiKey, "", lcHost, lcPort, lcCert, skipTlsVerify, noTls)
 		if err != nil {
 			return err
 		} // Store the new config

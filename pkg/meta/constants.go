@@ -76,6 +76,7 @@ const VcnPrefix string = "vcn"
 
 // Ledger compliance
 const VcnLCPluginTypeHeaderName string = "lc-plugin-type"
+const VcnLCLedgerHeaderName string = "lc-ledger"
 const VcnLCPluginTypeHeaderValue string = "vcn"
 
 const VcnLcHostFlagDesc string = "if set with host, action will be route to a CodeNotary Ledger Compliance server"
@@ -84,6 +85,7 @@ const VcnLcCertPathDesc string = "local or absolute path to a certificate file n
 const VcnLcSkipTlsVerifyDesc string = "disables tls certificate verification when connecting to a CodeNotary Ledger Compliance server"
 const VcnLcNoTlsDesc string = "allow insecure connections when connecting to a CodeNotary Ledger Compliance server"
 const VcnLcApiKeyDesc string = "CodeNotary Ledger Compliance server api key"
+const VcnLcLedgerDesc string = "CodeNotary Ledger Compliance ledger. Required when a multi-ledger API key is used."
 const VcnLcAttachDesc string = "add user defined file attachments. Ex. vcn n myfile --attach mysecondfile. (repeat --attach for multiple entries). "
 
 // UserAgent returns the vcn's User-Agent string

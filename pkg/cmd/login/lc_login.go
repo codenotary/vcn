@@ -12,6 +12,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/fatih/color"
 	vcnerr "github.com/vchain-us/vcn/internal/errors"
 	"github.com/vchain-us/vcn/pkg/api"
@@ -21,7 +22,7 @@ import (
 )
 
 // Execute the login action
-func ExecuteLC(host, port, lcCert, lcApiKey string, skipTlsVerify, lcNoTls bool) error {
+func ExecuteLC(host, port, lcCert, lcApiKey, lcLedger string, skipTlsVerify, lcNoTls bool) error {
 	if store.CNioContext() == true {
 		return errors.New("Already logged on CodeNotary.io. Please logout first.")
 	}
@@ -31,7 +32,7 @@ func ExecuteLC(host, port, lcCert, lcApiKey string, skipTlsVerify, lcNoTls bool)
 	color.Unset()
 
 	if lcApiKey != "" {
-		u, err := api.NewLcUser(lcApiKey, host, port, lcCert, skipTlsVerify, lcNoTls)
+		u, err := api.NewLcUser(lcApiKey, lcLedger, host, port, lcCert, skipTlsVerify, lcNoTls)
 		if err != nil {
 			return err
 		}

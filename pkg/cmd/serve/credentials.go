@@ -34,5 +34,6 @@ func getCredential(r *http.Request) (user *api.User, passphrase string, err erro
 
 func getLcUser(r *http.Request, lcHost, lcPort, lcCert string, skipTlsVerify, noTls bool) (*api.LcUser, error) {
 	apikey := r.Header.Get("x-notarization-lc-api-key")
-	return api.NewLcUser(apikey, lcHost, lcPort, lcCert, skipTlsVerify, noTls)
+	ledger := r.Header.Get("x-notarization-lc-ledger")
+	return api.NewLcUser(apikey, ledger, lcHost, lcPort, lcCert, skipTlsVerify, noTls)
 }
