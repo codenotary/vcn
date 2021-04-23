@@ -252,10 +252,12 @@ func PublicCNLCVerify(hash, lcLedger, signerID, lcHost, lcPort, lcCert string, l
 		return nil, errors.ErrNoLcApiKeyEnv
 	}
 
-	lcUser, err := NewLcUser(apiKey, lcLedger, lcHost, lcPort, lcCert, lcSkipTlsVerify, lcNoTls)
+	client, err := NewLcClient(apiKey, lcLedger, lcHost, lcPort, lcCert, lcSkipTlsVerify, lcNoTls)
 	if err != nil {
 		return nil, err
 	}
+
+	lcUser := &LcUser{Client: client}
 
 	err = lcUser.Client.Connect()
 	if err != nil {
@@ -263,7 +265,7 @@ func PublicCNLCVerify(hash, lcLedger, signerID, lcHost, lcPort, lcCert string, l
 	}
 
 	if hash != "" {
-		a, _, err = lcUser.LoadArtifact(hash, "", 0)
+		a, _, err = lcUser.LoadArtifact(hash, signerID, 0)
 		if err != nil {
 			return nil, err
 		}
