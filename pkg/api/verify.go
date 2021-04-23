@@ -229,7 +229,7 @@ func VerifyMatchingSignerIDs(hash string, signerIDs []string) (*BlockchainVerifi
 // PublicCNLCVerify allow connection and verification on CNLC ledger with a single call using environment variables.
 // LcLedger parameter is used when a cross-ledger key is provided in order to specify the ledger on which future operations will be directed. Empty string is accepted.
 // signerID parameter is used to filter result on a specific signer ID. If empty value is provided is used the current logged signerID value.
-func LcVerify(hash, lcLedger, signerID string) (a *LcArtifact, err error) {
+func LcVerifyEnv(hash, lcLedger, signerID string) (a *LcArtifact, err error) {
 	lcHost := os.Getenv(meta.VcnLcHost)
 	lcPort := os.Getenv(meta.VcnLcPort)
 	lcCert := os.Getenv(meta.VcnLcCert)
@@ -247,7 +247,7 @@ func PublicCNLCVerify(hash, lcLedger, signerID, lcHost, lcPort, lcCert string, l
 	}).Trace("LcVerify")
 
 	apiKey := os.Getenv(meta.VcnLcApiKey)
-	if apiKey != "" {
+	if apiKey == "" {
 		logs.LOG.Trace("Lc api key provided (environment)")
 		return nil, errors.ErrNoLcApiKeyEnv
 	}
