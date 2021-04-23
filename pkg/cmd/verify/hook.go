@@ -10,7 +10,6 @@ package verify
 
 import (
 	"fmt"
-	"google.golang.org/grpc/status"
 	"path/filepath"
 
 	"github.com/vchain-us/vcn/pkg/store"
