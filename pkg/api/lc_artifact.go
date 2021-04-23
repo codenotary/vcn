@@ -265,3 +265,14 @@ func (u *LcUser) DownloadAttachment(attach *Attachment, ar *LcArtifact, tx uint6
 
 	return ioutil.WriteFile(attach.Filename, attachEntry.Value, 0644)
 }
+
+// Date returns a RFC3339 formatted string of verification time (v.Timestamp), if any, otherwise an empty string.
+func (lca *LcArtifact) Date() string {
+	if lca != nil {
+		ut := lca.Timestamp.UTC()
+		if ut.Unix() > 0 {
+			return ut.Format(time.RFC3339)
+		}
+	}
+	return ""
+}

@@ -33,6 +33,7 @@ const (
 	LevelSocialVerified   Level = 2
 	LevelIDVerified       Level = 3
 	LevelLocationVerified Level = 4
+	LevelCNLC             Level = 98
 	LevelVchain           Level = 99
 )
 
