@@ -226,8 +226,22 @@ func VerifyMatchingSignerIDs(hash string, signerIDs []string) (*BlockchainVerifi
 	})
 }
 
-// Verify returns the most recent *BlockchainVerification with highest level available for the given hash.
-func LcVerify(hash string) (a *LcArtifact, err error) {
+// PublicCNLCVerify allow connection and verification on CNLC ledger with a single call using environment variables.
+// LcLedger parameter is used when a cross-ledger key is provided in order to specify the ledger on which future operations will be directed. Empty string is accepted.
+// signerID parameter is used to filter result on a specific signer ID. If empty value is provided is used the current logged signerID value.
+func LcVerify(hash, lcLedger, signerID string) (a *LcArtifact, err error) {
+	lcHost := os.Getenv(meta.VcnLcHost)
+	lcPort := os.Getenv(meta.VcnLcPort)
+	lcCert := os.Getenv(meta.VcnLcCert)
+	lcSkipTlsVerify := os.Getenv(meta.VcnLcSkipTlsVerify)
+	lcNoTls := os.Getenv(meta.VcnLcNoTls)
+	return PublicCNLCVerify(hash, lcLedger, signerID, lcHost, lcPort, lcCert, lcSkipTlsVerify == "true", lcNoTls == "true")
+}
+
+// PublicCNLCVerify allow connection and verification on CNLC ledger with a single call.
+// LcLedger parameter is used when a cross-ledger key is provided in order to specify the ledger on which future operations will be directed. Empty string is accepted
+// signerID parameter is used to filter result on a specific signer ID. If empty value is provided is used the current logged signerID value.
+func PublicCNLCVerify(hash, lcLedger, signerID, lcHost, lcPort, lcCert string, lcSkipTlsVerify, lcNoTls bool) (a *LcArtifact, err error) {
 	logger().WithFields(logrus.Fields{
 		"hash": hash,
 	}).Trace("LcVerify")
@@ -237,13 +251,8 @@ func LcVerify(hash string) (a *LcArtifact, err error) {
 		logs.LOG.Trace("Lc api key provided (environment)")
 		return nil, errors.ErrNoLcApiKeyEnv
 	}
-	lcHost := os.Getenv(meta.VcnLcHost)
-	lcPort := os.Getenv(meta.VcnLcPort)
-	lcCert := os.Getenv(meta.VcnLcCert)
-	lcSkipTlsVerify := os.Getenv(meta.VcnLcSkipTlsVerify)
-	lcNoTls := os.Getenv(meta.VcnLcNoTls)
 
-	lcUser, err := NewLcUser(apiKey,"", lcHost, lcPort, lcCert, lcSkipTlsVerify == "true", lcNoTls == "true")
+	lcUser, err := NewLcUser(apiKey, lcLedger, lcHost, lcPort, lcCert, lcSkipTlsVerify, lcNoTls)
 	if err != nil {
 		return nil, err
 	}
@@ -261,5 +270,4 @@ func LcVerify(hash string) (a *LcArtifact, err error) {
 	}
 
 	return a, nil
-
 }
