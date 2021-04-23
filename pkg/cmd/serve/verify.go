@@ -43,6 +43,10 @@ func (sh *handler) verify(w http.ResponseWriter, r *http.Request) {
 
 		ar, verified, err := lcUser.LoadArtifact(hash, "", 0)
 		if err != nil {
+			if err == api.ErrNotVerified {
+				writeError(w, http.StatusConflict, err)
+				return
+			}
 			writeError(w, http.StatusBadRequest, err)
 			return
 		}

@@ -50,14 +50,14 @@ func LcSign(u *api.LcUser, artifacts []*api.Artifact, state meta.Status, output 
 			api.LcSignWithAttachments(attach),
 		)
 		if err != nil {
+			if err == api.ErrNotVerified {
+				color.Set(meta.StyleError())
+				fmt.Println("the ledger is compromised. Please contact the CodeNotary Ledger Compliance administrators")
+				color.Unset()
+				fmt.Println()
+				return nil
+			}
 			return err
-		}
-		if !verified {
-			color.Set(meta.StyleError())
-			fmt.Println("the ledger is compromised. Please contact the CodeNotary Ledger Compliance administrators")
-			color.Unset()
-			fmt.Println()
-			return nil
 		}
 
 		// writingManifest
@@ -77,16 +77,15 @@ func LcSign(u *api.LcUser, artifacts []*api.Artifact, state meta.Status, output 
 
 		artifact, verified, err := u.LoadArtifact(a.Hash, "", tx)
 		if err != nil {
+			if err == api.ErrNotVerified {
+				color.Set(meta.StyleError())
+				fmt.Println("the ledger is compromised. Please contact the CodeNotary Ledger Compliance administrators")
+				color.Unset()
+				fmt.Println()
+				artifact.Status = meta.StatusUnknown
+				return nil
+			}
 			return cli.PrintWarning(output, err.Error())
-		}
-
-		if !verified {
-			color.Set(meta.StyleError())
-			fmt.Println("the ledger is compromised. Please contact the CodeNotary Ledger Compliance administrators")
-			color.Unset()
-			fmt.Println()
-			artifact.Status = meta.StatusUnknown
-			return nil
 		}
 
 		if lenArtifacts > 1 && output == "" {

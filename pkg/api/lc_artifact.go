@@ -13,11 +13,11 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	immuschema "github.com/codenotary/immudb/pkg/api/schema"
 	"github.com/vchain-us/ledger-compliance-go/schema"
 	"github.com/vchain-us/vcn/pkg/meta"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -205,10 +205,17 @@ func (u *LcUser) LoadArtifact(hash, signerID string, tx uint64) (lc *LcArtifact,
 
 	jsonAr, err := u.Client.VerifiedGetExtAt(ctx, key, tx)
 	if err != nil {
-		if err == errors.New("data is corrupted") {
-			return nil, false, nil
+		s, ok := status.FromError(err)
+		if ok && s.Message() == "data is corrupted" {
+			return nil, false, ErrNotVerified
 		}
-		return nil, false, err
+		if err.Error() == "data is corrupted" {
+			return nil, false, ErrNotVerified
+		}
+		if ok && s.Message() == "key not found" {
+			return nil, false, ErrNotFound
+		}
+		return nil, true, err
 	}
 
 	lcArtifact, err := VerifiableItemExtToLcArtifact(jsonAr)

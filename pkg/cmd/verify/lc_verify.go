@@ -10,7 +10,6 @@ import (
 	"github.com/vchain-us/vcn/pkg/cmd/internal/cli"
 	"github.com/vchain-us/vcn/pkg/cmd/internal/types"
 	"github.com/vchain-us/vcn/pkg/meta"
-	"google.golang.org/grpc/status"
 	"strconv"
 )
 
@@ -22,8 +21,15 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 	}
 	ar, verified, err := user.LoadArtifact(a.Hash, signerID, 0)
 	if err != nil {
-		if status.Convert(err).Message() == "key not found" {
+		if err == api.ErrNotFound {
 			err = fmt.Errorf("%s was not notarized", a.Hash)
+			viper.Set("exit-code", strconv.Itoa(meta.StatusUnknown.Int()))
+		}
+		if err == api.ErrNotVerified {
+			color.Set(meta.StyleError())
+			fmt.Println("the ledger is compromised. Please contact the CodeNotary Ledger Compliance administrators")
+			color.Unset()
+			fmt.Println()
 			viper.Set("exit-code", strconv.Itoa(meta.StatusUnknown.Int()))
 		}
 		return cli.PrintWarning(output, err.Error())

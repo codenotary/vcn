@@ -8,6 +8,14 @@
 
 package api
 
+import "fmt"
+
+// ErrNotVerified is returned when an artifact is not verified on CNLC
+var ErrNotVerified = fmt.Errorf("artifact is not verified")
+
+// ErrNotVerified is returned when an artifact is not found on CNLC
+var ErrNotFound = fmt.Errorf("artifact is not found")
+
 // Error represents a CodeNotary platform's API returned error.
 type Error struct {
 	Description string   `json:"description"`
