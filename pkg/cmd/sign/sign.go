@@ -139,8 +139,7 @@ echo my-file | vcn n -`,
 	cmd.Flags().Bool("lc-skip-tls-verify", false, meta.VcnLcSkipTlsVerifyDesc)
 	cmd.Flags().Bool("lc-no-tls", false, meta.VcnLcNoTlsDesc)
 	cmd.Flags().String("lc-api-key", "", meta.VcnLcApiKeyDesc)
-	cmd.Flags().Var(make(mapOpts), "attach", meta.VcnLcAttachDesc)
-	//cmd.Flags().StringArray("attach", nil, meta.VcnLcAttachDesc)
+	cmd.Flags().StringArray("attach", nil, meta.VcnLcAttachDesc)
 	cmd.SetUsageTemplate(
 		strings.Replace(cmd.UsageTemplate(), "{{.UseLine}}", "{{.UseLine}} ARG", 1),
 	)
@@ -243,8 +242,10 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 	noTls := viper.GetBool("lc-no-tls")
 	lcApiKey := viper.GetString("lc-api-key")
 
-	attachments := cmd.Flags().Lookup("attach").Value.(mapOpts).KeysToValues()
-
+	attachments, err := cmd.Flags().GetStringArray("attach")
+	if err != nil {
+		return err
+	}
 	//check if an lcUser is present inside the context
 	var lcUser *api.LcUser
 
