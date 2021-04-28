@@ -136,6 +136,8 @@ func (s Status) String() string {
 		return "UNKNOWN"
 	case StatusUnsupported:
 		return "UNSUPPORTED"
+	case StatusApikeyRevoked:
+		return "REVOKED"
 	default:
 		log.Fatal("unsupported status: ", int64(s))
 		return ""

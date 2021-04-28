@@ -19,6 +19,8 @@ func StatusColor(status Status) (color.Attribute, color.Attribute, color.Attribu
 		return StyleSuccess()
 	case StatusUnknown:
 		return StyleWarning()
+	case StatusApikeyRevoked:
+		return StyleWarning()
 	default:
 		return StyleError()
 	}

@@ -36,7 +36,9 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 	}
 	if ar.Revoked != nil && !ar.Revoked.IsZero() {
 		viper.Set("exit-code", strconv.Itoa(meta.StatusApikeyRevoked.Int()))
+		ar.Status = meta.StatusApikeyRevoked
 	}
+
 	if output == "attachments" {
 		color.Set(meta.StyleAffordance())
 		fmt.Println("downloading attachments ...")
