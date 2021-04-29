@@ -265,7 +265,7 @@ func PublicCNLCVerify(hash, lcLedger, signerID, lcHost, lcPort, lcCert string, l
 	}
 
 	if hash != "" {
-		a, _, err = lcUser.LoadArtifact(hash, signerID, 0)
+		a, _, err = lcUser.LoadArtifact(hash, signerID, "", 0)
 		if err != nil {
 			return nil, err
 		}

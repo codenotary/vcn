@@ -75,7 +75,7 @@ func LcSign(u *api.LcUser, artifacts []*api.Artifact, state meta.Status, output 
 			fmt.Println()
 		}
 
-		artifact, verified, err := u.LoadArtifact(a.Hash, "", tx)
+		artifact, verified, err := u.LoadArtifact(a.Hash, "", "", tx)
 		if err != nil {
 			if err == api.ErrNotVerified {
 				color.Set(meta.StyleError())

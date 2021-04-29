@@ -278,7 +278,7 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 		if hash != "" {
 			hash = strings.ToLower(hash)
 			// Load existing artifact, if any, otherwise use an empty artifact
-			if ar, _, err := lcUser.LoadArtifact(hash, "", 0); err == nil && ar != nil {
+			if ar, _, err := lcUser.LoadArtifact(hash, "", "", 0); err == nil && ar != nil {
 				artifacts = []*api.Artifact{{
 					Kind:        ar.Kind,
 					Name:        ar.Name,

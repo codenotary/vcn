@@ -15,6 +15,7 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"os"
 	"path"
@@ -203,7 +204,7 @@ func (u LcUser) createArtifact(artifact Artifact, status meta.Status, attach []s
 }
 
 // LoadArtifact fetches and returns an *lcArtifact for the given hash and current u, if any.
-func (u *LcUser) LoadArtifact(hash, signerID string, tx uint64) (lc *LcArtifact, verified bool, err error) {
+func (u *LcUser) LoadArtifact(hash, signerID string, uid string, tx uint64) (lc *LcArtifact, verified bool, err error) {
 
 	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
@@ -215,7 +216,33 @@ func (u *LcUser) LoadArtifact(hash, signerID string, tx uint64) (lc *LcArtifact,
 	key := AppendPrefix(meta.VcnPrefix, []byte(signerID))
 	key = AppendSignerId(hash, key)
 
-	jsonAr, err := u.Client.VerifiedGetExtAt(ctx, key, tx)
+	var jsonAr *schema.VerifiableItemExt
+	if uid != "" {
+		score, err := strconv.ParseFloat(uid, 64)
+		if err != nil {
+			return nil, false, err
+		}
+		zitems, err := u.Client.ZScanExt(ctx, &immuschema.ZScanRequest{
+			Set:       key,
+			SeekScore: math.MaxFloat64,
+			SeekAtTx:  tx,
+			Limit:     1,
+			MinScore:  &immuschema.Score{Score: score},
+			MaxScore:  &immuschema.Score{Score: score},
+			SinceTx:   math.MaxUint64,
+			NoWait:    true,
+		})
+		if err != nil {
+			return nil, false, err
+		}
+		if len(zitems.Items) > 0 {
+			jsonAr, err = u.Client.VerifiedGetExtAt(ctx, zitems.Items[0].Item.Key, zitems.Items[0].Item.AtTx)
+		} else {
+			return nil, false, ErrNotFound
+		}
+	} else {
+		jsonAr, err = u.Client.VerifiedGetExtAt(ctx, key, tx)
+	}
 	if err != nil {
 		s, ok := status.FromError(err)
 		if ok && s.Message() == "data is corrupted" {

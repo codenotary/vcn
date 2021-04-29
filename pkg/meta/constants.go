@@ -95,6 +95,7 @@ const VcnLcApiKeyDesc string = "CodeNotary Ledger Compliance server api key"
 const VcnLcLedgerDesc string = "CodeNotary Ledger Compliance ledger. Required when a multi-ledger API key is used."
 const VcnLcAttachDesc string = "add user defined file attachments. Ex. vcn n myfile --attach mysecondfile. (repeat --attach for multiple entries). "
 const VcnLcCIAttribDesc string = "detect CI environment variables context if presents and inject "
+const VcnLcUidDesc string = "authenticate on a specific artifact uid"
 
 // UserAgent returns the vcn's User-Agent string
 func UserAgent() string {

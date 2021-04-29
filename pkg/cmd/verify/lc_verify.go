@@ -13,13 +13,13 @@ import (
 	"strconv"
 )
 
-func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID string, output string) (err error) {
+func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID string, uid string, output string) (err error) {
 	hook := newHook(cmd, a)
 	err = hook.lcFinalizeWithoutAlert(user, output, 0)
 	if err != nil {
 		return err
 	}
-	ar, verified, err := user.LoadArtifact(a.Hash, signerID, 0)
+	ar, verified, err := user.LoadArtifact(a.Hash, signerID, uid, 0)
 	if err != nil {
 		if err == api.ErrNotFound {
 			err = fmt.Errorf("%s was not notarized", a.Hash)
