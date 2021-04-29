@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"time"
 
 	immuschema "github.com/codenotary/immudb/pkg/api/schema"
@@ -48,7 +49,9 @@ func ItemToLcArtifact(item *schema.ItemExt) (*LcArtifact, error) {
 	if err != nil {
 		return nil, err
 	}
-	lca.Timestamp = time.Unix(int64(item.Timestamp.GetSeconds()), int64(item.Timestamp.GetNanos())).UTC()
+	ts := time.Unix(item.Timestamp.GetSeconds(), int64(item.Timestamp.GetNanos()))
+	lca.Uid = strconv.Itoa(int(ts.UnixNano()))
+	lca.Timestamp = ts.UTC()
 	// if ApikeyRevoked == nil no revoked infos available. Old key type
 	if item.ApikeyRevoked != nil {
 		if item.ApikeyRevoked.GetSeconds() > 0 {
@@ -67,7 +70,9 @@ func ZItemToLcArtifact(ie *schema.ZItemExt) (*LcArtifact, error) {
 	if err != nil {
 		return nil, err
 	}
-	lca.Timestamp = time.Unix(int64(ie.Timestamp.GetSeconds()), int64(ie.Timestamp.GetNanos())).UTC()
+	ts := time.Unix(ie.Timestamp.GetSeconds(), int64(ie.Timestamp.GetNanos()))
+	lca.Uid = strconv.Itoa(int(ts.UnixNano()))
+	lca.Timestamp = ts.UTC()
 	// if ApikeyRevoked == nil no revoked infos available. Old key type
 	if ie.ApikeyRevoked != nil {
 		if ie.ApikeyRevoked.GetSeconds() > 0 {
@@ -86,7 +91,9 @@ func VerifiableItemExtToLcArtifact(item *schema.VerifiableItemExt) (*LcArtifact,
 	if err != nil {
 		return nil, err
 	}
-	lca.Timestamp = time.Unix(int64(item.Timestamp.GetSeconds()), int64(item.Timestamp.GetNanos())).UTC()
+	ts := time.Unix(item.Timestamp.GetSeconds(), int64(item.Timestamp.GetNanos()))
+	lca.Uid = strconv.Itoa(int(ts.UnixNano()))
+	lca.Timestamp = ts.UTC()
 	// if ApikeyRevoked == nil no revoked infos available. Old key type
 	if item.ApikeyRevoked != nil {
 		if item.ApikeyRevoked.GetSeconds() > 0 {
@@ -101,6 +108,7 @@ func VerifiableItemExtToLcArtifact(item *schema.VerifiableItemExt) (*LcArtifact,
 
 type LcArtifact struct {
 	// root fields
+	Uid         string    `json:"uid" yaml:"uid" vcn:"uid"`
 	Kind        string    `json:"kind" yaml:"kind" vcn:"Kind"`
 	Name        string    `json:"name" yaml:"name" vcn:"Name"`
 	Hash        string    `json:"hash" yaml:"hash" vcn:"Hash"`
