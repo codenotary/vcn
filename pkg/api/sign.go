@@ -71,7 +71,7 @@ func (u User) Sign(artifact Artifact, options ...SignOption) (*BlockchainVerific
 	// This is a workaround. Need a proper solution to handle parallel signing
 	var verification *BlockchainVerification
 	for i := uint64(0); i < meta.TxVerificationRounds(); i++ {
-		verification, err := u.commitTransaction(artifact, options...)
+		verification, err = u.commitTransaction(artifact, options...)
 		if err != nil {
 			if err.Error() == errors.BlockchainPermission {
 				rand.Seed(time.Now().UnixNano())
