@@ -54,4 +54,8 @@ Please try again later. If the problem persists contact our support.`
 
 const SignFailed = `method <sign> failed`
 
+const BlockchainSameHashAlreadyImported = `transaction with the same hash was already imported`
+
+const BlockchainTxNonceTooLow = `transaction nonce is too low. Try incrementing the nonce`
+
 var ErrNoLcApiKeyEnv = errors.New(`no API key configured. Please set the environment variable VCN_LC_API_KEY=<API-KEY> or use --lc-api-key flag on each request before running any commands`)

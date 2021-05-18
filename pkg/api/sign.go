@@ -73,13 +73,15 @@ func (u User) Sign(artifact Artifact, options ...SignOption) (*BlockchainVerific
 	for i := uint64(0); i < meta.TxVerificationRounds(); i++ {
 		verification, err := u.commitTransaction(artifact, options...)
 		if err != nil {
-			if err.Error() == errors.BlockchainPermission {
+			if err.Error() == errors.BlockchainPermission ||
+				err.Error() == errors.BlockchainSameHashAlreadyImported ||
+				err.Error() == errors.BlockchainTxNonceTooLow ||
+				err.Error() == "request failed: MetaHashAlreadyExistsException (409)" {
 				rand.Seed(time.Now().UnixNano())
 				sleepTime := time.Second * time.Duration(int64(rand.Intn(6)))
 				time.Sleep(sleepTime)
 				continue
 			}
-			break
 		}
 		return verification, err
 	}
@@ -129,6 +131,24 @@ func (u User) commitTransaction(
 	}
 	tx, err := instance.Sign(transactor, artifact.Hash, big.NewInt(int64(o.status)))
 	if err != nil {
+		if err.Error() == "Transaction with the same hash was already imported." {
+			return nil, makeError(
+				errors.BlockchainTxNonceTooLow,
+				logrus.Fields{
+					"error": err,
+					"hash":  artifact.Hash,
+				},
+			)
+		}
+		if err.Error() == "Transaction nonce is too low. Try incrementing the nonce." {
+			return nil, makeError(
+				errors.BlockchainSameHashAlreadyImported,
+				logrus.Fields{
+					"error": err,
+					"hash":  artifact.Hash,
+				},
+			)
+		}
 		err = makeFatal(
 			errors.SignFailed,
 			logrus.Fields{

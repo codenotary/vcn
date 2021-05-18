@@ -51,14 +51,14 @@ func TestParallelNotarization(t *testing.T) {
 
 	wg.Add(1)
 	go func() {
-		a, _ := extractor.Extract("file://../../../CONTRIBUTING.md")
+		a, _ := extractor.Extract([]string{"file://../../../CONTRIBUTING.md"})
 		_, err := psign(user, a, userPw)
 		assert.NoError(t, err)
 		wg.Done()
 	}()
 	wg.Add(1)
 	go func() {
-		a, _ := extractor.Extract("file://../../../README.md")
+		a, _ := extractor.Extract([]string{"file://../../../README.md"})
 		_, err := psign(user, a, userPw)
 		assert.NoError(t, err)
 		wg.Done()
@@ -66,7 +66,7 @@ func TestParallelNotarization(t *testing.T) {
 
 	wg.Add(1)
 	go func() {
-		a, _ := extractor.Extract("file://../../../LICENSE")
+		a, _ := extractor.Extract([]string{"file://../../../LICENSE"})
 		_, err := psign(user, a, userPw)
 		assert.NoError(t, err)
 		wg.Done()
@@ -74,7 +74,7 @@ func TestParallelNotarization(t *testing.T) {
 
 	wg.Add(1)
 	go func() {
-		a, _ := extractor.Extract("file://../../../go.mod")
+		a, _ := extractor.Extract([]string{"file://../../../go.mod"})
 		_, err := psign(user, a, userPw)
 		assert.NoError(t, err)
 		wg.Done()
@@ -82,11 +82,115 @@ func TestParallelNotarization(t *testing.T) {
 
 	wg.Add(1)
 	go func() {
-		a, _ := extractor.Extract("file://../../../Makefile")
+		a, _ := extractor.Extract([]string{"file://../../../Makefile"})
 		_, err := psign(user, a, userPw)
 		assert.NoError(t, err)
 		wg.Done()
 	}()
+
+	wg.Add(1)
+	go func() {
+		a, _ := extractor.Extract([]string{"file://../../../go.mod"})
+		_, err := psign(user, a, userPw)
+		assert.NoError(t, err)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		a, _ := extractor.Extract([]string{"file://../../../go.sum"})
+		_, err := psign(user, a, userPw)
+		assert.NoError(t, err)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		a, _ := extractor.Extract([]string{"file://../../../Dockerfile"})
+		_, err := psign(user, a, userPw)
+		assert.NoError(t, err)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		a, _ := extractor.Extract([]string{"file://../../../Dockerfile.docker"})
+		_, err := psign(user, a, userPw)
+		assert.NoError(t, err)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		a, _ := extractor.Extract([]string{"file://../../../CONTRIBUTING.md"})
+		_, err := psign(user, a, userPw)
+		assert.NoError(t, err)
+		wg.Done()
+	}()
+	wg.Add(1)
+	go func() {
+		a, _ := extractor.Extract([]string{"file://../../../README.md"})
+		_, err := psign(user, a, userPw)
+		assert.NoError(t, err)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		a, _ := extractor.Extract([]string{"file://../../../LICENSE"})
+		_, err := psign(user, a, userPw)
+		assert.NoError(t, err)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		a, _ := extractor.Extract([]string{"file://../../../go.mod"})
+		_, err := psign(user, a, userPw)
+		assert.NoError(t, err)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		a, _ := extractor.Extract([]string{"file://../../../Makefile"})
+		_, err := psign(user, a, userPw)
+		assert.NoError(t, err)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		a, _ := extractor.Extract([]string{"file://../../../go.mod"})
+		_, err := psign(user, a, userPw)
+		assert.NoError(t, err)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		a, _ := extractor.Extract([]string{"file://../../../go.sum"})
+		_, err := psign(user, a, userPw)
+		assert.NoError(t, err)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		a, _ := extractor.Extract([]string{"file://../../../Dockerfile"})
+		_, err := psign(user, a, userPw)
+		assert.NoError(t, err)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		a, _ := extractor.Extract([]string{"file://../../../Dockerfile.docker"})
+		_, err := psign(user, a, userPw)
+		assert.NoError(t, err)
+		wg.Done()
+	}()
+
 	wg.Wait()
 	fmt.Println("done")
 }
