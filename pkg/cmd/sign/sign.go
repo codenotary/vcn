@@ -448,8 +448,10 @@ func sign(u api.User, a api.Artifact, state meta.Status, visibility meta.Visibil
 
 	cli.Print(output, types.NewResult(&a, artifact, verification))
 
-	if err := handleAlert(alert, u, a, *verification, output); err != nil {
-		return cli.PrintWarning(output, err.Error())
+	if alert != nil {
+		if err := handleAlert(alert, u, a, *verification, output); err != nil {
+			return cli.PrintWarning(output, err.Error())
+		}
 	}
 
 	return nil
