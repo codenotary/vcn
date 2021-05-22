@@ -165,7 +165,7 @@ curl --location --request GET '127.0.0.1:8080/inspect/e2b58ab102dbadb3b1fd5139c8
 ```
 ### Notarization
 
-Register an account with [codernotary.io](https://codenotary.io) first.
+Register an account with [codenotary.io](https://codenotary.io) first.
 
 Then start with the `login` command. `vcn` will walk you through login and importing up your secret upon initial use.
 ```
@@ -212,7 +212,7 @@ vcn authenticate podman://<imageId>
 vcn authenticate git://<path_to_git_repo>
 vcn authenticate --hash <hash>
 ```
-> You can use `vcn authenticate` even without a [codernotary.io](https://codenotary.io) account.
+> You can use `vcn authenticate` even without a [codenotary.io](https://codenotary.io) account.
 
 To output results in `json` or `yaml` formats:
 ```
