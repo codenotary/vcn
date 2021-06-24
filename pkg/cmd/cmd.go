@@ -32,6 +32,7 @@ import (
 	"github.com/vchain-us/vcn/pkg/cmd/verify"
 	"github.com/vchain-us/vcn/pkg/meta"
 	"github.com/vchain-us/vcn/pkg/store"
+	"github.com/codenotary/vcn/pkg/cmd/bom"
 
 	"github.com/inconshreveable/mousetrap"
 	"github.com/spf13/cobra"
@@ -139,6 +140,8 @@ func init() {
 	// Alert comand
 	rootCmd.AddCommand(alert.NewCommand())
 
+	// BoM
+	rootCmd.AddCommand(bom.NewCommand())
 }
 
 func preExitHook(cmd *cobra.Command, versionCheck bool) {

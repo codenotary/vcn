@@ -17,6 +17,7 @@ require (
 	github.com/cespare/cp v1.1.1 // indirect
 	github.com/cmars/basen v0.0.0-20150613233007-fe3947df716e // indirect
 	github.com/codenotary/immudb v0.9.3-0.20210511160950-9d8cf71fe8ea
+	github.com/codenotary/vcn/pkg/cmd/bom v0.0.0-00010101000000-000000000000
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/dghubble/sling v1.3.0
 	github.com/dustin/go-humanize v1.0.0
@@ -50,8 +51,8 @@ require (
 	github.com/rs/cors v1.7.0 // indirect
 	github.com/schollz/progressbar/v3 v3.7.0
 	github.com/sirupsen/logrus v1.6.0
-	github.com/spf13/cobra v1.0.0
-	github.com/spf13/viper v1.6.3
+	github.com/spf13/cobra v1.1.3
+	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.6.1
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/tyler-smith/go-bip32 v0.0.0-20170922074101-2c9cfd177564
@@ -66,3 +67,11 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect
 )
+
+replace github.com/codenotary/vcn/pkg/cmd/bom => ./pkg/cmd/bom
+
+replace github.com/codenotary/vcn/pkg/bom_component => ./pkg/bom_component
+
+replace github.com/codenotary/vcn/pkg/bom_package => ./pkg/bom_package
+
+replace github.com/codenotary/vcn/pkg/bom_go => ./pkg/bom_go

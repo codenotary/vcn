@@ -94,7 +94,20 @@ func (p *GoPackage) Components() ([]component.Component, error) {
 	for _, line := range lines {
 		fields := strings.Split(line, "\t")
 		if fields[0] == "dep" {
-			res = append(res, component.Component{Name: fields[1], Version: fields[2], Hash: fields[3]})
+			var comp component.Component
+			switch len(fields) {
+			default:
+				comp.Hash = fields[3]
+				fallthrough
+			case 3:
+				comp.Version = fields[2]
+				fallthrough
+			case 2:
+				comp.Name = fields[1]
+			case 1:
+				continue
+			}
+			res = append(res, comp)
 		}
 	}
 

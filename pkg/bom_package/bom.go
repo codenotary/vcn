@@ -15,7 +15,7 @@ type Package interface {
 }
 
 func New(filename string) Package {
-	// try all language options, return the one that match
+	// try all language options, return the one that matches
 	if pkg := bom_go.New(filename); pkg != nil {
 		return pkg
 	}
