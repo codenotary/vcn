@@ -242,6 +242,7 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 	noTls := viper.GetBool("lc-no-tls")
 	lcApiKey := viper.GetString("lc-api-key")
 
+	// todo add attachment validator. Deny ":" misuses in input string
 	attachments, err := cmd.Flags().GetStringArray("attach")
 	if err != nil {
 		return err

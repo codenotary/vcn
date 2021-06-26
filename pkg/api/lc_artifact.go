@@ -13,6 +13,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"math"
@@ -20,6 +21,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	immuschema "github.com/codenotary/immudb/pkg/api/schema"
@@ -133,6 +135,8 @@ func (u LcUser) createArtifact(artifact Artifact, status meta.Status, attach []s
 
 	aR.Signer = GetSignerIDByApiKey(u.Client.ApiKey)
 
+	// vcn.myApiKey.{artifact hash}
+	// attachment key need to have "vcn." prefix because it's handled inside cnil frontend. (attachment is listed in the UI).
 	key := AppendPrefix(meta.VcnPrefix, []byte(aR.Signer))
 	key = AppendSignerId(artifact.Hash, key)
 
@@ -140,7 +144,20 @@ func (u LcUser) createArtifact(artifact Artifact, status meta.Status, attach []s
 	// attachments info generation and multi kv preparation
 	var aKVs []*immuschema.KeyValue
 	var aRattachment []Attachment
-	for _, a := range attach {
+
+	// map to save all the attachments with a specific label
+	labelMap := make(map[string][]Attachment)
+	for _, al := range attach {
+		// attachment can be --attach=vscanner.result:jobid123. jobid123 is the label
+		alSlice := strings.SplitN(al, ":", 2)
+		a := alSlice[0]
+		/** friendly label **/
+		label := ""
+		if len(alSlice) > 1 {
+			label = alSlice[1]
+		}
+
+		// attachment
 		f, err := os.Open(a)
 		if err != nil {
 			return false, 0, err
@@ -158,8 +175,9 @@ func (u LcUser) createArtifact(artifact Artifact, status meta.Status, attach []s
 		checksum := h.Sum(nil)
 		hash := hex.EncodeToString(checksum)
 		akey := AppendAttachment(hash, key)
+
 		kv := &immuschema.KeyValue{
-			Key:   akey,
+			Key:   []byte(akey),
 			Value: fc,
 		}
 
@@ -171,9 +189,31 @@ func (u LcUser) createArtifact(artifact Artifact, status meta.Status, attach []s
 			Hash:     hash,
 			Mime:     mime,
 		}
-		aRattachment = append(aRattachment, at)
 
+		/** friendly label **/
+		/* _ITEM.ATTACH.LABEL.myApiKey.{arifact hash}.vscanner.result:jobid123 */
+		if label != "" {
+			labelKey := meta.VcnAttachmentLabelPrefix + "." + aR.Signer + "." + artifact.Hash + "." + al
+			// here is used an array to be downloadable by the same code in the attachments map use case
+			attachs := []Attachment{at}
+			attachmentsListJson, err := json.Marshal(attachs)
+			if err != nil {
+				return false, 0, err
+			}
+			labelKV := &immuschema.KeyValue{
+				Key:   []byte(labelKey),
+				Value: attachmentsListJson,
+			}
+			aKVs = append(aKVs, labelKV)
+
+			// label map
+			// append the attachment key in the labelMap at specific label key
+			labelMap[label] = append(labelMap[label], at)
+		}
+
+		aRattachment = append(aRattachment, at)
 	}
+
 	aR.Attachments = aRattachment
 	arJson, err := json.Marshal(aR)
 	if err != nil {
@@ -196,6 +236,22 @@ func (u LcUser) createArtifact(artifact Artifact, status meta.Status, attach []s
 		eor.KVs = append(eor.KVs, aKVs...)
 	}
 
+	// here is built a key to retrieve in a single call all the attachment with a specific label. The value is a list of attachment keys joined by ":" separator
+	for label, attachments := range labelMap {
+		/* _ITEM.ATTACH.LABEL.myApiKey.{arifact hash}.jobid123 */
+		labelMapKey := meta.VcnAttachmentLabelPrefix + "." + aR.Signer + "." + artifact.Hash + "." + label
+
+		attachmentsListJson, err := json.Marshal(attachments)
+		if err != nil {
+			return false, 0, err
+		}
+		labelMapKV := &immuschema.KeyValue{
+			Key:   []byte(labelMapKey),
+			Value: attachmentsListJson, // attachmentKeys
+		}
+
+		eor.KVs = append(eor.KVs, labelMapKV)
+	}
 	txMeta, err = u.Client.SetAll(ctx, eor)
 	if err != nil {
 		return false, 0, err
@@ -265,6 +321,47 @@ func (u *LcUser) LoadArtifact(hash, signerID string, uid string, tx uint64) (lc 
 	return lcArtifact, true, nil
 }
 
+func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerID string, attach string) (uid string, attachmentList []Attachment, err error) {
+
+	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+	if signerID == "" {
+		signerID = GetSignerIDByApiKey(u.Client.ApiKey)
+	}
+
+	key := meta.VcnAttachmentLabelPrefix + "." + signerID + "." + hash + "." + attach
+
+	/* _ITEM.ATTACH.LABEL.myApiKey.{arifact hash}.vscanner.result:jobid123 */
+	/* _ITEM.ATTACH.LABEL.myApiKey.{arifact hash}.jobid123 */
+	sr := &immuschema.ScanRequest{
+		Prefix:  []byte(key),
+		Limit:   1,
+		SinceTx: math.MaxUint64,
+		NoWait:  true,
+	}
+	res, err := u.Client.Scan(ctx, sr)
+	if err != nil {
+		return "", nil, err
+	}
+	if len(res.Entries) < 1 {
+		return "", nil, errors.New("provided label is not present")
+	}
+
+	keyAndUid := strings.Split(string(res.Entries[0].Key), ".")
+
+	if len(keyAndUid) != 7 {
+		return "", nil, errors.New("not consistent data when retrieving uid from attachment label entry")
+	}
+
+	err = json.Unmarshal(res.Entries[0].Value, &attachmentList)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return keyAndUid[6], attachmentList, nil
+}
+
 func AppendPrefix(prefix string, key []byte) []byte {
 	var prefixed = make([]byte, len(prefix)+1+len(key))
 	copy(prefixed[0:], prefix+".")
@@ -284,6 +381,14 @@ func AppendAttachment(attachHash string, key []byte) []byte {
 	var prefixed = make([]byte, len(attachHash)+len(meta.AttachmentSeparator)+len(key))
 	copy(prefixed[0:], key)
 	copy(prefixed[len(key):], meta.AttachmentSeparator+attachHash)
+	return prefixed
+}
+
+func AppendLabel(label string, key []byte) []byte {
+	//vcn.$AssetHash.Attachment.$AttachmentHash
+	var prefixed = make([]byte, len(label)+len(meta.AttachmentSeparator)+len(key))
+	copy(prefixed[0:], key)
+	copy(prefixed[len(key):], meta.AttachmentSeparator+label)
 	return prefixed
 }
 
