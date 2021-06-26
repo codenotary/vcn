@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -348,9 +349,10 @@ func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerI
 		return "", nil, errors.New("provided label is not present")
 	}
 
-	keyAndUid := strings.Split(string(res.Entries[0].Key), ".")
+	var regex = regexp.MustCompile("_ITEM\\.ATTACH\\.LABEL\\.[^.]+\\.[^.]+\\.(\\S+:\\S[^.]+|\\S+)\\.([0-9]+)")
+	keyAndUid := regex.FindStringSubmatch(string(res.Entries[0].Key))
 
-	if len(keyAndUid) != 7 {
+	if len(keyAndUid) != 3 {
 		return "", nil, errors.New("not consistent data when retrieving uid from attachment label entry")
 	}
 
@@ -359,7 +361,7 @@ func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerI
 		return "", nil, err
 	}
 
-	return keyAndUid[6], attachmentList, nil
+	return keyAndUid[2], attachmentList, nil
 }
 
 func AppendPrefix(prefix string, key []byte) []byte {
