@@ -14,6 +14,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"math"
@@ -402,7 +403,7 @@ func AppendLabel(label string, key []byte) []byte {
 }
 
 // DownloadAttachment download locally all the attachments linked to the assets
-func (u *LcUser) DownloadAttachment(attach *Attachment, ar *LcArtifact, tx uint64) (err error) {
+func (u *LcUser) DownloadAttachment(attach *Attachment, ar *LcArtifact, tx uint64, lcAttachForce bool) (err error) {
 
 	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
@@ -415,8 +416,10 @@ func (u *LcUser) DownloadAttachment(attach *Attachment, ar *LcArtifact, tx uint6
 	if err != nil {
 		return err
 	}
-
-	return ioutil.WriteFile(attach.Filename, attachEntry.Value, 0644)
+	if _, err := os.Stat(attach.Filename); os.IsNotExist(err) || lcAttachForce {
+		return ioutil.WriteFile(attach.Filename, attachEntry.Value, 0644)
+	}
+	return fmt.Errorf("attachment %s already present on disk. Use --force to overwrite silently", attach.Filename)
 }
 
 // Date returns a RFC3339 formatted string of verification time (v.Timestamp), if any, otherwise an empty string.

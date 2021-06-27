@@ -13,7 +13,7 @@ import (
 	"strconv"
 )
 
-func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID string, uid string, attach string, output string) (err error) {
+func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID string, uid string, attach string, lcAttachForce bool, output string) (err error) {
 	hook := newHook(cmd, a)
 	err = hook.lcFinalizeWithoutAlert(user, output, 0)
 	if err != nil {
@@ -73,7 +73,7 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 
 		for _, a := range attachmentList {
 			_ = bar.Add(1)
-			err := user.DownloadAttachment(&a, ar, 0)
+			err := user.DownloadAttachment(&a, ar, 0, lcAttachForce)
 			if err != nil {
 				return err
 			}
