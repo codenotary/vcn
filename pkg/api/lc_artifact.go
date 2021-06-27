@@ -322,7 +322,7 @@ func (u *LcUser) LoadArtifact(hash, signerID string, uid string, tx uint64) (lc 
 	return lcArtifact, true, nil
 }
 
-func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerID string, attach string, lcAttachFullDownload bool) (map[string][]Attachment, error) {
+func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerID string, attach string) (map[string][]Attachment, error) {
 
 	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
@@ -340,9 +340,6 @@ func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerI
 		SinceTx: math.MaxUint64,
 		NoWait:  true,
 		Desc:    true,
-	}
-	if !lcAttachFullDownload {
-		sr.Limit = 1
 	}
 
 	res, err := u.Client.Scan(ctx, sr)
