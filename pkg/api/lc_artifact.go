@@ -322,7 +322,7 @@ func (u *LcUser) LoadArtifact(hash, signerID string, uid string, tx uint64) (lc 
 	return lcArtifact, true, nil
 }
 
-func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerID string, attach string) (uid string, attachmentList []Attachment, err error) {
+func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerID string, attach string, lcAttachFullDownload bool) (map[string][]Attachment, error) {
 
 	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
@@ -337,31 +337,41 @@ func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerI
 	/* _ITEM.ATTACH.LABEL.myApiKey.{arifact hash}.jobid123 */
 	sr := &immuschema.ScanRequest{
 		Prefix:  []byte(key),
-		Limit:   1,
 		SinceTx: math.MaxUint64,
 		NoWait:  true,
+		Desc:    true,
 	}
+	if !lcAttachFullDownload {
+		sr.Limit = 1
+	}
+
 	res, err := u.Client.Scan(ctx, sr)
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
 	if len(res.Entries) < 1 {
-		return "", nil, errors.New("provided label is not present")
+		return nil, errors.New("provided label is not present")
 	}
 
-	var regex = regexp.MustCompile("_ITEM\\.ATTACH\\.LABEL\\.[^.]+\\.[^.]+\\.(\\S+:\\S[^.]+|\\S+)\\.([0-9]+)")
-	keyAndUid := regex.FindStringSubmatch(string(res.Entries[0].Key))
+	attachMap := make(map[string][]Attachment)
 
-	if len(keyAndUid) != 3 {
-		return "", nil, errors.New("not consistent data when retrieving uid from attachment label entry")
+	for _, entry := range res.Entries {
+		var regex = regexp.MustCompile("_ITEM\\.ATTACH\\.LABEL\\.[^.]+\\.[^.]+\\.(\\S+:\\S[^.]+|\\S+)\\.([0-9]+)")
+		keyAndUid := regex.FindStringSubmatch(string(entry.Key))
+
+		if len(keyAndUid) != 3 {
+			return nil, errors.New("not consistent data when retrieving uid from attachment label entry")
+		}
+
+		attachmentList := make([]Attachment, 0)
+		err = json.Unmarshal(entry.Value, &attachmentList)
+		if err != nil {
+			return nil, err
+		}
+		attachMap[keyAndUid[2]] = attachmentList
 	}
 
-	err = json.Unmarshal(res.Entries[0].Value, &attachmentList)
-	if err != nil {
-		return "", nil, err
-	}
-
-	return keyAndUid[2], attachmentList, nil
+	return attachMap, nil
 }
 
 func AppendPrefix(prefix string, key []byte) []byte {

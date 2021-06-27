@@ -13,7 +13,7 @@ import (
 	"strconv"
 )
 
-func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID string, uid string, attach string, output string) (err error) {
+func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID string, uid string, attach string, lcAttachFullDownload bool, output string) (err error) {
 	hook := newHook(cmd, a)
 	err = hook.lcFinalizeWithoutAlert(user, output, 0)
 	if err != nil {
@@ -23,12 +23,20 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 	var verified bool
 	var attachmentList []api.Attachment
 
+	var attachmentMap = make(map[string][]api.Attachment)
 	if attach != "" {
-		uid, attachmentList, err = user.GetArtifactUIDAndAttachmentsListByAttachmentLabel(a.Hash, signerID, attach)
+		attachmentMap, err = user.GetArtifactUIDAndAttachmentsListByAttachmentLabel(a.Hash, signerID, attach, lcAttachFullDownload)
 		if err != nil {
 			return err
 		}
+		for k, attachMapEntry := range attachmentMap {
+			if uid == "" {
+				uid = k
+			}
+			attachmentList = append(attachmentList, attachMapEntry...)
+		}
 	}
+
 	ar, verified, err = user.LoadArtifact(a.Hash, signerID, uid, 0)
 	if len(attachmentList) == 0 {
 		attachmentList = ar.Attachments

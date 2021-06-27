@@ -101,6 +101,7 @@ const VcnLcAttachmentAuthDesc string = `authenticate an artifact on a specific a
 vcn a binary1 --attach=vscanner.result:jobid123 --output=attachments
 or to get all attachments for a label:
 vcn a binary1 --attach=jobid123 --output=attachments`
+const VcnLcAttachFullDownloadDesc string = "if provided together an attachment label all attachments are downloaded ( also across several notarizations on the same artifact)"
 
 // UserAgent returns the vcn's User-Agent string
 func UserAgent() string {

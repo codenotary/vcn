@@ -142,6 +142,7 @@ VCN_LC_LEDGER=
 	cmd.Flags().String("lc-ledger", "", meta.VcnLcLedgerDesc)
 	cmd.Flags().String("lc-uid", "", meta.VcnLcUidDesc)
 	cmd.Flags().String("attach", "", meta.VcnLcAttachmentAuthDesc)
+	cmd.Flags().Bool("attach-full-download", false, meta.VcnLcAttachFullDownloadDesc)
 
 	cmd.Flags().MarkHidden("raw-diff")
 
@@ -176,6 +177,7 @@ func runVerify(cmd *cobra.Command, args []string) error {
 	lcLedger := viper.GetString("lc-ledger")
 	lcUid := viper.GetString("lc-uid")
 	lcAttach := viper.GetString("attach")
+	lcAttachFullDownload := viper.GetBool("attach-full-download")
 	//check if an lcUser is present inside the context
 	var lcUser *api.LcUser
 	uif, err := api.GetUserFromContext(store.Config().CurrentContext, lcApiKey, lcLedger)
@@ -213,7 +215,7 @@ func runVerify(cmd *cobra.Command, args []string) error {
 			a := &api.Artifact{
 				Hash: strings.ToLower(hash),
 			}
-			return lcVerify(cmd, a, lcUser, signerID, lcUid, lcAttach, output)
+			return lcVerify(cmd, a, lcUser, signerID, lcUid, lcAttach, lcAttachFullDownload, output)
 		}
 
 		artifacts, err := extractor.Extract([]string{args[0]})
@@ -221,7 +223,7 @@ func runVerify(cmd *cobra.Command, args []string) error {
 			return err
 		}
 		for _, a := range artifacts {
-			err := lcVerify(cmd, a, lcUser, signerID, lcUid, lcAttach, output)
+			err := lcVerify(cmd, a, lcUser, signerID, lcUid, lcAttach, lcAttachFullDownload, output)
 			if err != nil {
 				return err
 			}
