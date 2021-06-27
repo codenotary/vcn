@@ -13,13 +13,35 @@ import (
 	"strconv"
 )
 
-func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID string, uid string, output string) (err error) {
+func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID string, uid string, attach string, lcAttachForce bool, output string) (err error) {
 	hook := newHook(cmd, a)
 	err = hook.lcFinalizeWithoutAlert(user, output, 0)
 	if err != nil {
 		return err
 	}
-	ar, verified, err := user.LoadArtifact(a.Hash, signerID, uid, 0)
+	var ar *api.LcArtifact
+	var verified bool
+	var attachmentList []api.Attachment
+
+	var attachmentMap = make(map[string][]api.Attachment)
+	if attach != "" {
+		attachmentMap, err = user.GetArtifactUIDAndAttachmentsListByAttachmentLabel(a.Hash, signerID, attach)
+		if err != nil {
+			return err
+		}
+		for k, attachMapEntry := range attachmentMap {
+			if uid == "" {
+				uid = k
+			}
+			attachmentList = append(attachmentList, attachMapEntry...)
+		}
+	}
+
+	ar, verified, err = user.LoadArtifact(a.Hash, signerID, uid, 0)
+	if len(attachmentList) == 0 {
+		attachmentList = ar.Attachments
+	}
+
 	if err != nil {
 		if err == api.ErrNotFound {
 			err = fmt.Errorf("%s was not notarized", a.Hash)
@@ -44,14 +66,14 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 		fmt.Println("downloading attachments ...")
 		color.Unset()
 		var bar *progressbar.ProgressBar
-		lenAttachments := len(ar.Attachments)
+		lenAttachments := len(attachmentList)
 		if lenAttachments >= 1 {
 			bar = progressbar.Default(int64(lenAttachments))
 		}
 
-		for _, a := range ar.Attachments {
+		for _, a := range attachmentList {
 			_ = bar.Add(1)
-			err := user.DownloadAttachment(&a, ar, 0)
+			err := user.DownloadAttachment(&a, ar, 0, lcAttachForce)
 			if err != nil {
 				return err
 			}

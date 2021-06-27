@@ -79,6 +79,7 @@ const (
 const VcnExitCode string = "override default exit codes in case of success"
 
 const VcnPrefix string = "vcn"
+const VcnAttachmentLabelPrefix string = "_ITEM.ATTACH.LABEL"
 
 // Ledger compliance
 const VcnLCPluginTypeHeaderName string = "lc-plugin-type"
@@ -93,9 +94,14 @@ const VcnLcSkipTlsVerifyDesc string = "disables tls certificate verification whe
 const VcnLcNoTlsDesc string = "allow insecure connections when connecting to a CodeNotary Immutable Ledger server"
 const VcnLcApiKeyDesc string = "CodeNotary Immutable Ledger server api key"
 const VcnLcLedgerDesc string = "CodeNotary Immutable Ledger ledger. Required when a multi-ledger API key is used."
-const VcnLcAttachDesc string = "add user defined file attachments. Ex. vcn n myfile --attach mysecondfile. (repeat --attach for multiple entries). "
+const VcnLcAttachDesc string = "add user defined file attachments. Ex. vcn n myfile --attach mysecondfile. (repeat --attach for multiple entries). It's possible to specify a label for each entry, Ex: --attach=vscanner.result:jobid123. In this way it will be possible to retrieve the specific attachment with `vcn a binary1 --attach=vscanner.result:jobid123` or `vcn a binary1 --attach=jobid123` to get all attachments"
 const VcnLcCIAttribDesc string = "detect CI environment variables context if presents and inject "
 const VcnLcUidDesc string = "authenticate on a specific artifact uid"
+const VcnLcAttachmentAuthDesc string = `authenticate an artifact on a specific attachment label. With this it's be possible to retrieve the specific attachment with:
+vcn a binary1 --attach=vscanner.result:jobid123 --output=attachments
+or to get all attachments for a label:
+vcn a binary1 --attach=jobid123 --output=attachments`
+const VcnLcForceAttachmentDownloadDesc string = "if provided when downloading attachments files are silently overwritten"
 
 // UserAgent returns the vcn's User-Agent string
 func UserAgent() string {
