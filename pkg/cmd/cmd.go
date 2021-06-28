@@ -107,6 +107,7 @@ func init() {
 	rootCmd.PersistentFlags().StringP("output", "o", "", "output format, one of: --output=json|--output=yaml|--output=''. In CodeNotary Immutable Ledger authenticate command is possible to specify also --output=attachments. It permits to download all items attached to an artifact.")
 	rootCmd.PersistentFlags().BoolP("silent", "S", false, "silent mode, don't show progress spinner, but it will still output the result")
 	rootCmd.PersistentFlags().BoolP("quit", "q", true, "if false, ask for confirmation before quitting")
+	rootCmd.PersistentFlags().Bool("verbose", false, "if true, print additional information")
 	//rootCmd.PersistentFlags().String("vcnpath", "", "if false, ask for confirmation before quitting")
 
 	rootCmd.PersistentFlags().MarkHidden("quit")

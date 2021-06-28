@@ -66,6 +66,7 @@ func ItemToLcArtifact(item *schema.ItemExt) (*LcArtifact, error) {
 			lca.Revoked = &time.Time{}
 		}
 	}
+	lca.Ledger = item.LedgerName
 	return &lca, nil
 }
 
@@ -87,6 +88,7 @@ func ZItemToLcArtifact(ie *schema.ZItemExt) (*LcArtifact, error) {
 			lca.Revoked = &time.Time{}
 		}
 	}
+	lca.Ledger = ie.LedgerName
 	return &lca, nil
 }
 
@@ -108,12 +110,13 @@ func VerifiableItemExtToLcArtifact(item *schema.VerifiableItemExt) (*LcArtifact,
 			lca.Revoked = &time.Time{}
 		}
 	}
+	lca.Ledger = item.LedgerName
 	return &lca, nil
 }
 
 type LcArtifact struct {
 	// root fields
-	Uid         string    `json:"uid" yaml:"uid" vcn:"uid"`
+	Uid         string    `json:"uid" yaml:"uid" vcn:"UID"`
 	Kind        string    `json:"kind" yaml:"kind" vcn:"Kind"`
 	Name        string    `json:"name" yaml:"name" vcn:"Name"`
 	Hash        string    `json:"hash" yaml:"hash" vcn:"Hash"`
@@ -128,6 +131,7 @@ type LcArtifact struct {
 	Signer  string      `json:"signer" yaml:"signer" vcn:"SignerID"`
 	Revoked *time.Time  `json:"revoked,omitempty" yaml:"revoked" vcn:"Apikey revoked"`
 	Status  meta.Status `json:"status" yaml:"status" vcn:"Status"`
+	Ledger  string      `json:"ledger,omitempty" yaml:"ledger"`
 }
 
 func (u LcUser) createArtifact(artifact Artifact, status meta.Status, attach []string) (bool, uint64, error) {
@@ -354,6 +358,7 @@ func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerI
 	attachMap := make(map[string][]Attachment)
 
 	for _, entry := range res.Entries {
+		// ori reg ex _ITEM\.ATTACH\.LABEL\.[^.]+\.[^.]+\.(\S+:\S[^.]+|\S+)\.([0-9]+)
 		var regex = regexp.MustCompile("_ITEM\\.ATTACH\\.LABEL\\.[^.]+\\.[^.]+\\.(\\S+:\\S[^.]+|\\S+)\\.([0-9]+)")
 		keyAndUid := regex.FindStringSubmatch(string(entry.Key))
 

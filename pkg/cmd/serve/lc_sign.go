@@ -74,5 +74,5 @@ func lcSign(user *api.LcUser, status meta.Status, kinds map[string]bool, w http.
 		return
 	}
 
-	writeLcResult(w, http.StatusOK, types.NewLcResult(ar, verified))
+	writeLcResult(w, http.StatusOK, types.NewLcResult(ar, verified, nil))
 }

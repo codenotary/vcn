@@ -50,7 +50,7 @@ func (sh *handler) verify(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusBadRequest, err)
 			return
 		}
-		writeLcResult(w, http.StatusOK, types.NewLcResult(ar, verified))
+		writeLcResult(w, http.StatusOK, types.NewLcResult(ar, verified, nil))
 		return
 	}
 

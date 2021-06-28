@@ -11,7 +11,7 @@ import (
 	"github.com/vchain-us/vcn/pkg/meta"
 )
 
-func LcSign(u *api.LcUser, artifacts []*api.Artifact, state meta.Status, output string, name string, metadata map[string]interface{}, attach []string) error {
+func LcSign(u *api.LcUser, artifacts []*api.Artifact, state meta.Status, output string, name string, metadata map[string]interface{}, attach []string, verbose bool) error {
 
 	if output == "" {
 		color.Set(meta.StyleAffordance())
@@ -93,7 +93,15 @@ func LcSign(u *api.LcUser, artifacts []*api.Artifact, state meta.Status, output 
 				return err
 			}
 		} else {
-			cli.PrintLc(output, types.NewLcResult(artifact, verified))
+			var verbInfos *types.LcVerboseInfo
+			if verbose {
+				verbInfos = &types.LcVerboseInfo{
+					LedgerName: artifact.Ledger,
+					LocalSID:   api.GetSignerIDByApiKey(u.Client.ApiKey),
+					ApiKey:     u.Client.ApiKey,
+				}
+			}
+			cli.PrintLc(output, types.NewLcResult(artifact, verified, verbInfos))
 		}
 	}
 	if lenArtifacts > 1 && output == "" {

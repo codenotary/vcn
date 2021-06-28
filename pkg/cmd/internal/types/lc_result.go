@@ -14,21 +14,28 @@ import (
 
 type LcResult struct {
 	api.LcArtifact `yaml:",inline"`
-	Verified       bool    `json:"verified" yaml:"verified" vcn:"Verified"`
-	Errors         []error `json:"error,omitempty" yaml:"error,omitempty"`
+	Verified       bool           `json:"verified" yaml:"verified" vcn:"Verified"`
+	Verbose        *LcVerboseInfo `yaml:",inline" vcn:"Verbose"`
+	Errors         []error        `json:"error,omitempty" yaml:"error,omitempty"`
+}
+
+type LcVerboseInfo struct {
+	LedgerName string `json:"ledgerName" yaml:"ledgerName" vcn:"LedgerName"`
+	LocalSID   string `json:"localSID" yaml:"localSID" vcn:"LocalSID"`
+	ApiKey     string `json:"apiKey" yaml:"apiKey" vcn:"ApiKey"`
 }
 
 func (r *LcResult) AddError(err error) {
 	r.Errors = append(r.Errors, err)
 }
 
-func NewLcResult(lca *api.LcArtifact, verified bool) *LcResult {
+func NewLcResult(lca *api.LcArtifact, verified bool, verbose *LcVerboseInfo) *LcResult {
 
 	var r LcResult
 
 	switch true {
 	case lca != nil:
-		r = LcResult{LcArtifact: *lca, Verified: verified}
+		r = LcResult{LcArtifact: *lca, Verified: verified, Verbose: verbose}
 	default:
 		r = LcResult{}
 	}

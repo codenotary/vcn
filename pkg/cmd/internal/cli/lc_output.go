@@ -134,6 +134,37 @@ func WriteLcResultTo(r *types.LcResult, out io.Writer) (n int64, err error) {
 		}
 	}
 
+	// here extra data when --verbose flag is provided
+	if r.Verbose != nil {
+		err = printf("\nAdditional details:\n")
+		if err != nil {
+			return
+		}
+		s = reflect.ValueOf(r.Verbose).Elem()
+		typeOfT = s.Type()
+		for i, l := 0, s.NumField(); i < l; i++ {
+			if key, ok := typeOfT.Field(i).Tag.Lookup("vcn"); ok {
+				switch key {
+				case "LedgerName":
+					err = printf("Ledger Name:\t%s\n", r.Verbose.LedgerName)
+					if err != nil {
+						return
+					}
+				case "LocalSID":
+					err = printf("Local SignerID:\t%s\n", r.Verbose.LocalSID)
+					if err != nil {
+						return
+					}
+				case "ApiKey":
+					err = printf("Api-key:\t%s\n", r.Verbose.ApiKey)
+					if err != nil {
+						return
+					}
+				}
+			}
+		}
+	}
+
 	for _, e := range r.Errors {
 		err = printf("Error:\t%s\n", color.New(meta.StyleError()).Sprintf(e.Error()))
 		if err != nil {

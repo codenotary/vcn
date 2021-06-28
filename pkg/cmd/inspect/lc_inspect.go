@@ -137,7 +137,7 @@ func getSignerResults(ctx context.Context, key []byte, u *api.LcUser, first, las
 		if err != nil {
 			results[i].AddError(err)
 		}
-		results[i] = types.NewLcResult(lca, true)
+		results[i] = types.NewLcResult(lca, true, nil)
 
 		i++
 	}
@@ -175,7 +175,7 @@ func getHistoryResults(ctx context.Context, key []byte, u *api.LcUser, first, la
 		if err != nil {
 			return nil, err
 		}
-		results[i] = types.NewLcResult(lca, true)
+		results[i] = types.NewLcResult(lca, true, nil)
 		if err != nil {
 			results[i].AddError(err)
 		}
@@ -251,7 +251,7 @@ func getTimeRangedResults(ctx context.Context, u *api.LcUser, set []byte, first,
 		if err != nil {
 			results[i].AddError(err)
 		}
-		results[i] = types.NewLcResult(lca, true)
+		results[i] = types.NewLcResult(lca, true, nil)
 
 		i++
 	}

@@ -13,7 +13,7 @@ import (
 	"strconv"
 )
 
-func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID string, uid string, attach string, lcAttachForce bool, output string) (err error) {
+func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID string, uid string, attach string, lcAttachForce bool, verbose bool, output string) (err error) {
 	hook := newHook(cmd, a)
 	err = hook.lcFinalizeWithoutAlert(user, output, 0)
 	if err != nil {
@@ -99,8 +99,15 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 	if exitCode == meta.VcnDefaultExitCode && viper.GetInt("exit-code") == 0 {
 		viper.Set("exit-code", strconv.Itoa(ar.Status.Int()))
 	}
-
-	cli.PrintLc(output, types.NewLcResult(ar, verified))
+	var verbInfos *types.LcVerboseInfo
+	if verbose {
+		verbInfos = &types.LcVerboseInfo{
+			LedgerName: ar.Ledger,
+			LocalSID:   api.GetSignerIDByApiKey(user.Client.ApiKey),
+			ApiKey:     user.Client.ApiKey,
+		}
+	}
+	cli.PrintLc(output, types.NewLcResult(ar, verified, verbInfos))
 
 	return
 }
