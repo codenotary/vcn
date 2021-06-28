@@ -233,6 +233,9 @@ func runVerify(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 
+	if output == "attachments" {
+		return fmt.Errorf("in order to download attachments, you need to be logged in on CodeNotary Immutable Ledger®\nProceed by authenticating yourself using <vcn login>")
+	}
 	// blockchain context
 	org := viper.GetString("org")
 	var keys []string
