@@ -38,9 +38,6 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 	}
 
 	ar, verified, err = user.LoadArtifact(a.Hash, signerID, uid, 0)
-	if len(attachmentList) == 0 {
-		attachmentList = ar.Attachments
-	}
 
 	if err != nil {
 		if err == api.ErrNotFound {
@@ -59,6 +56,10 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 	if ar.Revoked != nil && !ar.Revoked.IsZero() {
 		viper.Set("exit-code", strconv.Itoa(meta.StatusApikeyRevoked.Int()))
 		ar.Status = meta.StatusApikeyRevoked
+	}
+
+	if len(attachmentList) == 0 && ar.Attachments != nil {
+		attachmentList = ar.Attachments
 	}
 
 	if output == "attachments" {
