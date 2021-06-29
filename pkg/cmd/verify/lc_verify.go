@@ -23,17 +23,28 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 	var verified bool
 	var attachmentList []api.Attachment
 
-	var attachmentMap = make(map[string][]api.Attachment)
+	var attachmentMap = make(map[string][]*api.Attachment)
 	if attach != "" {
 		attachmentMap, err = user.GetArtifactUIDAndAttachmentsListByAttachmentLabel(a.Hash, signerID, attach)
 		if err != nil {
 			return err
 		}
+		// attachmentFileNameMap is used internally to produce a map to handle equal file name attachments
+		attachmentFileNameMap := make(map[string][]*api.Attachment)
 		for k, attachMapEntry := range attachmentMap {
+			// latest uid, needed to authenticate the latest notarized artifact
 			if uid == "" {
 				uid = k
 			}
-			attachmentList = append(attachmentList, attachMapEntry...)
+			for _, att := range attachMapEntry {
+				if _, ok := attachmentFileNameMap[att.Filename]; ok && len(attachmentFileNameMap[att.Filename]) > 0 {
+					// if there is a newer filename here a postfix is added. ~1,~2 ... ~N
+					att.Filename = att.Filename + "~" + strconv.Itoa(len(attachmentFileNameMap[att.Filename]))
+				}
+				attachmentFileNameMap[att.Filename] = append(attachmentFileNameMap[att.Filename], att)
+				// attachmentList contains all attachments with latest first order
+				attachmentList = append(attachmentList, *att)
+			}
 		}
 	}
 
@@ -64,8 +75,20 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 
 	if output == "attachments" {
 		color.Set(meta.StyleAffordance())
-		fmt.Println("downloading attachments ...")
+		attachDownloadMessage := "downloading attachments ..."
+		if attach != "" {
+			attachDownloadMessage = "downloading all notarizations attachments associated to the provided label ..."
+		}
+		fmt.Println(attachDownloadMessage)
 		color.Unset()
+
+		fmt.Printf("Download list:\n")
+		for _, a := range attachmentList {
+			fmt.Printf("\t\t- Filename:\t%s\n", a.Filename)
+			fmt.Printf("\t\t  Hash:\t\t%s\n", a.Hash)
+			fmt.Printf("\t\t  Mime:\t\t%s\n", a.Mime)
+		}
+		fmt.Printf("\n")
 		var bar *progressbar.ProgressBar
 		lenAttachments := len(attachmentList)
 		if lenAttachments >= 1 {

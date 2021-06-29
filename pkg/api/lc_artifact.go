@@ -327,7 +327,7 @@ func (u *LcUser) LoadArtifact(hash, signerID string, uid string, tx uint64) (lc 
 	return lcArtifact, true, nil
 }
 
-func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerID string, attach string) (map[string][]Attachment, error) {
+func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerID string, attach string) (map[string][]*Attachment, error) {
 
 	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
@@ -355,7 +355,7 @@ func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerI
 		return nil, errors.New("provided label is not present")
 	}
 
-	attachMap := make(map[string][]Attachment)
+	attachMap := make(map[string][]*Attachment)
 
 	for _, entry := range res.Entries {
 		// ori reg ex _ITEM\.ATTACH\.LABEL\.[^.]+\.[^.]+\.(\S+:\S[^.]+|\S+)\.([0-9]+)
@@ -366,7 +366,7 @@ func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerI
 			return nil, errors.New("not consistent data when retrieving uid from attachment label entry")
 		}
 
-		attachmentList := make([]Attachment, 0)
+		attachmentList := make([]*Attachment, 0)
 		err = json.Unmarshal(entry.Value, &attachmentList)
 		if err != nil {
 			return nil, err
