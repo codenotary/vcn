@@ -37,11 +37,12 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 				uid = k
 			}
 			for _, att := range attachMapEntry {
-				if _, ok := attachmentFileNameMap[att.Filename]; ok && len(attachmentFileNameMap[att.Filename]) > 0 {
+				fn := att.Filename
+				if _, ok := attachmentFileNameMap[fn]; ok && len(attachmentFileNameMap[fn]) > 0 {
 					// if there is a newer filename here a postfix is added. ~1,~2 ... ~N
-					att.Filename = att.Filename + "~" + strconv.Itoa(len(attachmentFileNameMap[att.Filename]))
+					att.Filename = fn + "~" + strconv.Itoa(len(attachmentFileNameMap[fn]))
 				}
-				attachmentFileNameMap[att.Filename] = append(attachmentFileNameMap[att.Filename], att)
+				attachmentFileNameMap[fn] = append(attachmentFileNameMap[fn], att)
 				// attachmentList contains all attachments with latest first order
 				attachmentList = append(attachmentList, *att)
 			}
