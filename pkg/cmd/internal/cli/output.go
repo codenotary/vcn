@@ -122,7 +122,7 @@ func WriteResultTo(r *types.Result, out io.Writer) (n int64, err error) {
 
 func Print(output string, r *types.Result) error {
 	switch output {
-	case "":
+	case "", "attachments":
 		WriteResultTo(r, colorable.NewColorableStdout())
 	case "yaml":
 		b, err := yaml.Marshal(r)
@@ -144,7 +144,7 @@ func Print(output string, r *types.Result) error {
 
 func PrintSlice(output string, rs []types.Result) error {
 	switch output {
-	case "":
+	case "", "attachments":
 		for _, r := range rs {
 			WriteResultTo(&r, colorable.NewColorableStdout())
 			fmt.Println()
@@ -169,7 +169,7 @@ func PrintSlice(output string, rs []types.Result) error {
 
 func PrintList(output string, artifacts []api.ArtifactResponse) error {
 	switch output {
-	case "":
+	case "", "attachments":
 		for _, a := range artifacts {
 			fmt.Print(a)
 		}
@@ -196,7 +196,7 @@ func PrintError(output string, err *types.Error) error {
 		return nil
 	}
 	switch output {
-	case "":
+	case "", "attachments":
 		fmt.Fprintf(os.Stderr, "\nError: %s\n", err)
 	case "yaml":
 		b, err := yaml.Marshal(err)
@@ -218,7 +218,7 @@ func PrintError(output string, err *types.Error) error {
 
 func PrintWarning(output string, message string) error {
 	switch output {
-	case "":
+	case "", "attachments":
 		fallthrough
 	case "yaml":
 		fallthrough
@@ -236,7 +236,7 @@ func outputNotSupportedErr(output string) error {
 
 func PrintObjects(output string, out interface{}) error {
 	switch output {
-	case "":
+	case "", "attachments":
 		fallthrough
 	case "yaml":
 		b, err := yaml.Marshal(out)

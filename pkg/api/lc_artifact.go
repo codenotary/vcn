@@ -22,6 +22,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -327,7 +328,56 @@ func (u *LcUser) LoadArtifact(hash, signerID string, uid string, tx uint64) (lc 
 	return lcArtifact, true, nil
 }
 
-func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerID string, attach string) (map[string][]*Attachment, error) {
+// GetArtifactAttachmentListByLabel returns the attachment list of an artifact and the most recent uid by a provided label and signerID
+// When there are multiple attachments with same file name it adds an enumerator postfix.
+func (u *LcUser) GetArtifactAttachmentListByLabel(hash string, signerID, label string) ([]Attachment, string, error) {
+	if label == "" {
+		return nil, "", errors.New("no attachment provided")
+	}
+	if hash == "" {
+		return nil, "", errors.New("no artifact provided")
+	}
+	var attachmentList []Attachment
+	var uid string
+	attachmentMap, err := u.fetchAttachmentMapByLabel(hash, signerID, label)
+	if err != nil {
+		return nil, "", err
+	}
+	// map order is not guaranted so here obtain a sorted string array
+	var attachDriver []string
+	for k, _ := range attachmentMap {
+		attachDriver = append(attachDriver, k)
+	}
+	sort.Strings(attachDriver)
+	// reverse the driver
+	last := len(attachDriver) - 1
+	for i := 0; i < len(attachDriver)/2; i++ {
+		attachDriver[i], attachDriver[last-i] = attachDriver[last-i], attachDriver[i]
+	}
+	// attachmentFileNameMap is used internally to produce a map to handle attachments with same name
+	attachmentFileNameMap := make(map[string][]*Attachment)
+
+	for _, k := range attachDriver {
+		attachMapEntry := attachmentMap[k]
+		// latest uid, needed to authenticate the latest notarized artifact
+		if uid == "" {
+			uid = k
+		}
+		for _, att := range attachMapEntry {
+			fn := att.Filename
+			if _, ok := attachmentFileNameMap[fn]; ok && len(attachmentFileNameMap[fn]) > 0 {
+				// if there is a newer filename here a postfix is added. ~1,~2 ... ~N
+				att.Filename = fn + "~" + strconv.Itoa(len(attachmentFileNameMap[fn]))
+			}
+			attachmentFileNameMap[fn] = append(attachmentFileNameMap[fn], att)
+			// attachmentList contains all attachments with latest first order
+			attachmentList = append(attachmentList, *att)
+		}
+	}
+	return attachmentList, uid, nil
+}
+
+func (u *LcUser) fetchAttachmentMapByLabel(hash, signerID string, attach string) (map[string][]*Attachment, error) {
 
 	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
@@ -352,7 +402,7 @@ func (u *LcUser) GetArtifactUIDAndAttachmentsListByAttachmentLabel(hash, signerI
 		return nil, err
 	}
 	if len(res.Entries) < 1 {
-		return nil, errors.New("provided label is not present")
+		return nil, errors.New("provided label does not contains entries")
 	}
 
 	attachMap := make(map[string][]*Attachment)

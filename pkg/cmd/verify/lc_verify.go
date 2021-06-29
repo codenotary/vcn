@@ -19,38 +19,16 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 	if err != nil {
 		return err
 	}
-	var ar *api.LcArtifact
-	var verified bool
 	var attachmentList []api.Attachment
 
-	var attachmentMap = make(map[string][]*api.Attachment)
 	if attach != "" {
-		attachmentMap, err = user.GetArtifactUIDAndAttachmentsListByAttachmentLabel(a.Hash, signerID, attach)
+		attachmentList, uid, err = user.GetArtifactAttachmentListByLabel(a.Hash, signerID, attach)
 		if err != nil {
 			return err
 		}
-		// attachmentFileNameMap is used internally to produce a map to handle equal file name attachments
-		attachmentFileNameMap := make(map[string][]*api.Attachment)
-		for k, attachMapEntry := range attachmentMap {
-			// latest uid, needed to authenticate the latest notarized artifact
-			if uid == "" {
-				uid = k
-			}
-			for _, att := range attachMapEntry {
-				fn := att.Filename
-				if _, ok := attachmentFileNameMap[fn]; ok && len(attachmentFileNameMap[fn]) > 0 {
-					// if there is a newer filename here a postfix is added. ~1,~2 ... ~N
-					att.Filename = fn + "~" + strconv.Itoa(len(attachmentFileNameMap[fn]))
-				}
-				attachmentFileNameMap[fn] = append(attachmentFileNameMap[fn], att)
-				// attachmentList contains all attachments with latest first order
-				attachmentList = append(attachmentList, *att)
-			}
-		}
 	}
 
-	ar, verified, err = user.LoadArtifact(a.Hash, signerID, uid, 0)
-
+	ar, verified, err := user.LoadArtifact(a.Hash, signerID, uid, 0)
 	if err != nil {
 		if err == api.ErrNotFound {
 			err = fmt.Errorf("%s was not notarized", a.Hash)
@@ -75,21 +53,8 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 	}
 
 	if output == "attachments" {
-		color.Set(meta.StyleAffordance())
-		attachDownloadMessage := "downloading attachments ..."
-		if attach != "" {
-			attachDownloadMessage = "downloading all notarizations attachments associated to the provided label ..."
-		}
-		fmt.Println(attachDownloadMessage)
-		color.Unset()
+		cli.PrintAttachmentList(attach, attachmentList)
 
-		fmt.Printf("Download list:\n")
-		for _, a := range attachmentList {
-			fmt.Printf("\t\t- Filename:\t%s\n", a.Filename)
-			fmt.Printf("\t\t  Hash:\t\t%s\n", a.Hash)
-			fmt.Printf("\t\t  Mime:\t\t%s\n", a.Mime)
-		}
-		fmt.Printf("\n")
 		var bar *progressbar.ProgressBar
 		lenAttachments := len(attachmentList)
 		if lenAttachments >= 1 {

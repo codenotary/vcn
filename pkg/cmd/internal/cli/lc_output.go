@@ -199,3 +199,25 @@ func PrintLcSlice(output string, rs []*types.LcResult) error {
 	}
 	return nil
 }
+
+func PrintAttachmentList(attach string, attachmentList []api.Attachment) {
+	if len(attachmentList) == 0 {
+		fmt.Println("no attachments founded")
+		return
+	}
+	color.Set(meta.StyleAffordance())
+	attachDownloadMessage := "downloading attachments ..."
+	if attach != "" {
+		attachDownloadMessage = "downloading all notarizations attachments associated to the provided label ..."
+	}
+	fmt.Println(attachDownloadMessage)
+	color.Unset()
+
+	fmt.Printf("Download list:\n")
+	for _, a := range attachmentList {
+		fmt.Printf("\t\t- Filename:\t%s\n", a.Filename)
+		fmt.Printf("\t\t  Hash:\t\t%s\n", a.Hash)
+		fmt.Printf("\t\t  Mime:\t\t%s\n", a.Mime)
+	}
+	fmt.Printf("\n")
+}
