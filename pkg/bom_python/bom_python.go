@@ -20,7 +20,6 @@ type PythonPackage struct {
 	pkgType int
 }
 
-
 // New returns new PythonPackage object, or nil if the path doesn't point to directory with Python package
 func New(dir string) *PythonPackage {
 	files, err := ioutil.ReadDir(dir)
@@ -30,15 +29,15 @@ func New(dir string) *PythonPackage {
 
 	packageType := unknown
 	// check what type of package is it
-	loop:
+loop:
 	for _, file := range files {
 		switch file.Name() {
 		case "Pipfile.lock":
 			packageType = pipenv
-			break loop		// don't look further
+			break loop // don't look further
 		case "poetry.lock":
 			packageType = poetry
-			break loop		// don't look further
+			break loop // don't look further
 		case "requirements.txt":
 			packageType = reqs
 			// keep looking for other files
@@ -46,7 +45,7 @@ func New(dir string) *PythonPackage {
 	}
 
 	if packageType == unknown {
-		return nil	// not Python signature files found
+		return nil // not Python signature files found
 	}
 
 	return &PythonPackage{pkgType: packageType, dirName: dir}

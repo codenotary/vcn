@@ -1,14 +1,14 @@
 package bom_python
 
 import (
-	"os"
-	"path/filepath"
-	"io/ioutil"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
-	"encoding/hex"
 
 	component "github.com/vchain-us/vcn/pkg/bom_component"
 )
@@ -46,7 +46,7 @@ func procPipenv(dir string) ([]component.Component, error) {
 		if !ok {
 			return nil, fmt.Errorf("malformed \"%s\" section", name)
 		}
-	
+
 		var comp component.Component
 		comp.Name = name
 		field, ok := pkgContent["hashes"]
@@ -88,7 +88,7 @@ func combineHashes(hashes []interface{}) (string, error) {
 	var res []byte
 	for _, v := range hashes {
 		hash, ok := v.(string)
-		if !ok { 
+		if !ok {
 			return "", errors.New("malformed hash value")
 		}
 		split := strings.SplitN(hash, ":", 2)

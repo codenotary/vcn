@@ -3,22 +3,22 @@ package bom_python
 import (
 	"bufio"
 	"bytes"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
+	"io"
+	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
-//	"sync"
-	"net/http"
-	"encoding/json"
-	"io"
-	"encoding/hex"
 
 	component "github.com/vchain-us/vcn/pkg/bom_component"
 )
 
 type pypiUrls struct {
-	Files []pypiFile	`json:"urls"`
+	Files []pypiFile `json:"urls"`
 }
 
 type pypiFile struct {
@@ -26,17 +26,28 @@ type pypiFile struct {
 }
 
 type pypiDigests struct {
-	Md5 string			`json:"md5,omitempty"`
-	Sha256 string		`json:"sha256,omitempty"`
+	Md5    string `json:"md5,omitempty"`
+	Sha256 string `json:"sha256,omitempty"`
 }
 
 type module struct {
-	needed	bool
+	needed  bool
 	version string
 }
 
+type task struct {
+	name    string
+	version string
+}
+type result struct {
+	name string
+	hash string
+	deps []string
+	err  error
+}
+
 const (
-	pythonExe = "python"
+	pythonExe     = "python"
 	maxGoroutines = 8
 )
 
@@ -58,46 +69,100 @@ func procPip(dir string) ([]component.Component, error) {
 		return nil, errors.New("got unexpected result to pip module list request")
 	}
 
-	// collect module dependencies
+	// store all known modules
 	moduleGraph := make(map[string]*module)
 	for scanner.Scan() {
 		fields := strings.Fields(scanner.Text())
 		moduleGraph[fields[0]] = &module{version: fields[1]}
 	}
 
-	// read root dependencies from requirements.txt and then traverse dependency graph, identifying needed modules
+	// root dependencies from requirements.txt
 	buf, err = os.ReadFile(filepath.Join(dir, "requirements.txt"))
 	if err != nil {
 		return nil, err
 	}
+
+	// init goroutine throttling - channels, start goroutines.
+	// We can be sure that there will be no more in-flight messages in channels than known modules
+	tasks := make(chan task, len(moduleGraph))
+	results := make(chan result, len(moduleGraph))
+	for i := 0; i < maxGoroutines; i++ {
+		go worker(tasks, results)
+	}
+
+	taskCount := 0
+
+	// initial tasks - content of requirements.txt
 	scanner = bufio.NewScanner(bytes.NewReader(buf))
 	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		line := scanner.Text()
 		endPos := strings.IndexAny(line, "=>")
 		if endPos > 0 {
-			err = traverseDependencies(moduleGraph, line[:endPos])
-		} else {
-			err = traverseDependencies(moduleGraph, line)
+			line = line[:endPos]
 		}
-		if err != nil {
+
+		mod, ok := moduleGraph[line]
+		if !ok {
+			// not found (should never happen) or already processed
+			log.Printf("Unknown module %s - ignoring", line)
+			continue
+		}
+		mod.needed = true
+
+		tasks <- task{name: line, version: mod.version}
+		taskCount++
+	}
+
+	// get dependencies, run tasks for dependencies, collect info about all used modules
+	res := make([]component.Component, 0)
+	for done := 0; taskCount == 0 || done < taskCount; done++ {
+		result := <-results
+		if result.err != nil {
+			close(tasks) // signal workers to stop
 			return nil, err
 		}
-	}
-
-	// select only needed modules
-	res := make([]component.Component, 0)
-	for k, v := range moduleGraph {
-		if v.needed {
-			hash, err := queryHash(k, v.version)
-			if err != nil {
-				return nil, err
+		res = append(res, component.Component{Name: result.name, Version: moduleGraph[result.name].version, Hash: result.hash})
+		for _, v := range result.deps {
+			if v == "" {
+				continue
 			}
-			res = append(res, component.Component{Name: k, Version: v.version, Hash: hash})
+			mod, ok := moduleGraph[v]
+			if !ok {
+				// not found (should never happen) or already processed
+				log.Printf("Unknown module %s - ignoring", v)
+				continue
+			}
+
+			if mod.needed {
+				continue // already being processed
+			}
+			mod.needed = true
+			tasks <- task{name: v, version: mod.version}
+			taskCount++
 		}
 	}
+	close(tasks)   // signal workers to stop
+	close(results) // it is safe to close result channel because workers do nothing at this point
 
 	return res, nil
+}
+
+func worker(tasks <-chan task, results chan<- result) {
+	for task := range tasks {
+		hash, err := queryHash(task.name, task.version)
+		if err != nil {
+			results <- result{err: err}
+			continue
+		}
+		deps, err := preRequisites(task.name)
+		if err != nil {
+			results <- result{err: err}
+			continue
+		}
+
+		results <- result{name: task.name, hash: hash, deps: deps, err: nil}
+	}
 }
 
 func preRequisites(module string) ([]string, error) {
@@ -118,28 +183,6 @@ func preRequisites(module string) ([]string, error) {
 	return nil, errors.New("malformed output from pip module query")
 }
 
-func traverseDependencies(graph map[string]*module, line string) error {
-	mod, ok := graph[line]
-	if !ok || mod.needed {
-		return nil // not found (should never happen) or already processed
-	}
-	mod.needed = true
-
-	preReqs, err := preRequisites(line)
-	if err != nil {
-		return err
-	}
-
-	for _, dep := range preReqs {
-		err = traverseDependencies(graph, dep)
-		if err != nil {
-			return err
-		}	
-	}
-
-	return nil
-}
-
 // query PyPI.org for module hash, combine all available hashes using XOR
 func queryHash(name, version string) (string, error) {
 	resp, err := http.Get("https://pypi.org/pypi/" + name + "/" + version + "/json")
@@ -147,7 +190,7 @@ func queryHash(name, version string) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-	if  resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusOK {
 		return "", errors.New("cannot query PyPI for package details")
 	}
 	body, err := io.ReadAll(resp.Body)
