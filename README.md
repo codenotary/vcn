@@ -429,21 +429,21 @@ It's possible to filter results by signer identifier:
 vcn inspect document.pdf --signerID CygBE_zb8XnprkkO6ncIrbbwYoUq5T1zfyEF6DhqcAI=
 ```
 ### Attachments
-When notarizing an assets it's possible to provide attachments:
+When notarizing an asset you can add attachments to the transaction:
 ```shell script
-vcn n artifact --attach attach-1:lab1 --attach attach-2:lab1 --attach attach-3:lab2
+vcn n artifact --attach attachment1:label1 --attach attachment2:label1 --attach attachment3:label2
 ```
->This is useful for instance when a CI pipeline consists in multiple steps and each step provides a different attachment.
+>This is especially useful when running a CI pipeline in multiple steps and each step provides a different result that should be attached (i. e. vulnerability scanner result, compliance scanner result, dependency scanner result).
 
-To retrieve attachments its' possible to use the notarization uid or labels.
-With the uid it will be download all the attachments of a specific notarization.
+To retrieve these attachments you can either use the notarization transaction uid or the labels.
+When using the uid all attachments of the specific notarization transaction will be downloaded.
 ```shell script
 vcn a go.sum --lc-uid 1624700334893475066 --output attachments
 ```
-With `labels` is possible to download a specific attachment or all the attachments for a label.
+When using `labels` you can either download a specific attachment or all attachments with the same label.
 ```shell script
-vcn a go.sum --attach attach-2:lab1 --output attachments
-vcn a go.sum --attach lab1 --output attachments
+vcn a go.sum --attach attachment2:label1 --output attachments
+vcn a go.sum --attach label1 --output attachments
 ```
 Another example that shows the artifact attachment's download across all notarizations:
 ```shell script
@@ -454,12 +454,14 @@ vcn n asset.bin --attach file3.txt:labelXYZ
 # downloads all attached files
 vcn a asset.bin --attach labelXYZ --output attachments
 ```
-If vcn finds a file name with the same name of the attachment the download will be aborted. It's possible to force the download using `--force` flag.
+
+The label only command --attach label1 downloads the latest version of all attachments that have the requested label.
+Existing files will not be overwritte. In case you want to download and overwrite existing files use the `--force` flag.
 If there are multiple versions of a specific attachment the file will be downloaded with an enumerated postfix.
+
 ```shell script
 vcn a go.sum --attach lab1 --output attachments --force
 ```
-
 
 ### Local API server
 
