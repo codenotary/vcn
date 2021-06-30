@@ -17,7 +17,6 @@ require (
 	github.com/cespare/cp v1.1.1 // indirect
 	github.com/cmars/basen v0.0.0-20150613233007-fe3947df716e // indirect
 	github.com/codenotary/immudb v0.9.3-0.20210511160950-9d8cf71fe8ea
-	github.com/codenotary/vcn/pkg/cmd/bom v0.0.0-00010101000000-000000000000
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/dghubble/sling v1.3.0
 	github.com/dustin/go-humanize v1.0.0
@@ -27,7 +26,6 @@ require (
 	github.com/fatih/color v1.9.0
 	github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5 // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
-	github.com/golang/protobuf v1.5.2
 	github.com/google/go-cmp v0.5.5
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.3
@@ -60,18 +58,9 @@ require (
 	github.com/vchain-us/ledger-compliance-go v0.9.2-0.20210512151942-891d9d3e24fd
 	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9
 	google.golang.org/grpc v1.37.0
-	google.golang.org/protobuf v1.26.0
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/urfave/cli.v1 v1.20.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	launchpad.net/gocheck v0.0.0-20140225173054-000000000087 // indirect
 )
-
-replace github.com/codenotary/vcn/pkg/cmd/bom => ./pkg/cmd/bom
-
-replace github.com/codenotary/vcn/pkg/bom_component => ./pkg/bom_component
-
-replace github.com/codenotary/vcn/pkg/bom_package => ./pkg/bom_package
-
-replace github.com/codenotary/vcn/pkg/bom_go => ./pkg/bom_go

@@ -1,16 +1,16 @@
 package bom_package
 
 import (
-	component "github.com/codenotary/vcn/pkg/bom_component"
 
 	// add language-specific packages below
-	"github.com/codenotary/vcn/pkg/bom_go"
+	"github.com/vchain-us/vcn/pkg/bom_component"
+	"github.com/vchain-us/vcn/pkg/bom_go"
 )
 
 // Package is a language- and/or environment-specific interface which finds components
 type Package interface {
 	Type() string
-	Components() ([]component.Component, error)
+	Components() ([]bom_component.Component, error)
 	Close()
 }
 

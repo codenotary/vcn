@@ -122,6 +122,8 @@ github.com/codenotary/immudb v0.9.3-0.20210511153409-241ec51e0d45 h1:fusVf8iLlDk
 github.com/codenotary/immudb v0.9.3-0.20210511153409-241ec51e0d45/go.mod h1:EFNhKjbZNAXYKYtXDCGSZsNf5gWSboO5M+tyowhKWKY=
 github.com/codenotary/immudb v0.9.3-0.20210511160950-9d8cf71fe8ea h1:+EYel5q5EqUsnrgq3sLJq/ceqZy4iGDYiDKfNkd+Hw8=
 github.com/codenotary/immudb v0.9.3-0.20210511160950-9d8cf71fe8ea/go.mod h1:EFNhKjbZNAXYKYtXDCGSZsNf5gWSboO5M+tyowhKWKY=
+github.com/codenotary/immudb v1.0.1 h1:VjBf8jMdtf9vqmEU+X8QmA/r17PpWHSsW2Uwi29ani8=
+github.com/codenotary/vcn v0.9.6 h1:vRoxnhPRgWi0H+JvmqCUKX6ZOATGQMuOv495uq4Ceqk=
 github.com/coreos/bbolt v1.3.2/go.mod h1:iRUV2dpdMOn7Bo10OQBFzIJO9kkE559Wcmn+qkEiiKk=
 github.com/coreos/etcd v3.3.10+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
 github.com/coreos/etcd v3.3.13+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
