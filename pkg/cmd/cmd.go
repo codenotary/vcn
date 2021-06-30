@@ -18,6 +18,7 @@ import (
 
 	"golang.org/x/crypto/ssh/terminal"
 
+	"github.com/vchain-us/vcn/pkg/cmd/bom"
 	"github.com/vchain-us/vcn/pkg/cmd/dashboard"
 	"github.com/vchain-us/vcn/pkg/cmd/info"
 	"github.com/vchain-us/vcn/pkg/cmd/inspect"
@@ -32,7 +33,6 @@ import (
 	"github.com/vchain-us/vcn/pkg/cmd/verify"
 	"github.com/vchain-us/vcn/pkg/meta"
 	"github.com/vchain-us/vcn/pkg/store"
-	"github.com/codenotary/vcn/pkg/cmd/bom"
 
 	"github.com/inconshreveable/mousetrap"
 	"github.com/spf13/cobra"

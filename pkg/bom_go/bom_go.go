@@ -4,9 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"github.com/vchain-us/vcn/pkg/bom_component"
 	"strings"
-
-	component "github.com/codenotary/vcn/pkg/bom_component"
 )
 
 // GoPackage implements Package interface
@@ -46,7 +45,7 @@ func (p *GoPackage) Close() {
 var buildInfoMagic = []byte("\xff Go buildinf:")
 
 // Components returns list of go packages used during the build
-func (p *GoPackage) Components() ([]component.Component, error) {
+func (p *GoPackage) Components() ([]bom_component.Component, error) {
 	// Read the first 64kB of text to find the build info blob.
 	text := p.file.DataStart()
 	data, err := p.file.ReadData(text, 64*1024)
@@ -90,11 +89,11 @@ func (p *GoPackage) Components() ([]component.Component, error) {
 	}
 
 	lines := strings.Split(mod, "\n")
-	res := make([]component.Component, 0, len(lines))
+	res := make([]bom_component.Component, 0, len(lines))
 	for _, line := range lines {
 		fields := strings.Split(line, "\t")
 		if fields[0] == "dep" {
-			var comp component.Component
+			var comp bom_component.Component
 			switch len(fields) {
 			default:
 				comp.Hash = fields[3]

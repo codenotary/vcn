@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io/ioutil"
 
-	component "github.com/codenotary/vcn/pkg/bom_component"
+	component "github.com/vchain-us/vcn/pkg/bom_component"
 )
 
 const (
@@ -67,19 +67,13 @@ func (p *PythonPackage) Components() ([]component.Component, error) {
 	case poetry:
 		return procPoetry(p.dirName)
 	case reqs:
-		return procReqs(p.dirName)
+		return procPip(p.dirName)
 	default:
 		// should never happen
 		return nil, errors.New("unknown package type")
 	}
 }
 
-
-
 func procPoetry(dir string) ([]component.Component, error) {
-	return nil, nil
-}
-
-func procReqs(dir string) ([]component.Component, error) {
 	return nil, nil
 }

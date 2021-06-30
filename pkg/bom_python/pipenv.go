@@ -10,7 +10,7 @@ import (
 	"strings"
 	"encoding/hex"
 
-	component "github.com/codenotary/vcn/pkg/bom_component"
+	component "github.com/vchain-us/vcn/pkg/bom_component"
 )
 
 // for pipenv Pipfile.lock JSON file contains all needed information in "default" section

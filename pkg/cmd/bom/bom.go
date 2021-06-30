@@ -5,18 +5,18 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/codenotary/vcn/pkg/bom_package"
+	"github.com/vchain-us/vcn/pkg/bom_package"
 )
 
 // NewCommand returns the cobra command for `vcn info`
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "bom",
+		Use:     "bom",
 		Example: "  vcn bom /bin/vcn",
-		Short: "Display BoM information",
-		Long:  ``,
-		RunE:  runBom,
-		Args:  func(cmd *cobra.Command, args []string) error {
+		Short:   "Display BoM information",
+		Long:    ``,
+		RunE:    runBom,
+		Args: func(cmd *cobra.Command, args []string) error {
 			return cobra.ExactValidArgs(1)(cmd, args)
 		},
 	}
