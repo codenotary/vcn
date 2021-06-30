@@ -428,6 +428,38 @@ It's possible to filter results by signer identifier:
 ```shell script
 vcn inspect document.pdf --signerID CygBE_zb8XnprkkO6ncIrbbwYoUq5T1zfyEF6DhqcAI=
 ```
+### Attachments
+When notarizing an assets it's possible to provide attachments:
+```shell script
+vcn n artifact --attach attach-1:lab1 --attach attach-2:lab1 --attach attach-3:lab2
+```
+>This is useful for instance when a CI pipeline consists in multiple steps and each step provides a different attachment.
+
+To retrieve attachments its' possible to use the notarization uid or labels.
+With the uid it will be download all the attachments of a specific notarization.
+```shell script
+vcn a go.sum --lc-uid 1624700334893475066 --output attachments
+```
+With `labels` is possible to download a specific attachment or all the attachments for a label.
+```shell script
+vcn a go.sum --attach attach-2:lab1 --output attachments
+vcn a go.sum --attach lab1 --output attachments
+```
+Another example that shows the artifact attachment's download across all notarizations:
+```shell script
+# upload attachments one at a time:
+vcn n asset.bin --attach file1.txt:labelXYZ
+vcn n asset.bin --attach file2.txt:labelXYZ
+vcn n asset.bin --attach file3.txt:labelXYZ
+# downloads all attached files
+vcn a asset.bin --attach labelXYZ --output attachments
+```
+If vcn finds a file name with the same name of the attachment the download will be aborted. It's possible to force the download using `--force` flag.
+If there are multiple versions of a specific attachment the file will be downloaded with an enumerated postfix.
+```shell script
+vcn a go.sum --attach lab1 --output attachments --force
+```
+
 
 ### Local API server
 
