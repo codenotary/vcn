@@ -75,3 +75,5 @@ replace github.com/codenotary/vcn/pkg/bom_component => ./pkg/bom_component
 replace github.com/codenotary/vcn/pkg/bom_package => ./pkg/bom_package
 
 replace github.com/codenotary/vcn/pkg/bom_go => ./pkg/bom_go
+
+replace github.com/codenotary/vcn/pkg/bom_python => ./pkg/bom_python

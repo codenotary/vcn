@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/codenotary/vcn/pkg/bom_package"
-//	"github.com/codenotary/vcn/pkg/bom_go"
 )
 
 // NewCommand returns the cobra command for `vcn info`
