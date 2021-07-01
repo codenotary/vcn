@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -44,10 +45,7 @@ type result struct {
 	err  error
 }
 
-const (
-	pythonExe     = "python"
-	maxGoroutines = 8
-)
+const maxGoroutines = 8
 
 var moduleListArgs = []string{"-m", "pip", "list", "-v"}
 var moduleDetailsArgs = []string{"-m", "pip", "show"}
@@ -55,9 +53,15 @@ var moduleDetailsArgs = []string{"-m", "pip", "show"}
 // collect info about all installed modules, find module relations, populate module graph and then recursively
 // select only the needed modules, using content of 'requirements.txt' as a starting point
 func procPip(dir string) ([]component.Component, error) {
+	// first try "python", if it fails, try "python3"
+	pythonExe := "python"
 	buf, err := exec.Command(pythonExe, moduleListArgs...).Output()
-	if err != nil {
-		return nil, err
+	if err != nil || len(buf) == 0 {
+		pythonExe = "python3"
+		buf, err = exec.Command(pythonExe, moduleListArgs...).Output()
+		if err != nil {
+			return nil, fmt.Errorf("cannot get Python module list: %w", err)
+		}
 	}
 
 	// output has two header lines, and then entries of the format "<package> <version> <location> <installer>"
@@ -85,7 +89,7 @@ func procPip(dir string) ([]component.Component, error) {
 	tasks := make(chan task, len(moduleGraph))
 	results := make(chan result, len(moduleGraph))
 	for i := 0; i < maxGoroutines; i++ {
-		go worker(tasks, results)
+		go worker(tasks, results, pythonExe)
 	}
 
 	taskCount := 0
@@ -146,14 +150,14 @@ func procPip(dir string) ([]component.Component, error) {
 	return res, nil
 }
 
-func worker(tasks <-chan task, results chan<- result) {
+func worker(tasks <-chan task, results chan<- result, pythonExe string) {
 	for task := range tasks {
 		hash, err := queryHash(task.name, task.version)
 		if err != nil {
 			results <- result{err: err}
 			continue
 		}
-		deps, err := preRequisites(task.name)
+		deps, err := preRequisites(pythonExe, task.name)
 		if err != nil {
 			results <- result{err: err}
 			continue
@@ -163,7 +167,7 @@ func worker(tasks <-chan task, results chan<- result) {
 	}
 }
 
-func preRequisites(module string) ([]string, error) {
+func preRequisites(pythonExe string, module string) ([]string, error) {
 	output, err := exec.Command(pythonExe, append(moduleDetailsArgs, module)...).Output()
 	if err != nil {
 		return nil, err
