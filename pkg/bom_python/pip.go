@@ -67,14 +67,27 @@ func procPip(dir string) ([]component.Component, error) {
 	// output has two header lines, and then entries of the format "<package> <version> <location> <installer>"
 	scanner := bufio.NewScanner(bytes.NewReader(buf))
 	scanner.Split(bufio.ScanLines)
-	if !scanner.Scan() || !scanner.Scan() { // not an error - need to skip two lines
-		return nil, errors.New("got unexpected result to pip module list request")
+	for i := 0; i < 2; {
+		if !scanner.Scan() {
+			return nil, errors.New("got unexpected result to pip module list request")
+		}
+		text := scanner.Text()
+		if text[0] == '#' {
+			// skip possible Python warnings - lines starting with #
+			continue
+		}
+		i++
 	}
 
 	// store all known modules
 	moduleGraph := make(map[string]*module)
 	for scanner.Scan() {
-		fields := strings.Fields(scanner.Text())
+		text := scanner.Text()
+		if text[0] == '#' {
+			// skip possible Python warnings - lines starting with #
+			continue
+		}
+		fields := strings.Fields(text)
 		moduleGraph[fields[0]] = &module{version: fields[1]}
 	}
 
