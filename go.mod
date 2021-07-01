@@ -3,6 +3,7 @@ module github.com/vchain-us/vcn
 go 1.15
 
 require (
+	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/FactomProject/basen v0.0.0-20150613233007-fe3947df716e // indirect
 	github.com/FactomProject/btcutilecc v0.0.0-20130527213604-d3a63a5752ec // indirect
 	github.com/Masterminds/goutils v1.1.0 // indirect

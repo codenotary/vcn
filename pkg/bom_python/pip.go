@@ -3,7 +3,6 @@ package bom_python
 import (
 	"bufio"
 	"bytes"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -203,29 +202,20 @@ func queryHash(name, version string) (string, error) {
 		return "", err
 	}
 
-	var res []byte
-	for _, file := range urls.Files {
-		var raw []byte
+	// assuming that all files have the same type of hash, with priority for SHA-256 
+	hashes := make([]string, len(urls.Files))
+	for i, file := range urls.Files {
 		if file.Digests.Sha256 != "" {
-			raw, err = hex.DecodeString(file.Digests.Sha256)
+			hashes[i] = file.Digests.Sha256
 		} else {
-			raw, err = hex.DecodeString(file.Digests.Md5)
-		}
-		if err != nil {
-			return "", errors.New("malformed hash value")
-		}
-		if res == nil {
-			res = raw
-		} else {
-			if len(raw) != len(res) {
-				// should never happen - all hashes must be of the same length
-				return "", errors.New("malformed hash value")
-			}
-			// XOR hash
-			for i := 0; i < len(res); i++ {
-				res[i] ^= raw[i]
-			}
+			hashes[i] = file.Digests.Md5
 		}
 	}
-	return hex.EncodeToString(res), nil
+
+	hash, err := combineHashes(hashes)
+	if err != nil {
+		return "", errors.New("malformed hash value")
+	}
+
+	return hash, nil
 }

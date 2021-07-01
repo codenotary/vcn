@@ -1,7 +1,6 @@
 package bom_python
 
 import (
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -53,9 +52,14 @@ func procPipenv(dir string) ([]component.Component, error) {
 		if !ok {
 			return nil, fmt.Errorf("malformed \"%s\" section", name)
 		}
-		hashes, ok := field.([]interface{})
+		hashArray, ok := field.([]interface{})
 		if !ok {
 			return nil, fmt.Errorf("malformed \"%s\" section", name)
+		}
+
+		hashes := make([]string, len(hashArray))
+		for i := range hashArray {
+			hashes[i] = hashArray[i].(string)
 		}
 
 		comp.Hash, err = combineHashes(hashes)
@@ -77,41 +81,4 @@ func procPipenv(dir string) ([]component.Component, error) {
 	}
 
 	return res, nil
-}
-
-// combine multiple hashes into single hash by XORing them
-// hash entry has a form of "<hash_type>:<base16-encoded hash>"
-func combineHashes(hashes []interface{}) (string, error) {
-	if len(hashes) == 0 {
-		return "", nil
-	}
-	var res []byte
-	for _, v := range hashes {
-		hash, ok := v.(string)
-		if !ok {
-			return "", errors.New("malformed hash value")
-		}
-		split := strings.SplitN(hash, ":", 2)
-		if len(split) < 2 {
-			return "", errors.New("malformed hash value")
-		}
-		comp, err := hex.DecodeString(split[1])
-		if err != nil {
-			return "", errors.New("malformed hash value")
-		}
-		if res == nil {
-			res = comp
-		} else {
-			if len(comp) != len(res) {
-				// should never happen - all hashes must be of the same length
-				return "", errors.New("malformed hash value")
-			}
-			// XOR hash
-			for i := 0; i < len(res); i++ {
-				res[i] ^= comp[i]
-			}
-		}
-	}
-
-	return hex.EncodeToString(res), nil
 }
