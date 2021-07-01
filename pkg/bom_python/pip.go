@@ -6,10 +6,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -77,7 +76,7 @@ func procPip(dir string) ([]component.Component, error) {
 	}
 
 	// root dependencies from requirements.txt
-	buf, err = os.ReadFile(filepath.Join(dir, "requirements.txt"))
+	buf, err = ioutil.ReadFile(filepath.Join(dir, "requirements.txt"))
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +192,7 @@ func queryHash(name, version string) (string, error) {
 	if resp.StatusCode != http.StatusOK {
 		return "", errors.New("cannot query PyPI for package details")
 	}
-	body, err := io.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
