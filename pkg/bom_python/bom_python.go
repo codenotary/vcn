@@ -1,10 +1,10 @@
 package bom_python
 
 import (
+	"encoding/hex"
 	"errors"
 	"io/ioutil"
 	"strings"
-	"encoding/hex"
 
 	component "github.com/vchain-us/vcn/pkg/bom_component"
 )

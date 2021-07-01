@@ -9,11 +9,11 @@ import (
 
 // poetry.lock TOML structure
 type poetryFile struct {
-	Packages []pkg	`toml:"package"`
-	Meta metadata	`toml:"metadata"`
+	Packages []pkg    `toml:"package"`
+	Meta     metadata `toml:"metadata"`
 }
 type pkg struct {
-	Name string
+	Name    string
 	Version string
 }
 type metadata struct {

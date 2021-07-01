@@ -202,7 +202,7 @@ func queryHash(name, version string) (string, error) {
 		return "", err
 	}
 
-	// assuming that all files have the same type of hash, with priority for SHA-256 
+	// assuming that all files have the same type of hash, with priority for SHA-256
 	hashes := make([]string, len(urls.Files))
 	for i, file := range urls.Files {
 		if file.Digests.Sha256 != "" {
