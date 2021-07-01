@@ -1,5 +1,5 @@
 # vcn  <img align="right" src="https://github.com/vchain-us/vcn/blob/master/docs/img/cn-color.eeadbabe.svg" width="160px"/>
-> **_vChain CodeNotary_**
+> ** _CodeNotary.io & CNIL vcn CLI for notarization and authentication of digital artifacts_**
 
 [![Build and run testsuite](https://github.com/codenotary/vcn/actions/workflows/build.yaml/badge.svg)](https://github.com/codenotary/vcn/actions/workflows/build.yaml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/vchain-us/vcn?style=flat-square)](https://goreportcard.com/report/github.com/vchain-us/vcn)
