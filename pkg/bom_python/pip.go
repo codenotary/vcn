@@ -93,7 +93,7 @@ func procPip(dir string) ([]bom_component.Component, error) {
 	}
 
 	// root dependencies from requirements.txt
-	buf, err = ioutil.ReadFile(filepath.Join(dir, "requirements.txt"))
+	buf, err = ioutil.ReadFile(filepath.Join(dir, pipFileName))
 	if err != nil {
 		return nil, err
 	}

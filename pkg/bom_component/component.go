@@ -10,6 +10,7 @@ const (
 	HashSHA224
 	HashSHA256
 	HashSHA384
+	HashSHA512
 	HashMD2
 	HashMD4
 	HashMD5
@@ -17,7 +18,7 @@ const (
 	hashMax = HashMD6
 )
 
-var hashText = [hashMax]string{"SHA1", "SHA224", "SHA256", "SHA384", "MD2", "MD4", "MD5", "MD6"}
+var hashText = [hashMax]string{"SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "MD2", "MD4", "MD5", "MD6"}
 
 // Component is a single building block, used for building the package
 type Component struct {

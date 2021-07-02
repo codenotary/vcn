@@ -3,7 +3,8 @@ package bom_python
 import (
 	"encoding/hex"
 	"errors"
-	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/vchain-us/vcn/pkg/bom_component"
@@ -13,7 +14,13 @@ const (
 	unknown = iota
 	pipenv
 	poetry
-	reqs
+	pip
+)
+
+const (
+	pipenvFileName = "Pipfile.lock"
+	poetryFileName = "poetry.lock"
+	pipFileName    = "requirements.txt"
 )
 
 // PythonPackage implements Package interface
@@ -24,33 +31,22 @@ type PythonPackage struct {
 
 // New returns new PythonPackage object, or nil if the path doesn't point to directory with Python package
 func New(dir string) *PythonPackage {
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		return nil // not a directory or cannot be accessed
+	_, err := os.Stat(filepath.Join(dir, pipenvFileName))
+	if err == nil {
+		return &PythonPackage{pkgType: pipenv, dirName: dir}
 	}
 
-	packageType := unknown
-	// check what type of package is it
-loop:
-	for _, file := range files {
-		switch file.Name() {
-		case "Pipfile.lock":
-			packageType = pipenv
-			break loop // don't look further
-		case "poetry.lock":
-			packageType = poetry
-			break loop // don't look further
-		case "requirements.txt":
-			packageType = reqs
-			// keep looking for other files
-		}
+	_, err = os.Stat(filepath.Join(dir, poetryFileName))
+	if err == nil {
+		return &PythonPackage{pkgType: poetry, dirName: dir}
 	}
 
-	if packageType == unknown {
-		return nil // not Python signature files found
+	_, err = os.Stat(filepath.Join(dir, pipFileName))
+	if err == nil {
+		return &PythonPackage{pkgType: pip, dirName: dir}
 	}
 
-	return &PythonPackage{pkgType: packageType, dirName: dir}
+	return nil
 }
 
 func (p *PythonPackage) Type() string {
@@ -71,7 +67,7 @@ func (p *PythonPackage) Components() ([]bom_component.Component, error) {
 		return procPipenv(p.dirName)
 	case poetry:
 		return procPoetry(p.dirName)
-	case reqs:
+	case pip:
 		return procPip(p.dirName)
 	default:
 		// should never happen

@@ -5,6 +5,7 @@ import (
 
 	// add language-specific packages below
 	"github.com/vchain-us/vcn/pkg/bom_go"
+	"github.com/vchain-us/vcn/pkg/bom_nuget"
 	"github.com/vchain-us/vcn/pkg/bom_python"
 )
 
@@ -22,6 +23,9 @@ func New(filename string) Package {
 		return pkg
 	}
 	if pkg := bom_python.New(filename); pkg != nil {
+		return pkg
+	}
+	if pkg := bom_nuget.New(filename); pkg != nil {
 		return pkg
 	}
 

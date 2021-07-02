@@ -27,7 +27,7 @@ type file struct {
 // poetry.lock file contains list of all dependencies with hashes
 func procPoetry(dir string) ([]bom_component.Component, error) {
 	var poetry poetryFile
-	_, err := toml.DecodeFile(filepath.Join(dir, "poetry.lock"), &poetry)
+	_, err := toml.DecodeFile(filepath.Join(dir, poetryFileName), &poetry)
 	if err != nil {
 		return nil, err
 	}

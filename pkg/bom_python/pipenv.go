@@ -14,7 +14,7 @@ import (
 
 // for pipenv Pipfile.lock JSON file contains all needed information in "default" section
 func procPipenv(dir string) ([]bom_component.Component, error) {
-	file, err := os.Open(filepath.Join(dir, "Pipfile.lock"))
+	file, err := os.Open(filepath.Join(dir, pipenvFileName))
 	if err != nil {
 		return nil, err
 	}
