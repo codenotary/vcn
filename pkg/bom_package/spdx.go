@@ -57,7 +57,7 @@ var componentContent = []componentLine{
 	{"PackageVersion", mandatory, func (c bom_component.Component) (string, error) { return c.Version, nil} },
 	{"PackageDownloadLocation", mandatory, noAssertion},
 	// FilesAnalysed is optional, but by default it is true, which requires presence of many other fields
-	{"FilesAnalysed", mandatory, func (bom_component.Component) (string, error) { return "false", nil} },
+	{"FilesAnalyzed", mandatory, func (bom_component.Component) (string, error) { return "false", nil} },
 	{"PackageChecksum", mandatory, func (c bom_component.Component) (string, error) {
 		hashType, err := c.HashTypeName()
 		if err != nil {
