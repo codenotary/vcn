@@ -10,6 +10,7 @@ import (
 
 // Package is a language- and/or environment-specific interface which finds components
 type Package interface {
+	Path() string
 	Type() string
 	Components() ([]bom_component.Component, error)
 	Close()

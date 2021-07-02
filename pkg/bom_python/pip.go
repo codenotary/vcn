@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	component "github.com/vchain-us/vcn/pkg/bom_component"
+	"github.com/vchain-us/vcn/pkg/bom_component"
 )
 
 type pypiUrls struct {
@@ -39,10 +39,11 @@ type task struct {
 	version string
 }
 type result struct {
-	name string
-	hash string
-	deps []string
-	err  error
+	name     string
+	hash     string
+	hashType int
+	deps     []string
+	err      error
 }
 
 const maxGoroutines = 8
@@ -52,7 +53,7 @@ var moduleDetailsArgs = []string{"-m", "pip", "show"}
 
 // collect info about all installed modules, find module relations, populate module graph and then recursively
 // select only the needed modules, using content of 'requirements.txt' as a starting point
-func procPip(dir string) ([]component.Component, error) {
+func procPip(dir string) ([]bom_component.Component, error) {
 	// first try "python", if it fails, try "python3"
 	pythonExe := "python"
 	buf, err := exec.Command(pythonExe, moduleListArgs...).Output()
@@ -60,7 +61,7 @@ func procPip(dir string) ([]component.Component, error) {
 		pythonExe = "python3"
 		buf, err = exec.Command(pythonExe, moduleListArgs...).Output()
 		if err != nil {
-			return nil, fmt.Errorf("cannot get Python module list: %w", err)
+			return nil, fmt.Errorf("cannot get python module list: %w", err)
 		}
 	}
 
@@ -130,14 +131,18 @@ func procPip(dir string) ([]component.Component, error) {
 	}
 
 	// get dependencies, run tasks for dependencies, collect info about all used modules
-	res := make([]component.Component, 0)
+	res := make([]bom_component.Component, 0)
 	for done := 0; taskCount == 0 || done < taskCount; done++ {
 		result := <-results
 		if result.err != nil {
 			close(tasks) // signal workers to stop
 			return nil, err
 		}
-		res = append(res, component.Component{Name: result.name, Version: moduleGraph[result.name].version, Hash: result.hash})
+		res = append(res, bom_component.Component{
+			Name:     result.name,
+			Version:  moduleGraph[result.name].version,
+			Hash:     result.hash,
+			HashType: result.hashType})
 		for _, v := range result.deps {
 			if v == "" {
 				continue
@@ -165,7 +170,7 @@ func procPip(dir string) ([]component.Component, error) {
 
 func worker(tasks <-chan task, results chan<- result, pythonExe string) {
 	for task := range tasks {
-		hash, err := queryHash(task.name, task.version)
+		hash, hashType, err := queryHash(task.name, task.version)
 		if err != nil {
 			results <- result{err: err}
 			continue
@@ -176,7 +181,7 @@ func worker(tasks <-chan task, results chan<- result, pythonExe string) {
 			continue
 		}
 
-		results <- result{name: task.name, hash: hash, deps: deps, err: nil}
+		results <- result{name: task.name, hash: hash, deps: deps, hashType: hashType, err: nil}
 	}
 }
 
@@ -199,40 +204,44 @@ func preRequisites(pythonExe string, module string) ([]string, error) {
 }
 
 // query PyPI.org for module hash, combine all available hashes using XOR
-func queryHash(name, version string) (string, error) {
+func queryHash(name, version string) (string, int, error) {
 	resp, err := http.Get("https://pypi.org/pypi/" + name + "/" + version + "/json")
 	if err != nil {
-		return "", err
+		return "", bom_component.HashInvalid, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return "", errors.New("cannot query PyPI for package details")
+		return "", bom_component.HashInvalid, errors.New("cannot query PyPI for package details")
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return "", bom_component.HashInvalid, err
 	}
 
 	var urls pypiUrls
 	err = json.Unmarshal(body, &urls)
 	if err != nil {
-		return "", err
+		return "", bom_component.HashInvalid, err
 	}
 
 	// assuming that all files have the same type of hash, with priority for SHA-256
+	hashType := bom_component.HashMD5
+	if urls.Files[0].Digests.Sha256 != "" {
+		hashType = bom_component.HashSHA256
+	}
 	hashes := make([]string, len(urls.Files))
 	for i, file := range urls.Files {
-		if file.Digests.Sha256 != "" {
+		if hashType == bom_component.HashSHA256 {
 			hashes[i] = file.Digests.Sha256
 		} else {
 			hashes[i] = file.Digests.Md5
 		}
 	}
 
-	hash, err := combineHashes(hashes)
+	hash, _, err := combineHashes(hashes)
 	if err != nil {
-		return "", errors.New("malformed hash value")
+		return "", bom_component.HashInvalid, errors.New("malformed hash value")
 	}
 
-	return hash, nil
+	return hash, hashType, nil
 }

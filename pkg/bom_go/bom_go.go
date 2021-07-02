@@ -2,14 +2,19 @@ package bom_go
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/binary"
+	"encoding/hex"
+	"errors"
 	"fmt"
-	"github.com/vchain-us/vcn/pkg/bom_component"
 	"strings"
+
+	"github.com/vchain-us/vcn/pkg/bom_component"
 )
 
 // GoPackage implements Package interface
 type GoPackage struct {
+	path string
 	file exe
 }
 
@@ -23,11 +28,15 @@ func New(filename string) *GoPackage {
 		file.Close()
 		return nil // cannot find build info
 	}
-	return &GoPackage{file: file}
+	return &GoPackage{path: filename, file: file}
 }
 
 func (p *GoPackage) Type() string {
 	return "Go"
+}
+
+func (p *GoPackage) Path() string {
+	return p.path
 }
 
 func (p *GoPackage) Close() {
@@ -60,7 +69,7 @@ func (p *GoPackage) Components() ([]bom_component.Component, error) {
 	// find where build info actually starts
 	for ; !bytes.HasPrefix(data, buildInfoMagic); data = data[32:] {
 		if len(data) < 32 {
-			return nil, fmt.Errorf("no build info found")
+			return nil, errors.New("no build info found")
 		}
 	}
 
@@ -85,7 +94,7 @@ func (p *GoPackage) Components() ([]bom_component.Component, error) {
 		// Strip module framing.
 		mod = mod[16 : len(mod)-16]
 	} else {
-		return nil, fmt.Errorf("no build info found")
+		return nil, errors.New("no build info found")
 	}
 
 	lines := strings.Split(mod, "\n")
@@ -96,7 +105,10 @@ func (p *GoPackage) Components() ([]bom_component.Component, error) {
 			var comp bom_component.Component
 			switch len(fields) {
 			default:
-				comp.Hash = fields[3]
+				comp.Hash, comp.HashType, err = goModHash(fields[3])
+				if err != nil {
+					return nil, fmt.Errorf("cannot decode hash: %w", err)
+				}
 				fallthrough
 			case 3:
 				comp.Version = fields[2]
@@ -126,4 +138,24 @@ func readString(x exe, ptrSize int, readPtr func([]byte) uint64, addr uint64) st
 		return ""
 	}
 	return string(data)
+}
+
+func goModHash(encoded string) (string, int, error) {
+	hashType := bom_component.HashInvalid
+	fields := strings.SplitN(encoded, ":", 2)
+	if len(fields) != 2 {
+		return "", bom_component.HashInvalid, errors.New("malformed hash value")
+	}
+	// At the time of writing "h1" (SHA256) is the only hash type, supported by Go
+	if fields[0] == "h1" {
+		hashType = bom_component.HashSHA256
+	} else {
+		return "", bom_component.HashInvalid, errors.New("unsupported hash type")
+	}
+	hash, err := base64.StdEncoding.DecodeString(fields[1])
+	if err != nil {
+		return "", bom_component.HashInvalid, fmt.Errorf("cannot decode base64 hash: %w", err)
+	}
+
+	return hex.EncodeToString(hash), hashType, nil
 }

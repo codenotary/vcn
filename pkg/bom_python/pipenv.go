@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	component "github.com/vchain-us/vcn/pkg/bom_component"
+	"github.com/vchain-us/vcn/pkg/bom_component"
 )
 
 // for pipenv Pipfile.lock JSON file contains all needed information in "default" section
-func procPipenv(dir string) ([]component.Component, error) {
+func procPipenv(dir string) ([]bom_component.Component, error) {
 	file, err := os.Open(filepath.Join(dir, "Pipfile.lock"))
 	if err != nil {
 		return nil, err
@@ -39,14 +39,14 @@ func procPipenv(dir string) ([]component.Component, error) {
 		return nil, errors.New("malformed Pipfile.lock - \"default\" has a wrong data type")
 	}
 
-	res := make([]component.Component, 0, len(packages))
+	res := make([]bom_component.Component, 0, len(packages))
 	for name, pkg := range packages {
 		pkgContent, ok := pkg.(map[string]interface{})
 		if !ok {
 			return nil, fmt.Errorf("malformed \"%s\" section", name)
 		}
 
-		var comp component.Component
+		var comp bom_component.Component
 		comp.Name = name
 		field, ok := pkgContent["hashes"]
 		if !ok {
@@ -62,7 +62,7 @@ func procPipenv(dir string) ([]component.Component, error) {
 			hashes[i] = hashArray[i].(string)
 		}
 
-		comp.Hash, err = combineHashes(hashes)
+		comp.Hash, comp.HashType, err = combineHashes(hashes)
 		if err != nil {
 			return nil, err
 		}

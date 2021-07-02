@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
-	component "github.com/vchain-us/vcn/pkg/bom_component"
+	"github.com/vchain-us/vcn/pkg/bom_component"
 )
 
 // poetry.lock TOML structure
@@ -25,27 +25,32 @@ type file struct {
 }
 
 // poetry.lock file contains list of all dependencies with hashes
-func procPoetry(dir string) ([]component.Component, error) {
+func procPoetry(dir string) ([]bom_component.Component, error) {
 	var poetry poetryFile
 	_, err := toml.DecodeFile(filepath.Join(dir, "poetry.lock"), &poetry)
 	if err != nil {
 		return nil, err
 	}
-	res := make([]component.Component, 0, len(poetry.Packages))
+	res := make([]bom_component.Component, 0, len(poetry.Packages))
 	for _, pkg := range poetry.Packages {
 		var hash string
+		var hashType int
 		meta, ok := poetry.Meta.Files[pkg.Name]
 		if ok {
 			hashes := make([]string, len(meta))
 			for i, f := range meta {
 				hashes[i] = f.Hash
 			}
-			hash, err = combineHashes(hashes)
+			hash, hashType, err = combineHashes(hashes)
 			if err != nil {
 				return nil, err
 			}
 		}
-		res = append(res, component.Component{Name: pkg.Name, Version: pkg.Version, Hash: hash})
+		res = append(res, bom_component.Component{
+			Name:     pkg.Name,
+			Version:  pkg.Version,
+			Hash:     hash,
+			HashType: hashType})
 	}
 
 	return res, nil

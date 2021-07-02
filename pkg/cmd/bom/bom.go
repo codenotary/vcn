@@ -31,14 +31,11 @@ func runBom(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("unsupported package format/language")
 	}
 
-	comp, err := pkg.Components()
+	spdx, err := bom_package.OutputSpdxText(pkg)
 	if err != nil {
-		return fmt.Errorf("cannot extract components: %w", err)
+		return err
 	}
-
-	for _, c := range comp {
-		fmt.Printf("%s\t%s\t%s\n", c.Name, c.Version, c.Hash)
-	}
+	fmt.Printf(spdx)
 
 	return nil
 }
