@@ -46,8 +46,6 @@ type result struct {
 	err      error
 }
 
-const maxGoroutines = 8
-
 var moduleListArgs = []string{"-m", "pip", "list", "-v"}
 var moduleDetailsArgs = []string{"-m", "pip", "show"}
 
@@ -102,7 +100,7 @@ func procPip(dir string) ([]bom_component.Component, error) {
 	// We can be sure that there will be no more in-flight messages in channels than known modules
 	tasks := make(chan task, len(moduleGraph))
 	results := make(chan result, len(moduleGraph))
-	for i := 0; i < maxGoroutines; i++ {
+	for i := 0; i < bom_component.MaxGoroutines; i++ {
 		go worker(tasks, results, pythonExe)
 	}
 
