@@ -32,7 +32,12 @@ const mvn_pkg_name = 1
 
 // JavaMavenPackage implements Package interface
 type JavaMavenPackage struct {
-	folder string
+	folder  string
+	dirName string
+}
+
+func (p *JavaMavenPackage) Path() string {
+	return p.dirName
 }
 
 // New returns new JavaMavenPackage object
@@ -42,7 +47,7 @@ func New(path string) *JavaMavenPackage {
 		return nil
 	}
 
-	return &JavaMavenPackage{folder: f}
+	return &JavaMavenPackage{folder: f, dirName: filepath.Dir(path)}
 }
 
 func (p *JavaMavenPackage) Type() string {
@@ -115,9 +120,8 @@ func (p *JavaMavenPackage) Components() ([]bom_component.Component, error) {
 		}
 		comp.Hash = hash
 		comp.Version = fields[mvn_version]
-
 		comp.Name = fields[mvn_pkg_name]
-
+		comp.HashType = bom_component.HashSHA1
 		res = append(res, comp)
 	}
 
