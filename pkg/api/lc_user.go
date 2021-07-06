@@ -24,7 +24,7 @@ type LcUser struct {
 	Client *sdk.LcClient
 }
 
-// NewUser returns a new User instance for the given email.
+// NewLcUser returns a new User instance configured with provided parameters.
 // LcLedger parameter is used when a cross-ledger key is provided in order to specify the ledger on which future operations will be directed. Empty string is accepted
 func NewLcUser(lcApiKey, lcLedger, host, port, lcCert string, skipTlsVerify bool, noTls bool) (*LcUser, error) {
 	client, err := NewLcClient(lcApiKey, lcLedger, host, port, lcCert, skipTlsVerify, noTls)
