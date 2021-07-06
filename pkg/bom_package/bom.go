@@ -2,6 +2,7 @@ package bom_package
 
 import (
 	"github.com/vchain-us/vcn/pkg/bom_component"
+	"github.com/vchain-us/vcn/pkg/bom_java"
 
 	// add language-specific packages below
 	"github.com/vchain-us/vcn/pkg/bom_go"
@@ -26,6 +27,10 @@ func New(filename string) Package {
 		return pkg
 	}
 	if pkg := bom_nuget.New(filename); pkg != nil {
+		return pkg
+	}
+
+	if pkg := bom_java.New(filename); pkg != nil {
 		return pkg
 	}
 
