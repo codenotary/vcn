@@ -30,6 +30,16 @@ const mvn_version = 3
 const mvn_artid = 0
 const mvn_pkg_name = 1
 
+type task struct {
+	mavenUrl string
+	name     string
+	version  string
+}
+type result struct {
+	comp bom_component.Component
+	err  error
+}
+
 // JavaMavenPackage implements Package interface
 type JavaMavenPackage struct {
 	folder  string
@@ -85,8 +95,15 @@ func (p *JavaMavenPackage) Components() ([]bom_component.Component, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, n := range graph.Graph.Nodes {
 
+	// worker pool
+	tasks := make(chan task, len(graph.Graph.Nodes))
+	results := make(chan result, len(graph.Graph.Nodes))
+	for i := 0; i < bom_component.MaxGoroutines; i++ {
+		go worker(tasks, results)
+	}
+
+	for _, n := range graph.Graph.Nodes {
 		fields := strings.Split(n.Data.ShapeNode.NodeLabel, ":")
 		if fields[mvn_pkg_name] == "" {
 			log.Errorf("unable to retrieve package name of component %s", n.Data.ShapeNode.NodeLabel)
@@ -100,32 +117,60 @@ func (p *JavaMavenPackage) Components() ([]bom_component.Component, error) {
 			log.Errorf("unable to retrieve package artifact ID of component %s", n.Data.ShapeNode.NodeLabel)
 			continue
 		}
-		var comp bom_component.Component
-
 		mavenSHA1url := strings.Join([]string{maven_repo_base_path, strings.Replace(fields[mvn_artid], ".", "/", -1), fields[mvn_pkg_name], fields[mvn_version], fields[mvn_pkg_name] + "-" + fields[mvn_version] + ".jar.sha1"}, "/")
-		resp, err := http.Get(mavenSHA1url)
-		if err != nil {
+
+		tasks <- task{
+			mavenUrl: mavenSHA1url,
+			name:     fields[mvn_pkg_name],
+			version:  fields[mvn_version],
+		}
+	}
+
+	res = make([]bom_component.Component, 0)
+	for done := 0; done < len(graph.Graph.Nodes); done++ {
+		result := <-results
+		if result.err != nil {
+			close(tasks) // signal workers to stop
 			return nil, err
+		}
+		res = append(res, result.comp)
+	}
+	close(tasks)
+	close(results)
+
+	return res, nil
+}
+
+func worker(tasks <-chan task, results chan<- result) {
+	for task := range tasks {
+		comp := bom_component.Component{}
+
+		resp, err := http.Get(task.mavenUrl)
+		if err != nil {
+			results <- result{comp: comp, err: err}
+			continue
 		}
 		defer resp.Body.Close()
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return nil, err
+			results <- result{comp: comp, err: err}
+			continue
 		}
 
 		hash := string(body[0:40])
 		if len(hash) < 40 {
+			results <- result{comp: comp, err: fmt.Errorf("malformed SHA1 hash at %s", task.mavenUrl)}
 			continue
 		}
-		comp.Hash = hash
-		comp.Version = fields[mvn_version]
-		comp.Name = fields[mvn_pkg_name]
-		comp.HashType = bom_component.HashSHA1
-		res = append(res, comp)
-	}
 
-	return res, nil
+		comp.Hash = hash
+		comp.Version = task.version
+		comp.Name = task.name
+		comp.HashType = bom_component.HashSHA1
+
+		results <- result{comp: comp, err: nil}
+	}
 }
 
 func getPOMFolder(path string) (string, error) {
