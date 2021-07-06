@@ -16,6 +16,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/prometheus/common/log"
+	"github.com/schollz/progressbar/v3"
 	"github.com/vchain-us/vcn/pkg/bom_component"
 	"io"
 	"io/ioutil"
@@ -127,10 +128,15 @@ func (p *JavaMavenPackage) Components() ([]bom_component.Component, error) {
 	}
 
 	res = make([]bom_component.Component, 0)
+	var bar *progressbar.ProgressBar
+	bar = progressbar.Default(int64(len(graph.Graph.Nodes)))
 	for done := 0; done < len(graph.Graph.Nodes); done++ {
 		result := <-results
 		if result.err != nil {
 			close(tasks) // signal workers to stop
+			return nil, err
+		}
+		if err := bar.Add(1); err != nil {
 			return nil, err
 		}
 		res = append(res, result.comp)
