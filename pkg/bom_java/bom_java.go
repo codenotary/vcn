@@ -53,7 +53,7 @@ func (p *JavaMavenPackage) Path() string {
 
 // New returns new JavaMavenPackage object
 func New(path string) *JavaMavenPackage {
-	f, err := getPOMFolder(path)
+	f, err := GetPOM(path)
 	if err != nil {
 		return nil
 	}
@@ -179,7 +179,7 @@ func worker(tasks <-chan task, results chan<- result) {
 	}
 }
 
-func getPOMFolder(path string) (string, error) {
+func GetPOM(path string) (string, error) {
 
 	if strings.ToLower(filepath.Base(path)) == "pom.xml" {
 		return path, nil
@@ -202,7 +202,7 @@ func getPOMFolder(path string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		tmp, err := ioutil.TempFile(tempDir, "vcn_bom_pom.xml")
+		tmp, err := ioutil.TempFile(tempDir, POM_name)
 		if err != nil {
 			return "", err
 		}

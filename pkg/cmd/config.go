@@ -10,6 +10,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/vchain-us/vcn/pkg/extractor/javacom"
 	"github.com/vchain-us/vcn/pkg/extractor/wildcard"
 	"os"
 
@@ -33,6 +34,7 @@ func initConfig() {
 	extractor.Register(docker.SchemePodman, docker.Artifact)
 	extractor.Register(git.Scheme, git.Artifact)
 	extractor.Register(wildcard.Scheme, wildcard.Artifact)
+	extractor.Register(javacom.Scheme, javacom.Artifact)
 
 	// Load config
 	if cfgFile != "" {

@@ -70,7 +70,7 @@ ARG must be one of:
   git://<repository>
   docker://<image>
   podman://<image>
-
+  javacom://<java mvn jar or pom.xml>
 Environment variables:
 VCN_USER=
 VCN_PASSWORD=

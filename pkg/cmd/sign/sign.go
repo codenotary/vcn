@@ -50,6 +50,7 @@ ARG must be one of:
   docker://<image>
   podman://<image>
   wildcard://"*"
+  javacom://<java project component>
 `
 
 // NewCommand returns the cobra command for `vcn sign`
