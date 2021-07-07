@@ -34,7 +34,7 @@ To obtain a valid key you need to get access to a licensed CodeNotary Immutable 
 
    ```bash
    vcn login --lc-host cnlc-host.com --lc-port 443
-   vcn authenticate <file|dir://directory|docker://dockerimage|git://gitdirectory>
+   vcn authenticate <file|dir://directory|docker://dockerimage|git://gitdirectory|javacom://javacomponent>
    ```
 
 
@@ -43,7 +43,7 @@ To obtain a valid key you need to get access to a licensed CodeNotary Immutable 
    ```bash
    # vcn login can be skipped, if already performed
    vcn login --lc-host cnlc-host.com --lc-port 443
-   vcn notarize <file|dir://directory|docker://dockerimage|git://gitdirectory>
+   vcn notarize <file|dir://directory|docker://dockerimage|git://gitdirectory|javacom://javacomponent>
    ```
 
 ### Login
@@ -129,6 +129,7 @@ Basically, `vcn` can notarize or authenticate any of the following kind of asset
 - an entire **directory** (by prefixing the directory path with `dir://`)
 - a **git commit** (by prefixing the local git working directory path with `git://`)
 - a **container image** (by using `docker://` or `podman://` followed by the name of an image present in the local registry of docker or podman, respectively)
+- a **java BoM component** (by using `javacom://javacomponent` followed by the name of a maven jar or pom.xml file)
 
 It's possible to provide a hash value directly by using the `--hash` flag.
 
@@ -159,6 +160,7 @@ vcn notarize docker://<imageId>
 vcn notarize podman://<imageId>
 vcn notarize git://<path_to_git_repo>
 vcn notarize --hash <hash>
+vcn notarize javacom://<java mvn jar or pom.xml>
 ```
 
 Change the asset's status:
@@ -183,6 +185,7 @@ vcn authenticate docker://<imageId>
 vcn authenticate podman://<imageId>
 vcn authenticate git://<path_to_git_repo>
 vcn authenticate --hash <hash>
+vcn authenticate javacom://<java mvn jar or pom.xml>
 ```
 
 To output results in `json` or `yaml` formats:

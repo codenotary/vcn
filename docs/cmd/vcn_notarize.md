@@ -28,7 +28,7 @@ ARG must be one of:
   git://<repository>
   docker://<image>
   podman://<image>
-
+  javacom://<java maven jar or pom.xml>
 
 ```
 vcn notarize [flags]
