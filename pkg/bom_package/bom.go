@@ -1,11 +1,19 @@
+/*
+ * Copyright (c) 2021 CodeNotary, Inc. All Rights Reserved.
+ * This software is released under GPL3.
+ * The full license information can be found under:
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ */
+
 package bom_package
 
 import (
 	"github.com/vchain-us/vcn/pkg/bom_component"
 
 	// add language-specific packages below
+	"github.com/vchain-us/vcn/pkg/bom_dotnet"
 	"github.com/vchain-us/vcn/pkg/bom_go"
-	"github.com/vchain-us/vcn/pkg/bom_nuget"
 	"github.com/vchain-us/vcn/pkg/bom_python"
 )
 
@@ -25,7 +33,7 @@ func New(filename string) Package {
 	if pkg := bom_python.New(filename); pkg != nil {
 		return pkg
 	}
-	if pkg := bom_nuget.New(filename); pkg != nil {
+	if pkg := bom_dotnet.New(filename); pkg != nil {
 		return pkg
 	}
 

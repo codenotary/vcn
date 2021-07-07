@@ -3,7 +3,7 @@ module github.com/vchain-us/vcn
 go 1.15
 
 require (
-	github.com/BurntSushi/toml v0.3.1 // indirect
+	github.com/BurntSushi/toml v0.3.1
 	github.com/FactomProject/basen v0.0.0-20150613233007-fe3947df716e // indirect
 	github.com/FactomProject/btcutilecc v0.0.0-20130527213604-d3a63a5752ec // indirect
 	github.com/Masterminds/goutils v1.1.0 // indirect
@@ -28,7 +28,7 @@ require (
 	github.com/fjl/memsize v0.0.0-20190710130421-bcb5799ab5e5 // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/google/go-cmp v0.5.5
-	github.com/google/uuid v1.2.0 // indirect
+	github.com/google/uuid v1.2.0
 	github.com/gorilla/handlers v1.4.2
 	github.com/gorilla/mux v1.7.3
 	github.com/h2non/filetype v1.0.10
@@ -59,7 +59,7 @@ require (
 	github.com/tyler-smith/go-bip39 v1.0.2
 	github.com/vchain-us/ledger-compliance-go v0.9.2-0.20210512151942-891d9d3e24fd
 	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9
-	golang.org/x/mod v0.4.2 // indirect
+	golang.org/x/mod v0.4.2
 	google.golang.org/grpc v1.37.0
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1

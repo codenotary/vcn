@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2021 CodeNotary, Inc. All Rights Reserved.
+ * This software is released under GPL3.
+ * The full license information can be found under:
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ */
+
 package bom_component
 
 import (
@@ -18,7 +26,7 @@ const (
 	hashMax = HashMD6
 )
 
-const MaxGoroutines = 8		// used by other packages that query components from external sources
+const MaxGoroutines = 8 // used by other packages that query components from external sources
 
 var hashText = [hashMax]string{"SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "MD2", "MD4", "MD5", "MD6"}
 

@@ -1,18 +1,26 @@
+/*
+ * Copyright (c) 2021 CodeNotary, Inc. All Rights Reserved.
+ * This software is released under GPL3.
+ * The full license information can be found under:
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ */
+
 package bom_go
 
 import (
 	"bufio"
 	"bytes"
-	"os/exec"
-	"strings"
 	"fmt"
-	"log"
-	"net/http"
-	"time"
 	"io"
 	"io/ioutil"
+	"log"
+	"net/http"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
+	"time"
 
 	"golang.org/x/mod/sumdb"
 
@@ -22,7 +30,7 @@ import (
 type clientOps struct{}
 
 type mapKey struct {
-	name string
+	name    string
 	version string
 }
 
@@ -34,7 +42,7 @@ var goListArgs = []string{"list", "--deps", "-f", "{{if not .Standard}}{{.Module
 // using go.mod/go.sum doesn't produce satisfactory results - list of modules in go.mod lacks some modules which
 // get into final build
 func goListComponents(path string) ([]bom_component.Component, error) {
-	absPath, err := filepath.Abs(path) 
+	absPath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
 	}
@@ -75,9 +83,9 @@ func goListComponents(path string) ([]bom_component.Component, error) {
 			hash, hashType, err := goModHash(fields[2])
 			if err == nil {
 				res = append(res, bom_component.Component{
-					Name: fields[0],
-					Version: fields[1],
-					Hash: hash,
+					Name:     fields[0],
+					Version:  fields[1],
+					Hash:     hash,
 					HashType: hashType})
 			}
 			wg.Done()
@@ -89,12 +97,12 @@ func goListComponents(path string) ([]bom_component.Component, error) {
 	for scanner.Scan() {
 		fields := strings.Fields(scanner.Text())
 		if len(fields) != 2 {
-			continue	// skip malformed lines
+			continue // skip malformed lines
 		}
 
 		_, ok := seen[mapKey{fields[0], fields[1]}]
 		if ok {
-			continue	// already processed
+			continue // already processed
 		}
 		seen[mapKey{fields[0], fields[1]}] = struct{}{}
 
@@ -108,8 +116,6 @@ func goListComponents(path string) ([]bom_component.Component, error) {
 
 	return res, nil
 }
-
-
 
 func (*clientOps) ReadConfig(file string) ([]byte, error) {
 	if file == "key" {

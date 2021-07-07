@@ -1,11 +1,19 @@
+/*
+ * Copyright (c) 2021 CodeNotary, Inc. All Rights Reserved.
+ * This software is released under GPL3.
+ * The full license information can be found under:
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ */
+
 package bom_go
 
 import (
 	"bytes"
 	"encoding/binary"
-	"strings"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/vchain-us/vcn/pkg/bom_component"
 )

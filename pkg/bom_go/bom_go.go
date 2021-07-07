@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2021 CodeNotary, Inc. All Rights Reserved.
+ * This software is released under GPL3.
+ * The full license information can be found under:
+ * https://www.gnu.org/licenses/gpl-3.0.en.html
+ *
+ */
+
 package bom_go
 
 import (
@@ -5,9 +13,9 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"strings"
-	"os"
 	"io/ioutil"
+	"os"
+	"strings"
 
 	"github.com/vchain-us/vcn/pkg/bom_component"
 )
@@ -15,7 +23,7 @@ import (
 // GoPackage implements Package interface
 type GoPackage struct {
 	path string
-	file exe		// file is nil when getting info from go.mod, not binary
+	file exe // file is nil when getting info from go.mod, not binary
 }
 
 // New returns new GoPackage object, or nil if filename doesn't referer to ELF, built from Go source, or directory
