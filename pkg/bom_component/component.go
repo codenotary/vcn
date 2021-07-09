@@ -38,11 +38,11 @@ type Component struct {
 	HashType int
 }
 
-func (c Component) HashTypeName() (string, error) {
-	if c.HashType <= HashInvalid || c.HashType >= hashMax {
-		return "", fmt.Errorf("invalid hash type %d", c.HashType)
+func HashTypeName(hashType int) (string, error) {
+	if hashType <= HashInvalid || hashType >= hashMax {
+		return "", fmt.Errorf("invalid hash type %d", hashType)
 	}
-	return hashText[c.HashType-1], nil
+	return hashText[hashType-1], nil
 }
 
 func (c Component) IsTrusted() bool {

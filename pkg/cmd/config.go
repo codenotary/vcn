@@ -19,6 +19,7 @@ import (
 	"github.com/vchain-us/vcn/pkg/extractor/docker"
 	"github.com/vchain-us/vcn/pkg/extractor/file"
 	"github.com/vchain-us/vcn/pkg/extractor/git"
+	"github.com/vchain-us/vcn/pkg/extractor/gocom"
 
 	"github.com/vchain-us/vcn/pkg/store"
 )
@@ -35,6 +36,7 @@ func initConfig() {
 	extractor.Register(git.Scheme, git.Artifact)
 	extractor.Register(wildcard.Scheme, wildcard.Artifact)
 	extractor.Register(javacom.Scheme, javacom.Artifact)
+	extractor.Register(gocom.Scheme, gocom.Artifact)
 
 	// Load config
 	if cfgFile != "" {

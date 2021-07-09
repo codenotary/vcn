@@ -80,7 +80,7 @@ func goListComponents(path string) ([]bom_component.Component, error) {
 			if len(fields) != 3 {
 				continue
 			}
-			hash, hashType, err := goModHash(fields[2])
+			hash, hashType, err := ModHash(fields[2])
 			if err == nil {
 				res = append(res, bom_component.Component{
 					Name:     fields[0],

@@ -68,7 +68,7 @@ var componentContent = []componentLine{
 	// FilesAnalysed is optional, but by default it is true, which requires presence of many other fields
 	{"FilesAnalyzed", mandatory, func(c bom_component.Component, seq int) (string, error) { return "false", nil }},
 	{"PackageChecksum", mandatory, func(c bom_component.Component, seq int) (string, error) {
-		hashType, err := c.HashTypeName()
+		hashType, err := bom_component.HashTypeName(c.HashType)
 		if err != nil {
 			return "", err
 		}

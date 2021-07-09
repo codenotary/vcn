@@ -78,7 +78,7 @@ func exeComponents(x exe) ([]bom_component.Component, error) {
 			var comp bom_component.Component
 			switch len(fields) {
 			default:
-				comp.Hash, comp.HashType, err = goModHash(fields[3])
+				comp.Hash, comp.HashType, err = ModHash(fields[3])
 				if err != nil {
 					return nil, fmt.Errorf("cannot decode hash: %w", err)
 				}
