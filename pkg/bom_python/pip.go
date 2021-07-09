@@ -11,12 +11,10 @@ package bom_python
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -176,7 +174,7 @@ func procPip(dir string) ([]bom_component.Component, error) {
 
 func worker(tasks <-chan task, results chan<- result, pythonExe string) {
 	for task := range tasks {
-		hash, hashType, err := queryHash(task.name, task.version)
+		hash, hashType, err := QueryHash(task.name, task.version)
 		if err != nil {
 			results <- result{err: err}
 			continue
@@ -207,47 +205,4 @@ func preRequisites(pythonExe string, module string) ([]string, error) {
 		}
 	}
 	return nil, errors.New("malformed output from pip module query")
-}
-
-// query PyPI.org for module hash, combine all available hashes using XOR
-func queryHash(name, version string) (string, int, error) {
-	resp, err := http.Get("https://pypi.org/pypi/" + name + "/" + version + "/json")
-	if err != nil {
-		return "", bom_component.HashInvalid, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return "", bom_component.HashInvalid, errors.New("cannot query PyPI for package details")
-	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", bom_component.HashInvalid, err
-	}
-
-	var urls pypiUrls
-	err = json.Unmarshal(body, &urls)
-	if err != nil {
-		return "", bom_component.HashInvalid, err
-	}
-
-	// assuming that all files have the same type of hash, with priority for SHA-256
-	hashType := bom_component.HashMD5
-	if urls.Files[0].Digests.Sha256 != "" {
-		hashType = bom_component.HashSHA256
-	}
-	hashes := make([]string, len(urls.Files))
-	for i, file := range urls.Files {
-		if hashType == bom_component.HashSHA256 {
-			hashes[i] = file.Digests.Sha256
-		} else {
-			hashes[i] = file.Digests.Md5
-		}
-	}
-
-	hash, _, err := combineHashes(hashes)
-	if err != nil {
-		return "", bom_component.HashInvalid, errors.New("malformed hash value")
-	}
-
-	return hash, hashType, nil
 }

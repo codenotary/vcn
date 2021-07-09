@@ -10,16 +10,18 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/vchain-us/vcn/pkg/extractor/javacom"
-	"github.com/vchain-us/vcn/pkg/extractor/wildcard"
 	"os"
 
+	"github.com/vchain-us/vcn/pkg/extractor/wildcard"
 	"github.com/vchain-us/vcn/pkg/extractor"
 	"github.com/vchain-us/vcn/pkg/extractor/dir"
 	"github.com/vchain-us/vcn/pkg/extractor/docker"
 	"github.com/vchain-us/vcn/pkg/extractor/file"
 	"github.com/vchain-us/vcn/pkg/extractor/git"
+	"github.com/vchain-us/vcn/pkg/extractor/javacom"
 	"github.com/vchain-us/vcn/pkg/extractor/gocom"
+	"github.com/vchain-us/vcn/pkg/extractor/pythoncom"
+	"github.com/vchain-us/vcn/pkg/extractor/dotnetcom"
 
 	"github.com/vchain-us/vcn/pkg/store"
 )
@@ -37,6 +39,8 @@ func initConfig() {
 	extractor.Register(wildcard.Scheme, wildcard.Artifact)
 	extractor.Register(javacom.Scheme, javacom.Artifact)
 	extractor.Register(gocom.Scheme, gocom.Artifact)
+	extractor.Register(pythoncom.Scheme, pythoncom.Artifact)
+	extractor.Register(dotnetcom.Scheme, dotnetcom.Artifact)
 
 	// Load config
 	if cfgFile != "" {

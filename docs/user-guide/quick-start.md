@@ -7,7 +7,10 @@
 - an entire **directory** (by prefixing the directory path with `dir://`)
 - a **git commit** (by prefixing the local git working directory path with `git://`)
 - a [**container image**](schemes/docker.md) (by using `docker://` or `podman://` followed by the name of an image present in the local registry of docker or podman, respectively)
-- a **java BoM component** (by using `javacom://javacomponent` followed by the name of a maven jar or pom.xml file)
+- a **java BoM component** (by using `javacom://` followed by the name of a maven jar or pom.xml file)
+- a **Go BoM component** (by using `gocom://` followed by the name and version of Go module, in a format `<name>@<version>`)
+- a **Python BoM component** (by using `pythoncom://` followed by the name and version of Python module, in a format `<name>@<version>`)
+- a **.Net BoM component** (by using `dotnetcom://` followed by the name and version of .Net module, in a format `<name>@<version>`)
 
 > It's also possible to provide a hash value directly by using the `--hash` flag.
 
@@ -32,6 +35,9 @@ vcn authenticate podman://<imageId>
 vcn authenticate git://<path_to_git_repo>
 vcn authenticate --hash <hash>
 vcn authenticate javacom://<java maven jar or pom.xml>
+vcn authenticate gocom://<Go module in name@version format>
+vcn authenticate pythoncom://<Python module in name@version format>
+vcn authenticate dotnetcom://<.Net module in name@version format>
 ```
 
 To output results in `json` or `yaml` formats:
@@ -59,6 +65,9 @@ vcn notarize podman://<imageId>
 vcn notarize git://<path_to_git_repo>
 vcn notarize --hash <hash>
 vcn notarize javacom://<java maven jar or pom.xml>
+vcn notarize gocom://<Go module in name@version format>
+vcn notarize pythoncom://<Python module in name@version format>
+vcn notarize dotnetcom://<.Net module in name@version format>
 ```
 
 By default all assets are notarized private, so not much information is disclosed about the asset. If you want to make that public and therefore, more trusted, please use the `--public` flag.

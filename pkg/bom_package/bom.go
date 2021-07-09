@@ -10,12 +10,12 @@ package bom_package
 
 import (
 	"github.com/vchain-us/vcn/pkg/bom_component"
-	"github.com/vchain-us/vcn/pkg/bom_java"
 
 	// add language-specific packages below
 	"github.com/vchain-us/vcn/pkg/bom_dotnet"
 	"github.com/vchain-us/vcn/pkg/bom_go"
 	"github.com/vchain-us/vcn/pkg/bom_python"
+	"github.com/vchain-us/vcn/pkg/bom_java"
 )
 
 // Package is a language- and/or environment-specific interface which finds components
@@ -37,7 +37,6 @@ func New(filename string) Package {
 	if pkg := bom_dotnet.New(filename); pkg != nil {
 		return pkg
 	}
-
 	if pkg := bom_java.New(filename); pkg != nil {
 		return pkg
 	}

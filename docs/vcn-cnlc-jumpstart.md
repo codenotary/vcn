@@ -34,7 +34,7 @@ To obtain a valid key you need to get access to a licensed CodeNotary Immutable 
 
    ```bash
    vcn login --lc-host cnlc-host.com --lc-port 443
-   vcn authenticate <file|dir://directory|docker://dockerimage|git://gitdirectory|javacom://javacomponent>
+   vcn authenticate <file|dir://directory|docker://dockerimage|git://gitdirectory|javacom://javacomponent|gocom://gocomponent|pythoncom://pythoncomponent|dotnetcom://dotnetcomponent>
    ```
 
 
@@ -43,7 +43,7 @@ To obtain a valid key you need to get access to a licensed CodeNotary Immutable 
    ```bash
    # vcn login can be skipped, if already performed
    vcn login --lc-host cnlc-host.com --lc-port 443
-   vcn notarize <file|dir://directory|docker://dockerimage|git://gitdirectory|javacom://javacomponent>
+   vcn notarize <file|dir://directory|docker://dockerimage|git://gitdirectory|javacom://javacomponent|gocom://gocomponent|pythoncom://pythoncomponent|dotnetcom://dotnetcomponent>
    ```
 
 ### Login
@@ -161,6 +161,9 @@ vcn notarize podman://<imageId>
 vcn notarize git://<path_to_git_repo>
 vcn notarize --hash <hash>
 vcn notarize javacom://<java mvn jar or pom.xml>
+vcn notarize gocom://<Go module in name@version format>
+vcn notarize pythoncom://<Python module in name@version format>
+vcn notarize dotnetcom://<.Net module in name@version format>
 ```
 
 Change the asset's status:
@@ -186,6 +189,9 @@ vcn authenticate podman://<imageId>
 vcn authenticate git://<path_to_git_repo>
 vcn authenticate --hash <hash>
 vcn authenticate javacom://<java mvn jar or pom.xml>
+vcn authenticate gocom://<Go module in name@version format>
+vcn authenticate pythoncom://<Python module in name@version format>
+vcn authenticate dotnetcom://<.Net module in name@version format>
 ```
 
 To output results in `json` or `yaml` formats:

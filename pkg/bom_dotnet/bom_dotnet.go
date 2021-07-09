@@ -120,13 +120,7 @@ func (p *DotnetPackage) Components() ([]bom_component.Component, error) {
 		return nil, errors.New("cannot download dependencies - 'dotnet restore' failed")
 	}
 
-	// find local (user) and global package cache directories
-	pkgCacheDirs := make([]string, 2)
-	pkgCacheDirs[0], err = userCacheDir()
-	if err != nil {
-		return nil, err
-	}
-	pkgCacheDirs[1], err = fallbackCacheDir()
+	pkgCacheDirs, err := GetPackageHCacheDirs()
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +209,7 @@ func processPackageFile(fileName string, seen map[mapKey]struct{}, pkgCacheDirs 
 			}
 			seen[mapKey{name: name, version: details.Version}] = struct{}{} // mark as seen
 
-			hash, err := getPackageHash(name, details.Version, pkgCacheDirs)
+			hash, err := GetPackageHash(name, details.Version, pkgCacheDirs)
 			if err != nil {
 				return nil, err
 			}
@@ -228,6 +222,21 @@ func processPackageFile(fileName string, seen map[mapKey]struct{}, pkgCacheDirs 
 	}
 
 	return res, nil
+}
+
+func GetPackageHCacheDirs() ([]string, error) {
+	var err error 
+	pkgCacheDirs := make([]string, 2)
+	pkgCacheDirs[0], err = userCacheDir()
+	if err != nil {
+		return nil, err
+	}
+	pkgCacheDirs[1], err = fallbackCacheDir()
+	if err != nil {
+		return nil, err
+	}
+	
+	return pkgCacheDirs, nil
 }
 
 func userCacheDir() (string, error) {
@@ -267,7 +276,7 @@ func fallbackCacheDir() (string, error) {
 	return "", errors.New("cannot find Nuget fallback directory")
 }
 
-func getPackageHash(name, version string, pkgCacheDirs []string) (string, error) {
+func GetPackageHash(name, version string, pkgCacheDirs []string) (string, error) {
 	lowerName := strings.ToLower(name)
 	for _, cache := range pkgCacheDirs {
 		hashBase64, err := ioutil.ReadFile(filepath.Join(

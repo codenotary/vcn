@@ -51,6 +51,9 @@ ARG must be one of:
   podman://<image>
   wildcard://"*"
   javacom://<java project component>
+  gocom://<Go module in name@version format>
+  pythoncom://<Python module in name@version format>
+  dotnetcom://<.Net module in name@version format>
 `
 
 // NewCommand returns the cobra command for `vcn sign`

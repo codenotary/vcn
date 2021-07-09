@@ -30,7 +30,9 @@ ARG must be one of:
   docker://<image>
   podman://<image>
   javacom://<java maven jar or pom.xml>
-
+  gocom://<Go module in name@version format>
+  pythoncom://<Python module in name@version format>
+  dotnetcom://<.Net module in name@version format>
 ```
 vcn unsupport [flags]
 ```

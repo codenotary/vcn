@@ -14,6 +14,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"io/ioutil"
+	"encoding/json"
+	"net/http"
 
 	"github.com/vchain-us/vcn/pkg/bom_component"
 )
@@ -29,6 +32,7 @@ const (
 	pipenvFileName = "Pipfile.lock"
 	poetryFileName = "poetry.lock"
 	pipFileName    = "requirements.txt"
+	pypiApiPrefix = "https://pypi.org/pypi/"
 )
 
 // PythonPackage implements Package interface
@@ -122,4 +126,47 @@ func combineHashes(hashes []string) (string, int, error) {
 	}
 
 	return hex.EncodeToString(res), hashType, nil
+}
+
+// query PyPI.org for module hash, combine all available hashes using XOR
+func QueryHash(name, version string) (string, int, error) {
+	resp, err := http.Get(pypiApiPrefix + name + "/" + version + "/json")
+	if err != nil {
+		return "", bom_component.HashInvalid, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", bom_component.HashInvalid, errors.New("cannot query PyPI for package details")
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", bom_component.HashInvalid, err
+	}
+
+	var urls pypiUrls
+	err = json.Unmarshal(body, &urls)
+	if err != nil {
+		return "", bom_component.HashInvalid, err
+	}
+
+	// assuming that all files have the same type of hash, with priority for SHA-256
+	hashType := bom_component.HashMD5
+	if urls.Files[0].Digests.Sha256 != "" {
+		hashType = bom_component.HashSHA256
+	}
+	hashes := make([]string, len(urls.Files))
+	for i, file := range urls.Files {
+		if hashType == bom_component.HashSHA256 {
+			hashes[i] = file.Digests.Sha256
+		} else {
+			hashes[i] = file.Digests.Md5
+		}
+	}
+
+	hash, _, err := combineHashes(hashes)
+	if err != nil {
+		return "", bom_component.HashInvalid, errors.New("malformed hash value")
+	}
+
+	return hash, hashType, nil
 }

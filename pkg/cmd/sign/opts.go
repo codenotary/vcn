@@ -48,7 +48,7 @@ func (m mapOpts) StringToInterface() map[string]interface{} {
 
 func (m mapOpts) KeysToValues() []string {
 	var as []string
-	for k, _ := range m {
+	for k := range m {
 		as = append(as, k)
 	}
 	return as
