@@ -6,7 +6,7 @@
  *
  */
 
-package bom_go
+package golang
 
 import (
 	"bufio"
@@ -21,28 +21,34 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"os"
 
 	"golang.org/x/mod/sumdb"
 
-	"github.com/vchain-us/vcn/pkg/bom_component"
+	"github.com/vchain-us/vcn/pkg/bom/artifact"
 )
 
-type clientOps struct{}
+// GoArtifactFromExe implements Artifact interface
+type goArtifactFromGoList struct {
+	goArtifact
+}
 
 type mapKey struct {
 	name    string
 	version string
 }
 
-const key = "sum.golang.org+033de0ae+Ac4zctda0e5eza+HJyk9SxEdh+s3Ux18htTTAD8OuAn8"
-
+type clientOps struct{}
 var goListArgs = []string{"list", "--deps", "-f", "{{if not .Standard}}{{.Module.Path}} {{.Module.Version}}{{end}}"}
+var sumDb = "sum.golang.org+033de0ae+Ac4zctda0e5eza+HJyk9SxEdh+s3Ux18htTTAD8OuAn8"	// default sumdb server and it's public key
 
+// Dependencies returns list of Go dependencies used during the build
 // run 'go list' to get the list of used modules, and then get hashes from sumdb
-// using go.mod/go.sum doesn't produce satisfactory results - list of modules in go.mod lacks some modules which
-// get into final build
-func goListComponents(path string) ([]bom_component.Component, error) {
-	absPath, err := filepath.Abs(path)
+func (a *goArtifactFromGoList) Dependencies() ([]artifact.Dependency, error) {
+	if a.Deps != nil {
+		return a.Deps, nil
+	}
+	absPath, err := filepath.Abs(a.path)
 	if err != nil {
 		return nil, err
 	}
@@ -54,14 +60,20 @@ func goListComponents(path string) ([]bom_component.Component, error) {
 		return nil, err
 	}
 
-	res := make([]bom_component.Component, 0)
+	// override default sumdb path with the value from env, if set
+	tmp, ok := os.LookupEnv("GOSUMDB")
+	if ok {
+		sumDb = tmp
+	}
+
+	res := make([]artifact.Dependency, 0)
 	client := sumdb.NewClient(new(clientOps))
 
 	// start workers and response processor
 	tasks := make(chan mapKey)
 	results := make(chan string)
 	var wg sync.WaitGroup
-	for i := 0; i < bom_component.MaxGoroutines; i++ {
+	for i := 0; i < artifact.MaxGoroutines; i++ {
 		go func() {
 			for tasks := range tasks {
 				lines, err := client.Lookup(tasks.name, tasks.version)
@@ -82,7 +94,7 @@ func goListComponents(path string) ([]bom_component.Component, error) {
 			}
 			hash, hashType, err := ModHash(fields[2])
 			if err == nil {
-				res = append(res, bom_component.Component{
+				res = append(res, artifact.Dependency{
 					Name:     fields[0],
 					Version:  fields[1],
 					Hash:     hash,
@@ -114,12 +126,13 @@ func goListComponents(path string) ([]bom_component.Component, error) {
 	close(tasks)
 	close(results)
 
+	a.Deps = res
 	return res, nil
 }
 
 func (*clientOps) ReadConfig(file string) ([]byte, error) {
 	if file == "key" {
-		return []byte(key), nil
+		return []byte(sumDb), nil
 	}
 	if strings.HasSuffix(file, "/latest") {
 		// Looking for cached latest tree head.
@@ -155,7 +168,7 @@ func init() {
 }
 
 func (*clientOps) ReadRemote(path string) ([]byte, error) {
-	name := key
+	name := sumDb
 	if i := strings.Index(name, "+"); i >= 0 {
 		name = name[:i]
 	}

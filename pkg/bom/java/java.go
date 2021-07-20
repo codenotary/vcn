@@ -6,7 +6,7 @@
  *
  */
 
-package bom_java
+package java
 
 import (
 	"archive/zip"
@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"github.com/prometheus/common/log"
 	"github.com/schollz/progressbar/v3"
-	"github.com/vchain-us/vcn/pkg/bom_component"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -25,7 +24,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/vchain-us/vcn/pkg/bom/artifact"
 )
+
+const AssetType = "java"
 
 const mvn_version = 3
 const mvn_artid = 0
@@ -37,51 +40,51 @@ type task struct {
 	version  string
 }
 type result struct {
-	comp bom_component.Component
+	comp artifact.Dependency
 	err  error
 }
 
-// JavaMavenPackage implements Package interface
-type JavaMavenPackage struct {
+// javaMavenArtifact implements Artifact interface
+type javaMavenArtifact struct {
+	artifact.GenericArtifact
 	folder  string
 	dirName string
 }
 
-func (p *JavaMavenPackage) Path() string {
+func (p *javaMavenArtifact) Path() string {
 	return p.dirName
 }
 
 // New returns new JavaMavenPackage object
-func New(path string) *JavaMavenPackage {
+func New(path string) artifact.Artifact {
 	f, err := GetPOM(path)
 	if err != nil {
 		return nil
 	}
 
-	return &JavaMavenPackage{folder: f, dirName: filepath.Dir(path)}
+	return &javaMavenArtifact{folder: f, dirName: filepath.Dir(path)}
 }
 
-func (p *JavaMavenPackage) Type() string {
-	return "JavaMaven"
+func (p *javaMavenArtifact) Type() string {
+	return AssetType
 }
 
-func (p *JavaMavenPackage) Close() {}
-
-// Components returns list of java packages used during the build
-func (p *JavaMavenPackage) Components() ([]bom_component.Component, error) {
+// Dependencies returns list of java packages used during the build
+func (a *javaMavenArtifact) Dependencies() ([]artifact.Dependency, error) {
+	if a.Deps != nil {
+		return a.Deps, nil
+	}
 	fname, err := exec.LookPath("mvn")
 	if err != nil {
 		return nil, fmt.Errorf("please install mvn tool follwing this link: https://maven.apache.org/install.html. Error reported: %w", err)
 	}
 
-	res := make([]bom_component.Component, 0)
-
-	xmlDepFn, err := ioutil.TempFile(filepath.Dir(p.folder), "xml")
+	xmlDepFn, err := ioutil.TempFile(filepath.Dir(a.folder), "xml")
 	if err != nil {
 		return nil, err
 	}
 	defer xmlDepFn.Close()
-	command := exec.Command(fname, "dependency:tree", "-DoutputType=graphml", "-f="+p.folder, "-DappendOutput=true", "-DoutputFile="+xmlDepFn.Name())
+	command := exec.Command(fname, "dependency:tree", "-DoutputType=graphml", "-f="+a.folder, "-DappendOutput=true", "-DoutputFile="+xmlDepFn.Name())
 	_, err = command.Output()
 	if err != nil {
 		return nil, err
@@ -100,7 +103,7 @@ func (p *JavaMavenPackage) Components() ([]bom_component.Component, error) {
 	// worker pool
 	tasks := make(chan task, len(graph.Graph.Nodes))
 	results := make(chan result, len(graph.Graph.Nodes))
-	for i := 0; i < bom_component.MaxGoroutines; i++ {
+	for i := 0; i < artifact.MaxGoroutines; i++ {
 		go worker(tasks, results)
 	}
 
@@ -127,9 +130,8 @@ func (p *JavaMavenPackage) Components() ([]bom_component.Component, error) {
 		}
 	}
 
-	res = make([]bom_component.Component, 0)
-	var bar *progressbar.ProgressBar
-	bar = progressbar.Default(int64(len(graph.Graph.Nodes)))
+	res := make([]artifact.Dependency, 0)
+	bar := progressbar.Default(int64(len(graph.Graph.Nodes)))
 	for done := 0; done < len(graph.Graph.Nodes); done++ {
 		result := <-results
 		if result.err != nil {
@@ -144,38 +146,41 @@ func (p *JavaMavenPackage) Components() ([]bom_component.Component, error) {
 	close(tasks)
 	close(results)
 
+	a.Deps = res
 	return res, nil
 }
 
 func worker(tasks <-chan task, results chan<- result) {
 	for task := range tasks {
-		comp := bom_component.Component{}
+		comp := artifact.Dependency{}
 
 		resp, err := http.Get(task.mavenUrl)
 		if err != nil {
 			results <- result{comp: comp, err: err}
 			continue
 		}
-		defer resp.Body.Close()
 
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			results <- result{comp: comp, err: err}
+			resp.Body.Close()
 			continue
 		}
 
 		hash := string(body[0:40])
 		if len(hash) < 40 {
 			results <- result{comp: comp, err: fmt.Errorf("malformed SHA1 hash at %s", task.mavenUrl)}
+			resp.Body.Close()
 			continue
 		}
 
 		comp.Hash = hash
 		comp.Version = task.version
 		comp.Name = task.name
-		comp.HashType = bom_component.HashSHA1
+		comp.HashType = artifact.HashSHA1
 
 		results <- result{comp: comp, err: nil}
+		resp.Body.Close()
 	}
 }
 
@@ -198,7 +203,7 @@ func GetPOM(path string) (string, error) {
 		hash := sha256.Sum256([]byte(f.Name))
 		tmpDirName := base64.RawURLEncoding.EncodeToString(hash[:])
 		tempDir := filepath.Join(os.TempDir(), "vcn", tmpDirName)
-		err := os.MkdirAll(tempDir, 755)
+		err := os.MkdirAll(tempDir, 0755)
 		if err != nil {
 			return "", err
 		}

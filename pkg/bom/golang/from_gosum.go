@@ -1,4 +1,4 @@
-package bom_go
+package golang
 
 import (
 	"os"
@@ -6,12 +6,21 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/vchain-us/vcn/pkg/bom_component"
+	"github.com/vchain-us/vcn/pkg/bom/artifact"
 )
 
-func goModComponents(path string) ([]bom_component.Component, error) {
+// goArtifactFromSum implements Artifact interface
+type goArtifactFromSum struct {
+	goArtifact
+}
+
+// Dependencies returns list of Go dependencies used during the build
+func (a *goArtifactFromSum) Dependencies() ([]artifact.Dependency, error) {
+	if a.Deps != nil {
+		return a.Deps, nil
+	}
 	// cache content of go.sum to avoid dupes
-	sumFile, err := os.Open(filepath.Join(path, "go.sum"))
+	sumFile, err := os.Open(filepath.Join(a.path, "go.sum"))
 	if err != nil {
 		return nil, err
 	}
@@ -35,18 +44,19 @@ func goModComponents(path string) ([]bom_component.Component, error) {
 	}
 	
 
-	res := make([]bom_component.Component, 0, len(hashes))
+	res := make([]artifact.Dependency, 0, len(hashes))
 	for k, v := range hashes {
 		hash, hashType, err := ModHash(v)
 		if err != nil {
 			return nil, err
 		}
-		res = append(res, bom_component.Component{
+		res = append(res, artifact.Dependency{
 			Name: k.name,
 			Version: k.version,
 			Hash: hash,
 			HashType: hashType})
 	}
 
+	a.Deps = res
 	return res, nil
 }

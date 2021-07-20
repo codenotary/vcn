@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 //package version
-package bom_go
+package golang
 
 import (
 	"bytes"

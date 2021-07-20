@@ -6,7 +6,7 @@
  *
  */
 
-package bom_go
+package golang
 
 import (
 	"bytes"
@@ -15,8 +15,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vchain-us/vcn/pkg/bom_component"
+	"github.com/vchain-us/vcn/pkg/bom/artifact"
 )
+
+// goArtifactFromExe implements Artifact interface
+type goArtifactFromExe struct {
+	goArtifact
+	file exe
+}
 
 // The logic is copied from 'go version' utility source: https://golang.org/src/cmd/go/internal/version/version.go
 
@@ -26,11 +32,14 @@ import (
 // and whether the binary is big endian (1 byte).
 var buildInfoMagic = []byte("\xff Go buildinf:")
 
-// Components returns list of go packages used during the build
-func exeComponents(x exe) ([]bom_component.Component, error) {
+// Dependencies returns list of Go dependencies used during the build
+func (a *goArtifactFromExe) Dependencies() ([]artifact.Dependency, error) {
+	if a.Deps != nil {
+		return a.Deps, nil
+	}
 	// Read the first 64kB of text to find the build info blob.
-	text := x.DataStart()
-	data, err := x.ReadData(text, 64*1024)
+	text := a.file.DataStart()
+	data, err := a.file.ReadData(text, 64*1024)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +71,7 @@ func exeComponents(x exe) ([]bom_component.Component, error) {
 		readPtr = bo.Uint64
 	}
 
-	mod := readString(x, ptrSize, readPtr, readPtr(data[16+ptrSize:]))
+	mod := readString(a.file, ptrSize, readPtr, readPtr(data[16+ptrSize:]))
 	if len(mod) >= 33 && mod[len(mod)-17] == '\n' {
 		// Strip module framing.
 		mod = mod[16 : len(mod)-16]
@@ -71,30 +80,32 @@ func exeComponents(x exe) ([]bom_component.Component, error) {
 	}
 
 	lines := strings.Split(mod, "\n")
-	res := make([]bom_component.Component, 0, len(lines))
+	res := make([]artifact.Dependency, 0, len(lines))
 	for _, line := range lines {
 		fields := strings.Split(line, "\t")
 		if fields[0] == "dep" {
-			var comp bom_component.Component
+			var dep artifact.Dependency
 			switch len(fields) {
 			default:
-				comp.Hash, comp.HashType, err = ModHash(fields[3])
+				dep.Hash, dep.HashType, err = ModHash(fields[3])
 				if err != nil {
 					return nil, fmt.Errorf("cannot decode hash: %w", err)
 				}
 				fallthrough
 			case 3:
-				comp.Version = fields[2]
+				dep.Version = fields[2]
 				fallthrough
 			case 2:
-				comp.Name = fields[1]
+				dep.Name = fields[1]
 			case 1:
 				continue
 			}
-			res = append(res, comp)
+			res = append(res, dep)
 		}
 	}
 
+	a.Deps = res
+	a.file.Close()
 	return res, nil
 }
 

@@ -15,10 +15,10 @@ import (
 	"strings"
 
 	"github.com/vchain-us/vcn/pkg/api"
-	"github.com/vchain-us/vcn/pkg/bom_component"
-	"github.com/vchain-us/vcn/pkg/bom_go"
 	"github.com/vchain-us/vcn/pkg/extractor"
 	"github.com/vchain-us/vcn/pkg/uri"
+	"github.com/vchain-us/vcn/pkg/bom/artifact"
+	"github.com/vchain-us/vcn/pkg/bom/golang"
 )
 
 // Scheme for Go component
@@ -63,23 +63,20 @@ func Artifact(u *uri.URI, options ...extractor.Option) ([]*api.Artifact, error) 
 		return nil, fmt.Errorf("cannot parse Go command output: %w", err)
 	}
 
-	hash, hashType, err := bom_go.ModHash(info.Sum)
+	hash, hashType, err := golang.ModHash(info.Sum)
 	if err != nil {
 		return nil, fmt.Errorf("cannot decode module hash: %w", err)
 	}
 
-	m := api.Metadata{}
-
-	m["path"] = info.Path
-	m["version"] = info.Version
-	m["hashType"], _ = bom_component.HashTypeName(hashType)
-
 	return []*api.Artifact{{
-		Kind:        Scheme,
+		Kind:        golang.AssetType,
 		Name:        info.Path,
 		Hash:        hash,
 		Size:        uint64(len(buf)),
 		ContentType: "text/json; charset=utf-8",
-		Metadata:    m,
+		Metadata:    api.Metadata{
+			"path": info.Path,
+			"version": info.Version,
+			"hashType": artifact.HashTypeName(hashType)},
 	}}, nil
 }

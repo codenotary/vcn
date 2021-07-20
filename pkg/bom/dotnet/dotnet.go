@@ -6,7 +6,7 @@
  *
  */
 
-package bom_dotnet
+package dotnet
 
 import (
 	"bufio"
@@ -22,12 +22,15 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/vchain-us/vcn/pkg/bom_component"
+	"github.com/vchain-us/vcn/pkg/bom/artifact"
 )
 
-// DotnetPackage implements Package interface
-type DotnetPackage struct {
-	path     string
+const AssetType = ".net"
+
+// dotnetArtifact implements Artifact interface
+type dotnetArtifact struct {
+	artifact.GenericArtifact
+	path string
 	projects []string
 }
 
@@ -63,7 +66,7 @@ var versionArgs = []string{"--version"}
 var projFileExtensions = []string{".csproj", ".vbproj"}
 
 // New returns new NugetPackage object if Nuget packages file is found in directory
-func New(path string) *DotnetPackage {
+func New(path string) *dotnetArtifact {
 	fi, err := os.Stat(path)
 	if err != nil {
 		return nil
@@ -85,7 +88,7 @@ func New(path string) *DotnetPackage {
 		}
 
 		if len(projFiles) > 0 {
-			return &DotnetPackage{path: path, projects: projFiles}
+			return &dotnetArtifact{path: path, projects: projFiles}
 		}
 	} else {
 		// if path is file, it should point to either Solution or Project file
@@ -94,11 +97,11 @@ func New(path string) *DotnetPackage {
 			if len(projFiles) == 0 {
 				return nil
 			}
-			return &DotnetPackage{path: filepath.Dir(path), projects: projFiles}
+			return &dotnetArtifact{path: filepath.Dir(path), projects: projFiles}
 		}
 		for _, ext := range projFileExtensions {
 			if strings.HasSuffix(path, ext) {
-				return &DotnetPackage{path: filepath.Dir(path), projects: []string{filepath.Base(path)}}
+				return &dotnetArtifact{path: filepath.Dir(path), projects: []string{filepath.Base(path)}}
 			}
 		}
 	}
@@ -106,10 +109,13 @@ func New(path string) *DotnetPackage {
 	return nil
 }
 
-// Components returns all dependencies for all known projects
-func (p *DotnetPackage) Components() ([]bom_component.Component, error) {
+// Dependencies returns all dependencies for all known projects
+func (a *dotnetArtifact) Dependencies() ([]artifact.Dependency, error) {
+	if a.Deps != nil {
+		return a.Deps, nil
+	}
 	// restore all dependencies
-	absPath, err := filepath.Abs(p.path)
+	absPath, err := filepath.Abs(a.path)
 	if err != nil {
 		return nil, err
 	}
@@ -125,9 +131,9 @@ func (p *DotnetPackage) Components() ([]bom_component.Component, error) {
 		return nil, err
 	}
 
-	res := make([]bom_component.Component, 0)
+	res := make([]artifact.Dependency, 0)
 	seen := map[mapKey]struct{}{} // use common hashmap for all projects to avoid dupes
-	for _, proj := range p.projects {
+	for _, proj := range a.projects {
 		pkgFileName := filepath.Join(absPath, filepath.Dir(proj), packagesFileName)
 
 		projDeps, err := processPackageFile(pkgFileName, seen, pkgCacheDirs)
@@ -137,19 +143,16 @@ func (p *DotnetPackage) Components() ([]bom_component.Component, error) {
 		res = append(res, projDeps...)
 	}
 
+	a.Deps = res
 	return res, nil
 }
 
-func (p *DotnetPackage) Type() string {
-	return ".Net"
+func (p dotnetArtifact) Type() string {
+	return AssetType
 }
 
-func (p *DotnetPackage) Path() string {
+func (p dotnetArtifact) Path() string {
 	return p.path
-}
-
-func (p *DotnetPackage) Close() {
-	// do nothing, function needed to comply with Package interface
 }
 
 func getProjFromSln(slnFile string) []string {
@@ -185,7 +188,7 @@ func getProjFromSln(slnFile string) []string {
 
 // process single package file
 // it uses map, passed by caller, to avoid dupes. Map access isn't synced so this function isn't thread-safe
-func processPackageFile(fileName string, seen map[mapKey]struct{}, pkgCacheDirs []string) ([]bom_component.Component, error) {
+func processPackageFile(fileName string, seen map[mapKey]struct{}, pkgCacheDirs []string) ([]artifact.Dependency, error) {
 	buf, err := ioutil.ReadFile(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read Nuget dependencies file: %w", err)
@@ -197,7 +200,7 @@ func processPackageFile(fileName string, seen map[mapKey]struct{}, pkgCacheDirs 
 		return nil, fmt.Errorf("cannot parse Nuget dependencies file: %w", err)
 	}
 
-	res := make([]bom_component.Component, 0)
+	res := make([]artifact.Dependency, 0)
 	for _, target := range lockFile.Targets {
 		for name, details := range target {
 			if details.Type == "Project" {
@@ -213,11 +216,11 @@ func processPackageFile(fileName string, seen map[mapKey]struct{}, pkgCacheDirs 
 			if err != nil {
 				return nil, err
 			}
-			res = append(res, bom_component.Component{
+			res = append(res, artifact.Dependency{
 				Name:     name,
 				Version:  details.Version,
 				Hash:     hash,
-				HashType: bom_component.HashSHA512})
+				HashType: artifact.HashSHA512})
 		}
 	}
 

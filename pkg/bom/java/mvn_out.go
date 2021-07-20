@@ -6,7 +6,7 @@
  *
  */
 
-package bom_java
+package java
 
 import "encoding/xml"
 

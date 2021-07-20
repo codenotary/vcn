@@ -6,7 +6,7 @@
  *
  */
 
-package bom_python
+package python
 
 import (
 	"encoding/json"
@@ -17,12 +17,21 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/vchain-us/vcn/pkg/bom_component"
+	"github.com/vchain-us/vcn/pkg/bom/artifact"
 )
 
+// pythonArtifactFromPipEnv implements Artifact interface
+type pythonArtifactFromPipEnv struct {
+	pythonArtifact
+}
+
+// Dependencies returns list of Python dependencies for the artifact
 // for pipenv Pipfile.lock JSON file contains all needed information in "default" section
-func procPipenv(dir string) ([]bom_component.Component, error) {
-	file, err := os.Open(filepath.Join(dir, pipenvFileName))
+func (a *pythonArtifactFromPipEnv) Dependencies() ([]artifact.Dependency, error) {
+	if a.Deps != nil {
+		return a.Deps, nil
+	}
+	file, err := os.Open(filepath.Join(a.path, pipenvFileName))
 	if err != nil {
 		return nil, err
 	}
@@ -47,15 +56,15 @@ func procPipenv(dir string) ([]bom_component.Component, error) {
 		return nil, errors.New("malformed Pipfile.lock - \"default\" has a wrong data type")
 	}
 
-	res := make([]bom_component.Component, 0, len(packages))
+	res := make([]artifact.Dependency, 0, len(packages))
 	for name, pkg := range packages {
 		pkgContent, ok := pkg.(map[string]interface{})
 		if !ok {
 			return nil, fmt.Errorf("malformed \"%s\" section", name)
 		}
 
-		var comp bom_component.Component
-		comp.Name = name
+		var dep artifact.Dependency
+		dep.Name = name
 		field, ok := pkgContent["hashes"]
 		if !ok {
 			return nil, fmt.Errorf("malformed \"%s\" section", name)
@@ -70,7 +79,7 @@ func procPipenv(dir string) ([]bom_component.Component, error) {
 			hashes[i] = hashArray[i].(string)
 		}
 
-		comp.Hash, comp.HashType, err = combineHashes(hashes)
+		dep.Hash, dep.HashType, err = combineHashes(hashes)
 		if err != nil {
 			return nil, err
 		}
@@ -83,10 +92,11 @@ func procPipenv(dir string) ([]bom_component.Component, error) {
 		if !ok {
 			return nil, fmt.Errorf("malformed \"%s\" section", name)
 		}
-		comp.Version = strings.TrimPrefix(version, "==")
+		dep.Version = strings.TrimPrefix(version, "==")
 
-		res = append(res, comp)
+		res = append(res, dep)
 	}
 
+	a.Deps = res
 	return res, nil
 }

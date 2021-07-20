@@ -6,7 +6,7 @@
  *
  */
 
-package bom_python
+package python
 
 import (
 	"bufio"
@@ -19,20 +19,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/vchain-us/vcn/pkg/bom_component"
+	"github.com/vchain-us/vcn/pkg/bom/artifact"
 )
 
-type pypiUrls struct {
-	Files []pypiFile `json:"urls"`
-}
-
-type pypiFile struct {
-	Digests pypiDigests `json:"digests"`
-}
-
-type pypiDigests struct {
-	Md5    string `json:"md5,omitempty"`
-	Sha256 string `json:"sha256,omitempty"`
+// pythonArtifactFromPip implements Artifact interface
+type pythonArtifactFromPip struct {
+	pythonArtifact
 }
 
 type module struct {
@@ -47,7 +39,7 @@ type task struct {
 type result struct {
 	name     string
 	hash     string
-	hashType int
+	hashType artifact.HashType
 	deps     []string
 	err      error
 }
@@ -55,9 +47,13 @@ type result struct {
 var moduleListArgs = []string{"-m", "pip", "list", "-v"}
 var moduleDetailsArgs = []string{"-m", "pip", "show"}
 
+// Dependencies returns list of Python dependencies for the artifact
 // collect info about all installed modules, find module relations, populate module graph and then recursively
 // select only the needed modules, using content of 'requirements.txt' as a starting point
-func procPip(dir string) ([]bom_component.Component, error) {
+func (a *pythonArtifactFromPip) Dependencies() ([]artifact.Dependency, error) {
+	if a.Deps != nil {
+		return a.Deps, nil
+	}
 	// first try "python", if it fails, try "python3"
 	pythonExe := "python"
 	buf, err := exec.Command(pythonExe, moduleListArgs...).Output()
@@ -97,7 +93,7 @@ func procPip(dir string) ([]bom_component.Component, error) {
 	}
 
 	// root dependencies from requirements.txt
-	buf, err = ioutil.ReadFile(filepath.Join(dir, pipFileName))
+	buf, err = ioutil.ReadFile(filepath.Join(a.path, pipFileName))
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +102,7 @@ func procPip(dir string) ([]bom_component.Component, error) {
 	// We can be sure that there will be no more in-flight messages in channels than known modules
 	tasks := make(chan task, len(moduleGraph))
 	results := make(chan result, len(moduleGraph))
-	for i := 0; i < bom_component.MaxGoroutines; i++ {
+	for i := 0; i < artifact.MaxGoroutines; i++ {
 		go worker(tasks, results, pythonExe)
 	}
 
@@ -135,14 +131,14 @@ func procPip(dir string) ([]bom_component.Component, error) {
 	}
 
 	// get dependencies, run tasks for dependencies, collect info about all used modules
-	res := make([]bom_component.Component, 0)
+	res := make([]artifact.Dependency, 0)
 	for done := 0; taskCount == 0 || done < taskCount; done++ {
 		result := <-results
 		if result.err != nil {
 			close(tasks) // signal workers to stop
 			return nil, err
 		}
-		res = append(res, bom_component.Component{
+		res = append(res, artifact.Dependency{
 			Name:     result.name,
 			Version:  moduleGraph[result.name].version,
 			Hash:     result.hash,
@@ -169,6 +165,7 @@ func procPip(dir string) ([]bom_component.Component, error) {
 	close(tasks)   // signal workers to stop
 	close(results) // it is safe to close result channel because workers do nothing at this point
 
+	a.Deps = res
 	return res, nil
 }
 

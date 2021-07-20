@@ -12,7 +12,6 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/xml"
-	"github.com/vchain-us/vcn/pkg/bom_java"
 	"io"
 	"io/ioutil"
 	"os"
@@ -21,6 +20,7 @@ import (
 	"github.com/vchain-us/vcn/pkg/api"
 	"github.com/vchain-us/vcn/pkg/extractor"
 	"github.com/vchain-us/vcn/pkg/uri"
+	"github.com/vchain-us/vcn/pkg/bom/java"
 )
 
 // Scheme for java component
@@ -35,7 +35,7 @@ func Artifact(u *uri.URI, options ...extractor.Option) ([]*api.Artifact, error) 
 
 	path := strings.TrimPrefix(u.Opaque, "//")
 
-	pomPath, err := bom_java.GetPOM(path)
+	pomPath, err := java.GetPOM(path)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func Artifact(u *uri.URI, options ...extractor.Option) ([]*api.Artifact, error) 
 	m["packaging"] = project.Packaging
 
 	return []*api.Artifact{{
-		Kind:        Scheme,
+		Kind:        java.AssetType,
 		Name:        project.Name,
 		Hash:        hex.EncodeToString(checksum),
 		Size:        uint64(stat.Size()),

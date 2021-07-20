@@ -6,10 +6,10 @@ import (
 	"fmt"
 
 	"github.com/vchain-us/vcn/pkg/api"
-	"github.com/vchain-us/vcn/pkg/bom_component"
-	"github.com/vchain-us/vcn/pkg/bom_dotnet"
 	"github.com/vchain-us/vcn/pkg/extractor"
 	"github.com/vchain-us/vcn/pkg/uri"
+	"github.com/vchain-us/vcn/pkg/bom/artifact"
+	"github.com/vchain-us/vcn/pkg/bom/dotnet"
 )
 
 // Scheme for Go component
@@ -28,28 +28,25 @@ func Artifact(u *uri.URI, options ...extractor.Option) ([]*api.Artifact, error) 
 		return nil, errors.New("component path format is <name>@<version>")
 	}
 
-	pkgCacheDirs, err := bom_dotnet.GetPackageHCacheDirs()
+	pkgCacheDirs, err := dotnet.GetPackageHCacheDirs()
 	if err != nil {
 		return nil, err
 	}
 
-	hash, err := bom_dotnet.GetPackageHash(fields[0], fields[1], pkgCacheDirs)
+	hash, err := dotnet.GetPackageHash(fields[0], fields[1], pkgCacheDirs)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get checksum for module %s: %w", path, err)
 	}
 
-	m := api.Metadata{}
-
-	m["path"] = fields[0]
-	m["version"] = fields[1]
-	m["hashType"], _ = bom_component.HashTypeName(bom_component.HashSHA512)
-
 	return []*api.Artifact{{
-		Kind:        Scheme,
+		Kind:        dotnet.AssetType,
 		Name:        fields[0],
 		Hash:        hash,
 		Size:        0,
 		ContentType: "text/json; charset=utf-8",
-		Metadata:    m,
+		Metadata:    api.Metadata{
+			"path": fields[0],
+			"version": fields[1],
+			"hashType": artifact.HashTypeName(artifact.HashSHA512)},
 	}}, nil
 }

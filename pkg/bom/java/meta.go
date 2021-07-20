@@ -6,7 +6,7 @@
  *
  */
 
-package bom_java
+package java
 
 const maven_repo_base_path = "https://repo1.maven.org/maven2"
 const POM_name = "vcn_pom.xml"

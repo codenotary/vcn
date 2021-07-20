@@ -11,9 +11,10 @@ package sign
 import (
 	"bufio"
 	"fmt"
-	"github.com/vchain-us/vcn/pkg/cicontext"
 	"os"
 	"strings"
+
+	"github.com/vchain-us/vcn/pkg/cicontext"
 
 	"github.com/spf13/viper"
 	"github.com/vchain-us/vcn/pkg/extractor/wildcard"
@@ -144,6 +145,7 @@ echo my-file | vcn n -`,
 	cmd.Flags().Bool("lc-no-tls", false, meta.VcnLcNoTlsDesc)
 	cmd.Flags().String("lc-api-key", "", meta.VcnLcApiKeyDesc)
 	cmd.Flags().StringArray("attach", nil, meta.VcnLcAttachDesc)
+	cmd.Flags().Bool("bom", false, "link asset to its dependencies from BoM")
 	cmd.SetUsageTemplate(
 		strings.Replace(cmd.UsageTemplate(), "{{.UseLine}}", "{{.UseLine}} ARG", 1),
 	)
@@ -249,6 +251,13 @@ func runSignWithState(cmd *cobra.Command, args []string, state meta.Status) erro
 	attachments, err := cmd.Flags().GetStringArray("attach")
 	if err != nil {
 		return err
+	}
+	if viper.GetBool("bom") {
+		_, err = os.Stat(".bom")
+		if err != nil {
+			return fmt.Errorf("please run 'vcn bom' first to produce .bom file")
+		}
+		attachments = append(attachments, ".bom")
 	}
 	//check if an lcUser is present inside the context
 	var lcUser *api.LcUser
