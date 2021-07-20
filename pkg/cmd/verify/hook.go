@@ -102,7 +102,7 @@ func (h *hook) lcFinalizeWithoutAlert(user *api.LcUser, output string, txId uint
 				fmt.Printf("Diff is unavailable because '%s' is invalid.\n\n", bundle.ManifestFilename)
 				return nil // ignore bad manifest
 			}
-			oldArtifact, _, err := user.LoadArtifact(oldDigest.Encoded(), "", "", txId)
+			oldArtifact, _, err := user.LoadArtifact(oldDigest.Encoded(), "", "", txId, nil)
 
 			if err != nil {
 				if err == api.ErrNotFound {

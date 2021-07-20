@@ -12,6 +12,7 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+
 	"github.com/vchain-us/vcn/internal/errors"
 	"github.com/vchain-us/vcn/internal/logs"
 
@@ -265,7 +266,12 @@ func PublicCNLCVerify(hash, lcLedger, signerID, lcHost, lcPort, lcCert string, l
 	}
 
 	if hash != "" {
-		a, _, err = lcUser.LoadArtifact(hash, signerID, "", 0)
+		a, _, err = lcUser.LoadArtifact(
+			hash,
+			signerID,
+			"",
+			0,
+			map[string][]string{meta.VcnLCCmdHeaderName: {meta.VcnLCVerifyCmdHeaderValue}})
 		if err != nil {
 			return nil, err
 		}

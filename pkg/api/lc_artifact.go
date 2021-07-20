@@ -227,7 +227,10 @@ func (u LcUser) createArtifact(artifact Artifact, status meta.Status, attach []s
 		return false, 0, err
 	}
 
-	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
+	md := metadata.Pairs(
+		meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue,
+		meta.VcnLCCmdHeaderName, meta.VcnLCNotarizeCmdHeaderValue,
+	)
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
 	var txMeta *immuschema.TxMetadata
@@ -267,9 +270,17 @@ func (u LcUser) createArtifact(artifact Artifact, status meta.Status, attach []s
 }
 
 // LoadArtifact fetches and returns an *lcArtifact for the given hash and current u, if any.
-func (u *LcUser) LoadArtifact(hash, signerID string, uid string, tx uint64) (lc *LcArtifact, verified bool, err error) {
+func (u *LcUser) LoadArtifact(
+	hash, signerID string,
+	uid string,
+	tx uint64,
+	gRPCMetadata map[string][]string,
+) (lc *LcArtifact, verified bool, err error) {
 
 	md := metadata.Pairs(meta.VcnLCPluginTypeHeaderName, meta.VcnLCPluginTypeHeaderValue)
+	if len(gRPCMetadata) > 0 {
+		md = metadata.Join(md, gRPCMetadata)
+	}
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
 	if signerID == "" {
