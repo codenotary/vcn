@@ -2,6 +2,8 @@ package verify
 
 import (
 	"fmt"
+	"strconv"
+
 	"github.com/fatih/color"
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
@@ -10,7 +12,6 @@ import (
 	"github.com/vchain-us/vcn/pkg/cmd/internal/cli"
 	"github.com/vchain-us/vcn/pkg/cmd/internal/types"
 	"github.com/vchain-us/vcn/pkg/meta"
-	"strconv"
 )
 
 func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID string, uid string, attach string, lcAttachForce bool, verbose bool, output string) (err error) {
@@ -28,7 +29,12 @@ func lcVerify(cmd *cobra.Command, a *api.Artifact, user *api.LcUser, signerID st
 		}
 	}
 
-	ar, verified, err := user.LoadArtifact(a.Hash, signerID, uid, 0)
+	ar, verified, err := user.LoadArtifact(
+		a.Hash,
+		signerID,
+		uid,
+		0,
+		map[string][]string{meta.VcnLCCmdHeaderName: {meta.VcnLCVerifyCmdHeaderValue}})
 	if err != nil {
 		if err == api.ErrNotFound {
 			err = fmt.Errorf("%s was not notarized", a.Hash)
