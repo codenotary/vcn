@@ -75,7 +75,7 @@ func Artifact(u *uri.URI, options ...extractor.Option) ([]*api.Artifact, error) 
 		}
 	}
 
-	files, err := walk(path)
+	files, err := Walk(path)
 	if err != nil {
 		return nil, err
 	}

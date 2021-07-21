@@ -16,7 +16,7 @@ import (
 	"github.com/vchain-us/vcn/pkg/bundle"
 )
 
-func walk(root string) (files []bundle.Descriptor, err error) {
+func Walk(root string) (files []bundle.Descriptor, err error) {
 	files = make([]bundle.Descriptor, 0)
 	ignore, err := newIgnoreFileMatcher(root)
 	if err != nil {
