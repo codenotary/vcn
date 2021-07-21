@@ -195,6 +195,7 @@ func (u LcUser) createArtifact(artifact Artifact, status meta.Status, attach []s
 			Filename: path.Base(a),
 			Hash:     hash,
 			Mime:     mime,
+			Label:    label,
 		}
 
 		/** friendly label **/

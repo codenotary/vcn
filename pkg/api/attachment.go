@@ -13,4 +13,5 @@ type Attachment struct {
 	Filename string `json:"filename" yaml:"filename" vcn:"filename"`
 	Hash     string `json:"hash" yaml:"hash" vcn:"hash"`
 	Mime     string `json:"mime" yaml:"mime" vcn:"mime"`
+	Label    string `json:"label" yaml:"label" vcn:"label"`
 }
