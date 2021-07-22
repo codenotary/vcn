@@ -1,9 +1,9 @@
 package pythoncom
 
 import (
-	"strings"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/vchain-us/vcn/pkg/api"
 	"github.com/vchain-us/vcn/pkg/bom/artifact"
@@ -33,15 +33,5 @@ func Artifact(u *uri.URI, options ...extractor.Option) ([]*api.Artifact, error) 
 		return nil, fmt.Errorf("cannot get checksum for module %s: %w", path, err)
 	}
 
-	return []*api.Artifact{{
-		Kind:        python.AssetType,
-		Name:        fields[0],
-		Hash:        hash,
-		Size:        0,
-		ContentType: "text/json; charset=utf-8",
-		Metadata:    api.Metadata{
-			"path" : fields[0],
-			"version": fields[1],
-			"hashType": artifact.HashTypeName(hashType)},
-	}}, nil
+	return []*api.Artifact{artifact.ToApiArtifact(python.AssetType, fields[0], fields[1], hash, hashType)}, nil
 }

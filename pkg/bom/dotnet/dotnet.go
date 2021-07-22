@@ -30,7 +30,7 @@ const AssetType = ".net"
 // dotnetArtifact implements Artifact interface
 type dotnetArtifact struct {
 	artifact.GenericArtifact
-	path string
+	path     string
 	projects []string
 }
 
@@ -228,7 +228,7 @@ func processPackageFile(fileName string, seen map[mapKey]struct{}, pkgCacheDirs 
 }
 
 func GetPackageHCacheDirs() ([]string, error) {
-	var err error 
+	var err error
 	pkgCacheDirs := make([]string, 2)
 	pkgCacheDirs[0], err = userCacheDir()
 	if err != nil {
@@ -238,7 +238,7 @@ func GetPackageHCacheDirs() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return pkgCacheDirs, nil
 }
 

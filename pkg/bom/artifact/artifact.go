@@ -36,7 +36,7 @@ func AuthDependencies(lcUser *api.LcUser, a Artifact, signerID string, trustLeve
 		return err
 	}
 	if len(deps) == 0 {
-		return nil 	// nothing to do
+		return nil // nothing to do
 	}
 	if trustLevel < MinTrustLevel || trustLevel > MaxTrustLevel {
 		return errors.New("invalid trust level")
@@ -48,7 +48,7 @@ func AuthDependencies(lcUser *api.LcUser, a Artifact, signerID string, trustLeve
 	unsupportedCount := 0
 	messages := make([]string, 0)
 	failed := false
-	for i := range deps {	// use index i to iterate because Authenticate() mutates the object
+	for i := range deps { // use index i to iterate because Authenticate() mutates the object
 		err = deps[i].Authenticate(lcUser, signerID)
 		if err != nil {
 			return err
@@ -63,7 +63,7 @@ func AuthDependencies(lcUser *api.LcUser, a Artifact, signerID string, trustLeve
 		}
 	}
 
-	if threshold < 100 && unsupportedCount > len(deps) * int(threshold) / 100 {
+	if threshold < 100 && unsupportedCount > len(deps)*int(threshold)/100 {
 		failed = true
 	}
 
@@ -78,9 +78,9 @@ func AuthDependencies(lcUser *api.LcUser, a Artifact, signerID string, trustLeve
 	// notarize the components with Unsupported trust level
 	if autoNotarize && unsupportedCount > 0 {
 		fmt.Printf("Notarizing dependencies...\n")
-		for i := range deps {	// use index i to iterate because Notarize() mutates the object
+		for i := range deps { // use index i to iterate because Notarize() mutates the object
 			if deps[i].TrustLevel == Unsupported {
-				err = deps[i].Notarize(lcUser, a.Type())		// FIXME make sure a.Type() value matches component scheme
+				err = deps[i].Notarize(lcUser, a.Type())
 				if err != nil {
 					return err
 				}

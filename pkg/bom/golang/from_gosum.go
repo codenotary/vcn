@@ -1,8 +1,8 @@
 package golang
 
 import (
-	"os"
 	"bufio"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -31,10 +31,10 @@ func (a *goArtifactFromSum) Dependencies() ([]artifact.Dependency, error) {
 	for scanner.Scan() {
 		fields := strings.Fields(scanner.Text())
 		if len(fields) != 3 {
-			continue	// skip malformed lines
+			continue // skip malformed lines
 		}
 		if strings.HasSuffix(fields[1], "/go.mod") {
-			continue	// skip go.mod hashes
+			continue // skip go.mod hashes
 		}
 		key := mapKey{name: fields[0], version: fields[1]}
 		if _, ok := hashes[key]; ok {
@@ -42,7 +42,6 @@ func (a *goArtifactFromSum) Dependencies() ([]artifact.Dependency, error) {
 		}
 		hashes[key] = fields[2]
 	}
-	
 
 	res := make([]artifact.Dependency, 0, len(hashes))
 	for k, v := range hashes {
@@ -51,9 +50,9 @@ func (a *goArtifactFromSum) Dependencies() ([]artifact.Dependency, error) {
 			return nil, err
 		}
 		res = append(res, artifact.Dependency{
-			Name: k.name,
-			Version: k.version,
-			Hash: hash,
+			Name:     k.name,
+			Version:  k.version,
+			Hash:     hash,
 			HashType: hashType})
 	}
 

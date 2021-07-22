@@ -15,10 +15,10 @@ import (
 	"strings"
 
 	"github.com/vchain-us/vcn/pkg/api"
-	"github.com/vchain-us/vcn/pkg/extractor"
-	"github.com/vchain-us/vcn/pkg/uri"
 	"github.com/vchain-us/vcn/pkg/bom/artifact"
 	"github.com/vchain-us/vcn/pkg/bom/golang"
+	"github.com/vchain-us/vcn/pkg/extractor"
+	"github.com/vchain-us/vcn/pkg/uri"
 )
 
 // Scheme for Go component
@@ -68,15 +68,5 @@ func Artifact(u *uri.URI, options ...extractor.Option) ([]*api.Artifact, error) 
 		return nil, fmt.Errorf("cannot decode module hash: %w", err)
 	}
 
-	return []*api.Artifact{{
-		Kind:        golang.AssetType,
-		Name:        info.Path,
-		Hash:        hash,
-		Size:        uint64(len(buf)),
-		ContentType: "text/json; charset=utf-8",
-		Metadata:    api.Metadata{
-			"path": info.Path,
-			"version": info.Version,
-			"hashType": artifact.HashTypeName(hashType)},
-	}}, nil
+	return []*api.Artifact{artifact.ToApiArtifact(golang.AssetType, info.Path, info.Version, hash, hashType)}, nil
 }

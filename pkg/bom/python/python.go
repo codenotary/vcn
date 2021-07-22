@@ -10,13 +10,13 @@ package python
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"errors"
+	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
-	"io/ioutil"
-	"encoding/json"
-	"net/http"
 
 	"github.com/vchain-us/vcn/pkg/bom/artifact"
 )
@@ -46,7 +46,7 @@ const (
 	pipenvFileName = "Pipfile.lock"
 	poetryFileName = "poetry.lock"
 	pipFileName    = "requirements.txt"
-	pypiApiPrefix = "https://pypi.org/pypi/"
+	pypiApiPrefix  = "https://pypi.org/pypi/"
 )
 
 // New returns new Artifact, or nil if the path doesn't point to directory with Python package

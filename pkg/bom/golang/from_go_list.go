@@ -16,12 +16,12 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
-	"os"
 
 	"golang.org/x/mod/sumdb"
 
@@ -39,8 +39,9 @@ type mapKey struct {
 }
 
 type clientOps struct{}
+
 var goListArgs = []string{"list", "--deps", "-f", "{{if not .Standard}}{{.Module.Path}} {{.Module.Version}}{{end}}"}
-var sumDb = "sum.golang.org+033de0ae+Ac4zctda0e5eza+HJyk9SxEdh+s3Ux18htTTAD8OuAn8"	// default sumdb server and it's public key
+var sumDb = "sum.golang.org+033de0ae+Ac4zctda0e5eza+HJyk9SxEdh+s3Ux18htTTAD8OuAn8" // default sumdb server and it's public key
 
 // Dependencies returns list of Go dependencies used during the build
 // run 'go list' to get the list of used modules, and then get hashes from sumdb

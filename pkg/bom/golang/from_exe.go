@@ -83,23 +83,14 @@ func (a *goArtifactFromExe) Dependencies() ([]artifact.Dependency, error) {
 	res := make([]artifact.Dependency, 0, len(lines))
 	for _, line := range lines {
 		fields := strings.Split(line, "\t")
-		if fields[0] == "dep" {
+		if (fields[0] == "dep" || fields[0] == "=>") && len(fields) == 4 {
 			var dep artifact.Dependency
-			switch len(fields) {
-			default:
-				dep.Hash, dep.HashType, err = ModHash(fields[3])
-				if err != nil {
-					return nil, fmt.Errorf("cannot decode hash: %w", err)
-				}
-				fallthrough
-			case 3:
-				dep.Version = fields[2]
-				fallthrough
-			case 2:
-				dep.Name = fields[1]
-			case 1:
-				continue
+			dep.Hash, dep.HashType, err = ModHash(fields[3])
+			if err != nil {
+				return nil, fmt.Errorf("cannot decode hash: %w", err)
 			}
+			dep.Version = fields[2]
+			dep.Name = fields[1]
 			res = append(res, dep)
 		}
 	}

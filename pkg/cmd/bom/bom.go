@@ -20,8 +20,8 @@ import (
 	"github.com/vchain-us/vcn/pkg/api"
 	"github.com/vchain-us/vcn/pkg/bom"
 	"github.com/vchain-us/vcn/pkg/bom/artifact"
-	"github.com/vchain-us/vcn/pkg/store"
 	"github.com/vchain-us/vcn/pkg/meta"
+	"github.com/vchain-us/vcn/pkg/store"
 )
 
 // NewCommand returns the cobra command for `vcn info`
@@ -30,8 +30,14 @@ func NewCommand() *cobra.Command {
 		Use:     "bom",
 		Example: "  vcn bom /bin/vcn",
 		Short:   "Collect BoM information",
-		Long:    ``,
-		RunE:    runBom,
+		Long: `
+Collect BoM (Bill of Material) information
+
+It identifies dependencies of build artifact and produces the BoM, which can be
+later notorized using 'vcn notorize' command with '--bom' option.
+It can optionally notorize unsupported dependencies, if '--nd' option is specified.
+`,
+		RunE: runBom,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			// Bind to all flags to env vars (after flags were parsed),
 			// but only ones retrivied by using viper will be used.
@@ -51,8 +57,9 @@ func NewCommand() *cobra.Command {
 	cmd.Flags().String("lc-api-key", "", meta.VcnLcApiKeyDesc)
 	cmd.Flags().String("lc-ledger", "", meta.VcnLcLedgerDesc)
 	cmd.Flags().Bool("nd", false, "enables automatic notarization of unsupported dependencies")
-	cmd.Flags().Int("max_unsupported", 100, "max number (in %) of unsupported dependencies allowed")
+	cmd.Flags().Int("max-unsupported", 0, "max number (in %) of unsupported dependencies allowed")
 	cmd.Flags().String("spdx", "", "name of the file to output BoM in SPDX format")
+	cmd.Flags().Int("trust-level", int(artifact.Trusted), "min trust level: 0 (untrusted) / 1 (unsupported) / 2 (trusted)")
 
 	return cmd
 }
@@ -67,13 +74,18 @@ func runBom(cmd *cobra.Command, args []string) error {
 	lcApiKey := viper.GetString("lc-api-key")
 	lcLedger := viper.GetString("lc-ledger")
 	autoNotarize := viper.GetBool("nd")
-	threshold := viper.GetInt("max_unsupported")
+	threshold := viper.GetInt("max-unsupported")
 	signerID := viper.GetString("signerID")
 	if threshold < 0 || threshold > 100 {
-		return errors.New("max_unsupported must be a valid percentage value (0-100)")
+		return errors.New("max-unsupported must be a valid percentage value (0-100)")
 	}
 	spdxFilename := viper.GetString("spdx")
-	// TODO Add min trust level
+	trustLevel := viper.GetInt("trust-level")
+	if trustLevel < int(artifact.MinTrustLevel) || trustLevel > int(artifact.MaxTrustLevel) {
+		return fmt.Errorf("invalid trust level, expected values %d-%d", artifact.MinTrustLevel, artifact.MaxTrustLevel)
+	}
+
+	cmd.SilenceUsage = true
 
 	buildArtifact := bom.New(args[0])
 	if buildArtifact == nil {
@@ -91,7 +103,6 @@ func runBom(cmd *cobra.Command, args []string) error {
 	}
 
 	// use credentials if at least ledger compliance host is provided
-	// FIXME maybe remove lcHost condition? there is a default for host, I think
 	if lcHost != "" && lcApiKey != "" {
 		lcUser, err = api.NewLcUser(lcApiKey, "", lcHost, lcPort, lcCert, skipTlsVerify, noTls)
 		if err != nil {
@@ -101,14 +112,15 @@ func runBom(cmd *cobra.Command, args []string) error {
 			return err
 		}
 	}
-	
+
 	if lcUser != nil {
 		err = lcUser.Client.Connect()
 		if err != nil {
 			return err
 		}
+	} else {
+		return fmt.Errorf("cannot load the current user")
 	}
-	// FIXME what to do otherwise?
 
 	if signerID == "" {
 		signerID = api.GetSignerIDByApiKey(lcUser.Client.ApiKey)
@@ -120,7 +132,7 @@ func runBom(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	err = artifact.AuthDependencies(lcUser, buildArtifact, signerID, artifact.Trusted, autoNotarize, uint(threshold))
+	err = artifact.AuthDependencies(lcUser, buildArtifact, signerID, artifact.TrustLevel(trustLevel), autoNotarize, uint(threshold))
 	if err != nil {
 		return err
 	}
@@ -147,10 +159,10 @@ func runBom(cmd *cobra.Command, args []string) error {
 		}
 		err = ioutil.WriteFile(spdxFilename, []byte(spdx), 0644)
 		if err != nil {
-			return err	// FIXME show warning, but not error, because notarization succeeded
+			// show warning, but not error, because notarization succeeded
+			fmt.Printf("Cannot output SPDX: %v", err)
 		}
 	}
-	fmt.Printf("Done\n")
 
 	return nil
 }

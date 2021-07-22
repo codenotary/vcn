@@ -9,7 +9,7 @@
 package javacom
 
 import (
-	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/xml"
 	"io"
@@ -18,9 +18,10 @@ import (
 	"strings"
 
 	"github.com/vchain-us/vcn/pkg/api"
+	"github.com/vchain-us/vcn/pkg/bom/artifact"
+	"github.com/vchain-us/vcn/pkg/bom/java"
 	"github.com/vchain-us/vcn/pkg/extractor"
 	"github.com/vchain-us/vcn/pkg/uri"
-	"github.com/vchain-us/vcn/pkg/bom/java"
 )
 
 // Scheme for java component
@@ -46,20 +47,11 @@ func Artifact(u *uri.URI, options ...extractor.Option) ([]*api.Artifact, error) 
 	}
 	defer f.Close()
 
-	m := api.Metadata{}
-
-	h := sha1.New()
+	h := sha256.New()
 	if _, err := io.Copy(h, f); err != nil {
 		return nil, err
 	}
 	checksum := h.Sum(nil)
-
-	stat, err := f.Stat()
-	if err != nil {
-		return nil, err
-	}
-
-	ct := "text/xml; charset=utf-8"
 
 	pb, err := ioutil.ReadFile(pomPath)
 	if err != nil {
@@ -71,46 +63,18 @@ func Artifact(u *uri.URI, options ...extractor.Option) ([]*api.Artifact, error) 
 		return nil, err
 	}
 
-	m["groupId"] = project.Parent.GroupId
-	m["artifactId"] = project.ArtifactId
-	m["version"] = project.Parent.Version
-	m["packaging"] = project.Packaging
-
-	return []*api.Artifact{{
-		Kind:        java.AssetType,
-		Name:        project.Name,
-		Hash:        hex.EncodeToString(checksum),
-		Size:        uint64(stat.Size()),
-		ContentType: ct,
-		Metadata:    m,
-	}}, nil
+	return []*api.Artifact{artifact.ToApiArtifact(java.AssetType, project.Name, project.Parent.Version, hex.EncodeToString(checksum), artifact.HashSHA256)}, nil
 }
 
 type Pom struct {
-	XMLName      xml.Name     `xml:"project"`
-	ModelVersion string       `xml:"modelVersion"`
-	Parent       Parent       `xml:"parent"`
-	GroupId      string       `xml:"groupId"`
-	ArtifactId   string       `xml:"artifactId"`
-	Version      string       `xml:"version"`
-	Packaging    string       `xml:"packaging"`
-	Name         string       `xml:"name"`
-	Dependencies []Dependency `xml:"dependencies>dependency"`
-	Modules      []string     `xml:"modules>module"`
+	XMLName      xml.Name `xml:"project"`
+	ModelVersion string   `xml:"modelVersion"`
+	Parent       Parent   `xml:"parent"`
+	Version      string   `xml:"version"`
+	Name         string   `xml:"name"`
+	Modules      []string `xml:"modules>module"`
 }
 
 type Parent struct {
-	GroupId    string `xml:"groupId"`
-	ArtifactId string `xml:"artifactId"`
-	Version    string `xml:"version"`
-}
-
-type Dependency struct {
-	XMLName    xml.Name `xml:"dependency"`
-	GroupId    string   `xml:"groupId"`
-	ArtifactId string   `xml:"artifactId"`
-	Version    string   `xml:"version"`
-	Classifier string   `xml:"classifier"`
-	Type       string   `xml:"type"`
-	Scope      string   `xml:"scope"`
+	Version string `xml:"version"`
 }

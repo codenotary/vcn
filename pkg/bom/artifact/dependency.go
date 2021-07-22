@@ -9,14 +9,15 @@
 package artifact
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 
 	"github.com/vchain-us/vcn/pkg/api"
 	"github.com/vchain-us/vcn/pkg/meta"
 )
 
 type HashType int
+
 const (
 	HashInvalid HashType = iota
 	HashSHA1
@@ -31,9 +32,11 @@ const (
 	minHash = HashSHA1
 	maxHash = HashMD6
 )
-var hashText = [maxHash+1]string{"Invalid", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "MD2", "MD4", "MD5", "MD6"}
+
+var hashText = [maxHash + 1]string{"Invalid", "SHA1", "SHA224", "SHA256", "SHA384", "SHA512", "MD2", "MD4", "MD5", "MD6"}
 
 type TrustLevel int
+
 const (
 	Untrusted TrustLevel = iota
 	Unsupported
@@ -41,18 +44,19 @@ const (
 	MinTrustLevel = Untrusted
 	MaxTrustLevel = Trusted
 )
-var levelText = [MaxTrustLevel+1]string{"Untrusted", "Unsupported", "Trusted"}
+
+var levelText = [MaxTrustLevel + 1]string{"Untrusted", "Unsupported", "Trusted"}
 
 const MaxGoroutines = 8 // used by other packages that query components from external sources
 
 // Dependency is a single building block, used for building the Artifact
 type Dependency struct {
-	Name     string
-	Version  string
-	Hash     string
-	HashType HashType
-	TrustLevel TrustLevel	// set by Notorize/Authenticate
-	SignerID string			// set by Notorize/Authenticate
+	Name       string
+	Version    string
+	Hash       string
+	HashType   HashType
+	TrustLevel TrustLevel // set by Notorize/Authenticate
+	SignerID   string     // set by Notorize/Authenticate
 }
 
 func HashTypeName(hashType HashType) string {
@@ -63,7 +67,7 @@ func HashTypeName(hashType HashType) string {
 }
 
 func TrustLevelName(level TrustLevel) string {
-	if level < MinTrustLevel || level >= MaxTrustLevel {
+	if level < MinTrustLevel || level > MaxTrustLevel {
 		return levelText[Untrusted]
 	}
 	return levelText[level]
@@ -71,16 +75,8 @@ func TrustLevelName(level TrustLevel) string {
 
 // Notarize() notarizes the dependency
 func (dep *Dependency) Notarize(lcUser *api.LcUser, kind string) error {
-	_, _, err := lcUser.Sign(api.Artifact{
-			Kind: kind,
-			Name: dep.Name,
-			Hash: dep.Hash,
-			Size: 10,	// FIXME
-			ContentType: "text/plain; charset=utf-8",
-			Metadata: map[string]interface{}{
-				"version": dep.Version,
-				"hashType": HashTypeName(dep.HashType)},	// FIXME - add more metadata
-		},
+	_, _, err := lcUser.Sign(
+		*ToApiArtifact(kind, dep.Name, dep.Version, dep.Hash, dep.HashType),
 		api.LcSignWithStatus(meta.StatusTrusted))
 	if err != nil {
 		return fmt.Errorf("notarization of %s failed: %w", dep.Name, err)
@@ -100,7 +96,7 @@ func (dep *Dependency) Authenticate(lcUser *api.LcUser, signerID string) error {
 		switch {
 		case !verified:
 			return errors.New("the ledger is compromised")
-		case ar.Revoked != nil && !ar.Revoked.IsZero():
+		case ar.Status == meta.StatusUntrusted || (ar.Revoked != nil && !ar.Revoked.IsZero()):
 			level = Untrusted
 		case ar.Status == meta.StatusUnsupported:
 			level = Unsupported
@@ -117,4 +113,16 @@ func (dep *Dependency) Authenticate(lcUser *api.LcUser, signerID string) error {
 	}
 
 	return nil
+}
+
+func ToApiArtifact(kind, name, version, hash string, hashType HashType) *api.Artifact {
+	return &api.Artifact{
+		Kind: kind,
+		Name: name,
+		Hash: hash,
+		Size: 0,
+		//		ContentType: "text/plain; charset=utf-8",
+		Metadata: map[string]interface{}{
+			"version":  version,
+			"hashtype": HashTypeName(hashType)}}
 }

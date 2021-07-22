@@ -12,8 +12,8 @@ import (
 	"github.com/vchain-us/vcn/pkg/bom/artifact"
 	"github.com/vchain-us/vcn/pkg/bom/dotnet"
 	"github.com/vchain-us/vcn/pkg/bom/golang"
-	"github.com/vchain-us/vcn/pkg/bom/python"
 	"github.com/vchain-us/vcn/pkg/bom/java"
+	"github.com/vchain-us/vcn/pkg/bom/python"
 )
 
 // New returns Artifact implementation of type, matching the artifact language/environment

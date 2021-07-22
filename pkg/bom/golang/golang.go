@@ -14,8 +14,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 	"path/filepath"
+	"strings"
 
 	"github.com/vchain-us/vcn/pkg/bom/artifact"
 )
@@ -36,16 +36,15 @@ func New(path string) artifact.Artifact {
 		return nil
 	}
 	if fi.IsDir() {
-		// a directory - checks the presence of Go files, if no Go files present, look for go.sum
+		// a directory - look for go.sum, if it is not there, checks the presence of Go files
+		_, err = os.Stat(filepath.Join(path, "go.sum"))
+		if err == nil {
+			return &goArtifactFromSum{goArtifact: goArtifact{path: path}}
+		}
 		files, err := filepath.Glob(filepath.Join(path, "*.go"))
 		if err == nil && len(files) > 0 {
-			return &goArtifactFromGoList{goArtifact: goArtifact{ path: path}}
+			return &goArtifactFromGoList{goArtifact: goArtifact{path: path}}
 		}
-		_, err = os.Stat(filepath.Join(path, "go.sum"))
-		if err != nil {
-			return nil
-		}
-		return &goArtifactFromSum{goArtifact: goArtifact{path: path}}
 	} else {
 		// not a directory - check if file is executable and contains Go build info section
 		file, err := openExe(path)
@@ -56,8 +55,10 @@ func New(path string) artifact.Artifact {
 			file.Close()
 			return nil // cannot find build info
 		}
+		// exe file is closed by goArtifactFromExe.Dependencies()
 		return &goArtifactFromExe{goArtifact: goArtifact{path: path}, file: file}
 	}
+	return nil
 }
 
 func (p goArtifact) Type() string {
