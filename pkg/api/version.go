@@ -10,6 +10,7 @@ package api
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/sirupsen/logrus"
 	"github.com/vchain-us/vcn/pkg/meta"
@@ -59,4 +60,42 @@ func LatestCLIVersion() (string, string, error) {
 		return "", "", err
 	}
 	return v.Release, v.Message, nil
+}
+
+// LatestCLIDownloadURL returns the download URL of the latest `vcn` CLI release for the current architecture and OS.
+func LatestCLIDownloadURL() (string, error) {
+	response := new(struct {
+		URL string `json:"url"`
+	})
+	restError := new(Error)
+	url := fmt.Sprintf(
+		"%s?arch=%s&os=%s",
+		meta.APIEndpoint("version/vcn/latest-download-url"),
+		runtime.GOARCH,
+		runtime.GOOS,
+	)
+	if meta.StaticBuild() {
+		url += "&static=true"
+	}
+	r, err := newSling("").
+		Get(url).
+		Receive(&response, restError)
+	if err != nil {
+		return "", err
+	}
+
+	if r.StatusCode != 200 {
+		logger().WithFields(logrus.Fields{
+			"response":  response,
+			"err":       err,
+			"restError": restError,
+		}).Trace("LatestCLIDownloadURL")
+		return "", fmt.Errorf(
+			"request failed: %s (%d)",
+			restError.Message,
+			restError.Status,
+		)
+	}
+
+	return response.URL, nil
 }

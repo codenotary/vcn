@@ -43,6 +43,12 @@ func CheckVersion() {
 	}
 
 	if latestV.GT(curV) {
+
+		downloadURL, err := api.LatestCLIDownloadURL()
+		if err != nil {
+			return
+		}
+
 		fmt.Println()
 		color.Set(meta.StyleAffordance())
 		fmt.Println("A newer version of vcn is available to download.")
@@ -50,7 +56,8 @@ func CheckVersion() {
 		fmt.Printf(`		
 Your version: %s
 Latest version: %s
+Download URL: %s
 %s
-`, meta.Version(), v, m)
+`, meta.Version(), v, downloadURL, m)
 	}
 }
